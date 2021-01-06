@@ -1,0 +1,6 @@
+node_modules/
+build/
+scripts/merge.ts
+scripts/genp.ts
+bench/
+compiler-debug/
