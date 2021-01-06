@@ -1,8 +1,8 @@
-import { Ref } from "@effect-ts/system/Ref";
-import { Option } from "@effect-ts/core/Classic/Option";
 import { Either } from "@effect-ts/core/Classic/Either";
-import { Request } from "src/Request";
+import { Option } from "@effect-ts/core/Classic/Option";
 import { _A, _E } from "@effect-ts/core/Utils";
+import { Ref } from "@effect-ts/system/Ref";
+import { Request } from "src/Request";
 
 /**
  * A `BlockedRequest[A]` keeps track of a request of type `A` along with a
@@ -17,6 +17,7 @@ export interface BlockedRequest<A> {
 }
 
 interface BlockedRequestFull<A, E, B> {
+  _A: () => A;
   request: Request<E, B>;
   result: Ref<Option<Either<E, B>>>;
 }
@@ -25,5 +26,5 @@ export function of<A extends Request<any, any>>(
   request: A,
   result: Ref<Option<Either<_E<A>, _A<A>>>>
 ): BlockedRequest<A> {
-  return (_) => _({ request, result });
+  return (_) => _({ request, result, _A: undefined as any });
 }

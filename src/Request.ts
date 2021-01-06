@@ -1,6 +1,5 @@
-
-export abstract class Request<E,A>{
-    readonly _tag = 'Request'
-    readonly _E!: () => E
-    readonly _A!: () => A
+export abstract class Request<E, A> {
+  abstract readonly _tag: string;
+  readonly _E!: () => E;
+  readonly _A!: () => A;
 }

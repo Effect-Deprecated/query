@@ -5,13 +5,20 @@ import * as O from "@effect-ts/core/Classic/Option";
 import * as E from "@effect-ts/core/Classic/Either";
 import { pipe } from "@effect-ts/core/Function";
 
+type Query<R, E, A> = {};
+type DataSource<R, A> = {};
+
+class QueryFailure<R, A> {
+  constructor(readonly dataSource: DataSource<R, A>, readonly request: A) {}
+}
+
 class Effect<R, E, A> {
   readonly _tag = "Effect";
   readonly _R!: (r: R) => never;
   readonly _E!: () => E;
   readonly _A!: () => A;
 
-  constructor(public readonly query: ZQuery<R, E, A>) {}
+  constructor(public readonly query: Query<R, E, A>) {}
 }
 
 class Get<E, A> {
@@ -58,7 +65,7 @@ export function apply<R, E, A, B>(
 /**
  * Constructs a continuation that may perform arbitrary effects.
  */
-export function effect<R, E, A>(query: ZQuery<R, E, A>): Continue<R, E, A> {
+export function effect<R, E, A>(query: Query<R, E, A>): Continue<R, E, A> {
   return new Effect(query);
 }
 
@@ -70,13 +77,19 @@ export function get<E, A>(io: IO<E, A>): Continue<unknown, E, A> {
   return new Get(io);
 }
 
-  /**
-   * Purely folds over the failure and success types of this continuation.
-   */
-  export function fold<E, A, B>(failure: (e: E) => B, success: (a: A) => B): <R>(cont: Continue<R, E, A>) => Continue<R, never, B> {
-      return cont => {
-          switch(cont._tag){
-              case 'Effect': return effect()
-          }
-      }
-  }
+/**
+ * Purely folds over the failure and success types of this continuation.
+ */
+export function fold<E, A, B>(
+  failure: (e: E) => B,
+  success: (a: A) => B
+): <R>(cont: Continue<R, E, A>) => Continue<R, never, B> {
+  // @ts-expect-error
+  return (cont) => {
+    switch (cont._tag) {
+      case "Effect":
+        // @ts-expect-error
+        return effect();
+    }
+  };
+}

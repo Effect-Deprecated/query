@@ -1,3 +1,1 @@
-
-
-export type BlockedRequests<A> = {}
+export type BlockedRequests<A> = {};

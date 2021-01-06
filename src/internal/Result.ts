@@ -15,11 +15,13 @@ class Blocked<R, E, A> {
     public readonly cont: Continue<R, E, A>
   ) {}
 }
+
 class Done<A> {
   readonly _tag = "Done";
   readonly _A!: () => A;
   constructor(public readonly value: A) {}
 }
+
 class Fail<E> {
   readonly _tag = "Fail";
   readonly _E!: () => E;
