@@ -73,7 +73,7 @@ export function get<E, A>(io: IO<E, A>): Continue<unknown, E, A> {
   /**
    * Purely folds over the failure and success types of this continuation.
    */
-  export function fold<E, A, B>(failure: (e: E) => B, success: (a: A) => B): <R>(cont: Continue<R, E, A>) => Continue<R, E, B> {
+  export function fold<E, A, B>(failure: (e: E) => B, success: (a: A) => B): <R>(cont: Continue<R, E, A>) => Continue<R, never, B> {
       return cont => {
           switch(cont._tag){
               case 'Effect': return effect()
