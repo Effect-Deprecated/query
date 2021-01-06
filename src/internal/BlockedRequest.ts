@@ -1,6 +1,7 @@
-import { Ref } from '@effect-ts/system/Ref'
-import { Option } from '@effect-ts/core/Classic/Option'
-import { Either } from '@effect-ts/core/Classic/Either'
+import { Ref } from "@effect-ts/system/Ref";
+import { Option } from "@effect-ts/core/Classic/Option";
+import { Either } from "@effect-ts/core/Classic/Either";
+import { Request } from "src/Request";
 
 /**
  * A `BlockedRequest[A]` keeps track of a request of type `A` along with a
@@ -9,16 +10,13 @@ import { Either } from '@effect-ts/core/Classic/Either'
  * return different result types for different requests while guaranteeing that
  * results will be of the type requested.
  */
-export class BlockedRequest<A> {
-    readonly _A!: A
-
-    // TODO: existential types here, "any" needs to be of type E
-    constructor(
-        public readonly request: Request<any, A>,
-        public readonly result: Ref<Option<Either<any, A>>>
-    ){}
+export interface BlockedRequest<A> {
+  <E, B>(): { request: Request<E, A>; result: Ref<Option<Either<E, B>>> };
 }
 
-export function fromRequestResult<E, A, B>(request: A, result: Ref<Option<Either<E, B>>>): BlockedRequest<A> {
-    return new BlockedRequest(request, result as any)
+export function of<E, B, A extends Request<E, B>>(
+  request: A,
+  result: Ref<Option<Either<E, B>>>
+): BlockedRequest<A> {
+  return () => ({ request: request as any, result: result as any });
 }
