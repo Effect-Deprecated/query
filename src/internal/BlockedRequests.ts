@@ -1,8 +1,12 @@
 // port of: https://github.com/zio/zio-query/blob/3f9f4237ca2d879b629163f23fe79045eb29f0b0/zio-query/shared/src/main/scala/zio/query/internal/BlockedRequests.scala
 
+import { Cache } from "src/Cache";
 import { DataSource } from "src/DataSource";
 import { DataSourceAspect } from "src/DataSourceAspect";
+import { Described } from "src/Described";
 import { BlockedRequest } from "./BlockedRequest";
+import * as T from "@effect-ts/core/Effect";
+import { Request } from "src/Request";
 
 class Both<R> {
   readonly _tag = "Both";
@@ -53,20 +57,20 @@ export type BlockedRequests<R> = Both<R> | Empty | Single<R> | Then<R>;
  * Combines this collection of blocked requests with the specified collection
  * of blocked requests, in parallel.
  */
-export function both<R, R1>(
-  fb: BlockedRequests<R & R1>
-): (fa: BlockedRequests<R>) => BlockedRequests<R & R1> {
-  return (fa) => new Both(fa, fb);
+export function both<R>(
+  fb: BlockedRequests<R>
+): <R1>(fa: BlockedRequests<R1>) => BlockedRequests<R & R1> {
+  return (fa) => new Both(fa, fb as any); // TODO: SHAME!
 }
 
 /**
  * Combines this collection of blocked requests with the specified collection
  * of blocked requests, in sequence.
  */
-export function then<R, R1>(
-  fb: BlockedRequests<R & R1>
-): (fa: BlockedRequests<R>) => BlockedRequests<R & R1> {
-  return (fa) => new Then(fa, fb);
+export function then<R>(
+  fb: BlockedRequests<R>
+): <R1>(fa: BlockedRequests<R1>) => BlockedRequests<R & R1> {
+  return (fa) => new Then(fa, fb as any); // TODO: SHAME!
 }
 
 /**
@@ -75,9 +79,9 @@ export function then<R, R1>(
  * request type of each data source.
  */
 export function mapDataSources<R, R1>(
-  f: DataSourceAspect<R & R1>
-): (fa: BlockedRequests<R>) => BlockedRequests<R1 & R> {
-  // TODO: Stack safety?
+  f: DataSourceAspect<R, R1>
+): (fa: BlockedRequests<R>) => BlockedRequests<R1> {
+  // TODO: Stack safety
   return (fa) => {
     switch (fa._tag) {
       case "Empty":
@@ -98,6 +102,35 @@ export function mapDataSources<R, R1>(
             new Single(($) =>
               $({
                 dataSource: f(_.dataSource),
+                blockedRequest: _.blockedRequest,
+              })
+            )
+        );
+    }
+  };
+}
+
+/**
+ * Provides each data source with part of its required environment.
+ */
+export function provideSome<R, R0>(
+  f: Described<(a: R0) => R>
+): (fa: BlockedRequests<R>) => BlockedRequests<R0> {
+  // TODO: Stack safety
+  return (fa) => {
+    switch (fa._tag) {
+      case "Empty":
+        return new Empty();
+      case "Both":
+        return new Both(provideSome(f)(fa.left), provideSome(f)(fa.right));
+      case "Then":
+        return new Then(provideSome(f)(fa.left), provideSome(f)(fa.right));
+      case "Single":
+        return fa.f(
+          (_) =>
+            new Single(($) =>
+              $({
+                dataSource: DS.provideSome(f)(_.dataSource),
                 blockedRequest: _.blockedRequest,
               })
             )
