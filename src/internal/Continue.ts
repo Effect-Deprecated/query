@@ -4,13 +4,11 @@ import * as REF from "@effect-ts/system/Ref";
 import * as O from "@effect-ts/core/Classic/Option";
 import * as E from "@effect-ts/core/Classic/Either";
 import { pipe } from "@effect-ts/core/Function";
-
-type Query<R, E, A> = {};
-type DataSource<R, A> = {};
-
-class QueryFailure<R, A> {
-  constructor(readonly dataSource: DataSource<R, A>, readonly request: A) {}
-}
+import { Query } from "src/Query";
+import { DataSource } from "src/DataSource";
+import { QueryFailure } from "src/QueryFailure";
+import { Request } from "src/Request";
+import { _A, _E } from "@effect-ts/core/Utils";
 
 class Effect<R, E, A> {
   readonly _tag = "Effect";
@@ -44,11 +42,11 @@ export type Continue<R, E, A> = Effect<R, E, A> | Get<E, A>;
  * Constructs a continuation from a request, a data source, and a `Ref` that
  * will contain the result of the request when it is executed.
  */
-export function apply<R, E, A, B>(
+export function apply<R, A extends Request<any, any>>(
   request: A,
   dataSource: DataSource<R, A>,
-  ref: REF.Ref<O.Option<E.Either<E, B>>>
-): Continue<R, E, B> {
+  ref: REF.Ref<O.Option<E.Either<_E<A>, _A<A>>>>
+): Continue<R, _E<A>, _A<A>> {
   return pipe(
     REF.get(ref),
     T.chain((v) =>
