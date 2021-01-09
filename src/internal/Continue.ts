@@ -104,7 +104,9 @@ export function foldCauseM<E, A, R2, E2, A2, R3, E3, A3>(
   failure: (cause: C.Cause<E>) => Q.Query<R2, E2, A2>,
   success: (a: A) => Q.Query<R3, E3, A3>
 ) {
-  return <R>(self: Continue<R, E, A>) => {
+  return <R>(
+    self: Continue<R, E, A>
+  ): Continue<R & R2 & R3, E2 | E3, A2 | A3> => {
     switch (self._tag) {
       case "Effect":
         return effect(Q.foldCauseM(failure, success));

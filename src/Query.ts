@@ -8,6 +8,7 @@ import * as C from "@effect-ts/system/Cause";
 import { pipe } from "@effect-ts/core/Function";
 import * as E from "@effect-ts/core/Classic/Either";
 import { fromEffect } from "@effect-ts/system/Managed";
+import { Continue } from "@effect-ts/system/Schedule/Decision";
 
 /**
  * A `ZQuery[R, E, A]` is a purely functional description of an effectual query
@@ -116,11 +117,13 @@ export function fold<B, E, A>(
  * A more powerful version of `foldM` that allows recovering from any type
  * of failure except interruptions.
  */
-export function foldCauseM<R, R1, E1, B, A, E>(
-  failure: (c: C.Cause<E>) => Query<R1, E1, B>,
-  success: (a: A) => Query<R1, E1, B>
-): (self: Query<R, E, A>) => Query<R & R1, E1, B> {
-  return (self) =>
+export function foldCauseM<E, A, R2, E2, A2, R3, E3, A3>(
+  failure: (cause: C.Cause<E>) => Continue<R2, E2, A2>,
+  success: (a: A) => Continue<R3, E3, A3>
+) {
+  return <R>(
+    self: Continue<R, E, A>
+  ): Continue<R & R2 & R3, E2 | E3, A2 | A3> =>
     new Query(
       T.foldCauseM_(
         self.step,
