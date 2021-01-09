@@ -1,14 +1,19 @@
+// port of: https://github.com/zio/zio-query/blob/5746d54dfbed8e3c35415355b09c8e6a54c49889/zio-query/shared/src/main/scala/zio/query/internal/Continue.scala
 import { IO } from "@effect-ts/core/Effect";
 import * as T from "@effect-ts/core/Effect";
 import * as REF from "@effect-ts/system/Ref";
 import * as O from "@effect-ts/core/Classic/Option";
 import * as E from "@effect-ts/core/Classic/Either";
 import { pipe } from "@effect-ts/core/Function";
-import { Query } from "src/Query";
+import * as Q from "src/Query";
 import { DataSource } from "src/DataSource";
 import { QueryFailure } from "src/QueryFailure";
 import { Request } from "src/Request";
 import { _A, _E } from "@effect-ts/core/Utils";
+import * as C from "@effect-ts/system/Cause";
+import { DataSourceAspect } from "src/DataSourceAspect";
+import { Described } from "src/Described";
+import { Cache } from "src/Cache";
 
 class Effect<R, E, A> {
   readonly _tag = "Effect";
@@ -16,7 +21,7 @@ class Effect<R, E, A> {
   readonly _E!: () => E;
   readonly _A!: () => A;
 
-  constructor(public readonly query: Query<R, E, A>) {}
+  constructor(public readonly query: Q.Query<R, E, A>) {}
 }
 
 class Get<E, A> {
@@ -63,7 +68,7 @@ export function apply<R, A extends Request<any, any>>(
 /**
  * Constructs a continuation that may perform arbitrary effects.
  */
-export function effect<R, E, A>(query: Query<R, E, A>): Continue<R, E, A> {
+export function effect<R, E, A>(query: Q.Query<R, E, A>): Continue<R, E, A> {
   return new Effect(query);
 }
 
@@ -82,12 +87,125 @@ export function fold<E, A, B>(
   failure: (e: E) => B,
   success: (a: A) => B
 ): <R>(cont: Continue<R, E, A>) => Continue<R, never, B> {
-  // @ts-expect-error
   return (cont) => {
     switch (cont._tag) {
       case "Effect":
-        // @ts-expect-error
-        return effect();
+        return effect(Q.fold(failure, success)(cont.query));
+      case "Get":
+        return get(T.fold_(cont.io, failure, success));
+    }
+  };
+}
+
+/**
+ * Effectually folds over the failure and success types of this continuation.
+ */
+export function foldCauseM<R1, E1, E, A, B>(
+  failure: (c: C.Cause<E>) => Q.Query<R1, E1, B>,
+  success: (a: A) => Q.Query<R1, E1, B>
+): <R>(self: Continue<R, E, A>) => Continue<R & R1, E1, B> {
+  return (self) => {
+    switch (self._tag) {
+      case "Effect":
+        return effect(Q.foldCauseM(failure, success));
+      case "Get":
+        return effect(T.foldCauseM_(Q.fromEffect(self.io), failure, success));
+    }
+  };
+}
+
+/**
+ * Purely maps over the success type of this continuation.
+ */
+export function map<A, B>(
+  f: (a: A) => B
+): <R, E>(self: Continue<R, E, A>) => Continue<R, E, B> {
+  return (self) => {
+    switch (self._tag) {
+      case "Effect":
+        return effect(Q.map(f)(self.query));
+      case "Get":
+        return get(T.map_(self.io, f));
+    }
+  };
+}
+
+/**
+ * Transforms all data sources with the specified data source aspect.
+ */
+export function mapDataSources<R, R1>(
+  f: DataSourceAspect<R, R1>
+): <E, A>(self: Continue<R, E, A>) => Continue<R & R1, E, A> {
+  return (self) => {
+    switch (self._tag) {
+      case "Effect":
+        return effect(Q.mapDataSources(f)(self.query));
+      case "Get":
+        return get(self.io);
+    }
+  };
+}
+
+/**
+ * Purely maps over the failure type of this continuation.
+ */
+export function mapError<E, E1>(
+  f: (e: E) => E1
+): <R, A>(self: Continue<R, E, A>) => Continue<R, E1, A> {
+  return (self) => {
+    switch (self._tag) {
+      case "Effect":
+        return effect(Q.mapError(f)(self.query));
+      case "Get":
+        return get(T.mapError_(self.io, f));
+    }
+  };
+}
+
+/**
+ * Effectually maps over the success type of this continuation.
+ */
+export function mapM<A, R1, E1, B>(
+  f: (a: A) => Q.Query<R1, E1, B>
+): (self: Continue<R, E, A>) => Continue<R1, E1, B> {
+  return (self) => {
+    switch (self._tag) {
+      case "Effect":
+        return effect(Q.chain(f)(self.query));
+      case "Get":
+        return effect(Q.chain(Q.fromEffect(self.io))(f));
+    }
+  };
+}
+
+/**
+ * Purely contramaps over the environment type of this continuation.
+ */
+export function provideSome<R0, R>(
+  f: Described<(a: R0) => R>
+): <E, A>(self: Continue<R, E, A>) => Continue<R0, E, A> {
+  return (self) => {
+    switch (self._tag) {
+      case "Effect":
+        return effect(Q.provideSome(f)(self.query));
+      case "Get":
+        return get(self.io);
+    }
+  };
+}
+
+/**
+ * Runs this continuation..
+ */
+export function runCache(
+  cache: Cache
+): <R, E, A>(self: Continue<R, E, A>) => T.Effect<R, E, A> {
+  return (self) => {
+    switch (self._tag) {
+      case "Effect":
+        return Q.runCache(cache)(self.query);
+      case "Get":
+        return self.io;
     }
   };
 }
