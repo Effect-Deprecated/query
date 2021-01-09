@@ -4,6 +4,10 @@ import { Has } from "@effect-ts/core/Has";
 import { QueryContext } from "./internal/QueryContext";
 import * as RES from "./internal/Result";
 import * as CONT from "./internal/Continue";
+import * as C from "@effect-ts/system/Cause";
+import { pipe } from "@effect-ts/core/Function";
+import * as E from "@effect-ts/core/Classic/Either";
+import { fromEffect } from "@effect-ts/system/Managed";
 
 /**
  * A `ZQuery[R, E, A]` is a purely functional description of an effectual query
@@ -70,7 +74,9 @@ export function chain<R1, E1, A, B>(
       T.chain_(self.step, (r) => {
         switch (r._tag) {
           case "Blocked":
-            return T.succeed(RES.blocked(r.blockedRequests, CONT.mapM(f)));
+            return T.succeed(
+              RES.blocked(r.blockedRequests, pipe(r.cont, CONT.mapM(f)))
+            );
           case "Done":
             return f(r.value).step;
           case "Fail":
@@ -78,4 +84,101 @@ export function chain<R1, E1, A, B>(
         }
       })
     );
+}
+
+/**
+ * Returns a query whose failure and success have been lifted into an
+ * `Either`. The resulting query cannot fail, because the failure case has
+ * been exposed as part of the `Either` success case.
+ */
+export function either<R, E, A>(
+  self: Query<R, E, A>
+): Query<R, never, E.Either<E, A>> {
+  return fold(E.left, E.right);
+}
+
+/**
+ * Folds over the failed or successful result of this query to yield a query
+ * that does not fail, but succeeds with the value returned by the left or
+ * right function passed to `fold`.
+ */
+export function fold<B, E, A>(
+  failure: (e: E) => B,
+  success: (a: A) => B
+): <R>(self: Query<R, E, A>) => Query<R, never, B> {
+  return foldM(
+    (e) => succeed(T.fail(e)),
+    (a) => succeed(T.succeed(a))
+  );
+}
+
+/**
+ * A more powerful version of `foldM` that allows recovering from any type
+ * of failure except interruptions.
+ */
+export function foldCauseM<R, R1, E1, B, A, E>(
+  failure: (c: C.Cause<E>) => Query<R1, E1, B>,
+  success: (a: A) => Query<R1, E1, B>
+): (self: Query<R, E, A>) => Query<R & R1, E1, B> {
+  return (self) =>
+    new Query(
+      T.foldCauseM_(
+        self.step,
+        (_) => failure(_).step,
+        (res) => {
+          switch (res._tag) {
+            case "Blocked":
+              return T.succeed(
+                RES.blocked(
+                  res.blockedRequests,
+                  pipe(res.cont, CONT.foldCauseM(failure, success))
+                )
+              );
+            case "Done":
+              return success(res.value).step;
+            case "Fail":
+              return failure(res.cause).step;
+          }
+        }
+      )
+    );
+}
+
+/**
+ * Recovers from errors by accepting one query to execute for the case of an
+ * error, and one query to execute for the case of success.
+ */
+export function foldM<E, R1, E1, B, A>(
+  failure: (e: E) => Query<R1, E1, B>,
+  success: (a: A) => Query<R1, E1, B>
+): <R>(self: Query<R, E, A>) => Query<R & R1, E1, B> {
+  return (self) =>
+    pipe(
+      self,
+      foldCauseM((c) => E.fold_(C.failureOrCause(c), failure, halt), success)
+    );
+}
+
+/**
+ * Constructs a query that fails with the specified cause.
+ */
+export function halt<E>(cause: C.Cause<E>) {
+  return new Query(T.succeed(RES.fail(cause)));
+}
+
+/**
+ * Constructs a query that never completes.
+ */
+export const never = fromEffect(T.never);
+
+/**
+ * Constructs a query that succeds with the empty value.
+ */
+export const none = fromEffect(T.none);
+
+/**
+ *  Constructs a query that succeeds with the specified value.
+ */
+export function succeed<A>(value: A) {
+  return new Query(T.succeed(RES.done(value)));
 }

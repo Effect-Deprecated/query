@@ -100,11 +100,11 @@ export function fold<E, A, B>(
 /**
  * Effectually folds over the failure and success types of this continuation.
  */
-export function foldCauseM<R1, E1, E, A, B>(
-  failure: (c: C.Cause<E>) => Q.Query<R1, E1, B>,
-  success: (a: A) => Q.Query<R1, E1, B>
-): <R>(self: Continue<R, E, A>) => Continue<R & R1, E1, B> {
-  return (self) => {
+export function foldCauseM<E, A, R2, E2, A2, R3, E3, A3>(
+  failure: (cause: C.Cause<E>) => Q.Query<R2, E2, A2>,
+  success: (a: A) => Q.Query<R3, E3, A3>
+) {
+  return <R>(self: Continue<R, E, A>) => {
     switch (self._tag) {
       case "Effect":
         return effect(Q.foldCauseM(failure, success));
@@ -167,7 +167,7 @@ export function mapError<E, E1>(
  */
 export function mapM<A, R1, E1, B>(
   f: (a: A) => Q.Query<R1, E1, B>
-): (self: Continue<R, E, A>) => Continue<R1, E1, B> {
+): <R, E>(self: Continue<R, E, A>) => Continue<R1, E1, B> {
   return (self) => {
     switch (self._tag) {
       case "Effect":
