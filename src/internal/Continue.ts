@@ -106,14 +106,21 @@ export function foldCauseM<E, A, R2, E2, A2, R3, E3, A3>(
 ) {
   return <R>(
     self: Continue<R, E, A>
-  ): Continue<R & R2 & R3, E2 | E3, A2 | A3> => {
-    switch (self._tag) {
-      case "Effect":
-        return effect(Q.foldCauseM(failure, success));
-      case "Get":
-        return effect(T.foldCauseM_(Q.fromEffect(self.io), failure, success));
-    }
-  };
+  ): Continue<R & R2 & R3, E2 | E3, A2 | A3> =>
+    foldCauseM_(self, failure, success);
+}
+
+export function foldCauseM_<R, E, A, R2, E2, A2, R3, E3, A3>(
+  self: Continue<R, E, A>,
+  failure: (cause: C.Cause<E>) => Q.Query<R2, E2, A2>,
+  success: (a: A) => Q.Query<R3, E3, A3>
+): Continue<R & R2 & R3, E2 | E3, A2 | A3> {
+  switch (self._tag) {
+    case "Effect":
+      return effect(Q.foldCauseM_(self.query, failure, success));
+    case "Get":
+      return effect(Q.foldCauseM_(Q.fromEffect(self.io), failure, success));
+  }
 }
 
 /**
@@ -125,7 +132,7 @@ export function map<A, B>(
   return (self) => {
     switch (self._tag) {
       case "Effect":
-        return effect(Q.map(f)(self.query));
+        return effect(pipe(self.query, Q.map(f)));
       case "Get":
         return get(T.map_(self.io, f));
     }
@@ -169,13 +176,13 @@ export function mapError<E, E1>(
  */
 export function mapM<A, R1, E1, B>(
   f: (a: A) => Q.Query<R1, E1, B>
-): <R, E>(self: Continue<R, E, A>) => Continue<R1, E1, B> {
+): <R, E>(self: Continue<R, E, A>) => Continue<R1 & R, E1 | E, B> {
   return (self) => {
     switch (self._tag) {
       case "Effect":
-        return effect(Q.chain(f)(self.query));
+        return effect(Q.chain_(self.query, f));
       case "Get":
-        return effect(Q.chain(Q.fromEffect(self.io))(f));
+        return effect(Q.chain_(Q.fromEffect(self.io), f));
     }
   };
 }

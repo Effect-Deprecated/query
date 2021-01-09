@@ -7,8 +7,6 @@ import * as CONT from "./internal/Continue";
 import * as C from "@effect-ts/system/Cause";
 import { pipe } from "@effect-ts/core/Function";
 import * as E from "@effect-ts/core/Classic/Either";
-import { fromEffect } from "@effect-ts/system/Managed";
-import { Continue } from "@effect-ts/system/Schedule/Decision";
 
 /**
  * A `ZQuery[R, E, A]` is a purely functional description of an effectual query
@@ -67,24 +65,29 @@ export class Query<R, E, A> {
  * sequentially and will not be pipelined, though deduplication and caching of
  * requests may still be applied.
  */
-export function chain<R1, E1, A, B>(
+export function chain<R1, E1, A, B>(f: (a: A) => Query<R1, E1, B>) {
+  return <R, E>(self: Query<R, E, A>): Query<R & R1, E | E1, B> =>
+    chain_(self, f);
+}
+
+export function chain_<R, E, R1, E1, A, B>(
+  self: Query<R, E, A>,
   f: (a: A) => Query<R1, E1, B>
-): <R, E>(self: Query<R, E, A>) => Query<R & R1, E | E1, B> {
-  return (self) =>
-    new Query(
-      T.chain_(self.step, (r) => {
-        switch (r._tag) {
-          case "Blocked":
-            return T.succeed(
-              RES.blocked(r.blockedRequests, pipe(r.cont, CONT.mapM(f)))
-            );
-          case "Done":
-            return f(r.value).step;
-          case "Fail":
-            return T.succeed(RES.fail(r.cause));
-        }
-      })
-    );
+): Query<R & R1, E | E1, B> {
+  return new Query(
+    T.chain_(self.step, (r) => {
+      switch (r._tag) {
+        case "Blocked":
+          return T.succeed(
+            RES.blocked(r.blockedRequests, pipe(r.cont, CONT.mapM(f)))
+          );
+        case "Done":
+          return f(r.value).step;
+        case "Fail":
+          return T.succeed(RES.fail(r.cause));
+      }
+    })
+  );
 }
 
 /**
@@ -95,7 +98,7 @@ export function chain<R1, E1, A, B>(
 export function either<R, E, A>(
   self: Query<R, E, A>
 ): Query<R, never, E.Either<E, A>> {
-  return fold(E.left, E.right);
+  return pipe(self, fold<E.Either<E, A>, E, A>(E.left, E.right));
 }
 
 /**
@@ -103,13 +106,22 @@ export function either<R, E, A>(
  * that does not fail, but succeeds with the value returned by the left or
  * right function passed to `fold`.
  */
-export function fold<B, E, A>(
+export function fold<B, E, A>(failure: (e: E) => B, success: (a: A) => B) {
+  return <R>(self: Query<R, E, A>): Query<R, never, B> =>
+    fold_(self, failure, success);
+}
+
+export function fold_<R, E, A, B>(
+  self: Query<R, E, A>,
   failure: (e: E) => B,
   success: (a: A) => B
-): <R>(self: Query<R, E, A>) => Query<R, never, B> {
-  return foldM(
-    (e) => succeed(T.fail(e)),
-    (a) => succeed(T.succeed(a))
+): Query<R, never, B> {
+  return pipe(
+    self,
+    foldM(
+      (e) => succeed(failure(e)),
+      (a) => succeed(success(a))
+    )
   );
 }
 
@@ -118,44 +130,50 @@ export function fold<B, E, A>(
  * of failure except interruptions.
  */
 export function foldCauseM<E, A, R2, E2, A2, R3, E3, A3>(
-  failure: (cause: C.Cause<E>) => Continue<R2, E2, A2>,
-  success: (a: A) => Continue<R3, E3, A3>
+  failure: (cause: C.Cause<E>) => Query<R2, E2, A2>,
+  success: (a: A) => Query<R3, E3, A3>
 ) {
-  return <R>(
-    self: Continue<R, E, A>
-  ): Continue<R & R2 & R3, E2 | E3, A2 | A3> =>
-    new Query(
-      T.foldCauseM_(
-        self.step,
-        (_) => failure(_).step,
-        (res) => {
-          switch (res._tag) {
-            case "Blocked":
-              return T.succeed(
-                RES.blocked(
-                  res.blockedRequests,
-                  pipe(res.cont, CONT.foldCauseM(failure, success))
-                )
-              );
-            case "Done":
-              return success(res.value).step;
-            case "Fail":
-              return failure(res.cause).step;
-          }
+  return <R>(self: Query<R, E, A>): Query<R & R2 & R3, E2 | E3, A2 | A3> =>
+    foldCauseM_(self, failure, success);
+}
+
+export function foldCauseM_<R, E, A, R2, E2, A2, R3, E3, A3>(
+  self: Query<R, E, A>,
+  failure: (cause: C.Cause<E>) => Query<R2, E2, A2>,
+  success: (a: A) => Query<R3, E3, A3>
+): Query<R & R2 & R3, E2 | E3, A2 | A3> {
+  return new Query(
+    T.foldCauseM_(
+      self.step,
+      (_) => failure(_).step,
+      (res) => {
+        switch (res._tag) {
+          case "Blocked":
+            return T.succeed(
+              RES.blocked(
+                res.blockedRequests,
+                CONT.foldCauseM_(res.cont, failure, success)
+              )
+            );
+          case "Done":
+            return success(res.value).step;
+          case "Fail":
+            return failure(res.cause).step;
         }
-      )
-    );
+      }
+    )
+  );
 }
 
 /**
  * Recovers from errors by accepting one query to execute for the case of an
  * error, and one query to execute for the case of success.
  */
-export function foldM<E, R1, E1, B, A>(
-  failure: (e: E) => Query<R1, E1, B>,
-  success: (a: A) => Query<R1, E1, B>
-): <R>(self: Query<R, E, A>) => Query<R & R1, E1, B> {
-  return (self) =>
+export function foldM<E, A, R2, E2, A2, R3, E3, A3>(
+  failure: (failure: E) => Query<R2, E2, A2>,
+  success: (a: A) => Query<R3, E3, A3>
+) {
+  return <R>(self: Query<R, E, A>): Query<R & R2 & R3, E2 | E3, A2 | A3> =>
     pipe(
       self,
       foldCauseM((c) => E.fold_(C.failureOrCause(c), failure, halt), success)
@@ -184,4 +202,14 @@ export const none = fromEffect(T.none);
  */
 export function succeed<A>(value: A) {
   return new Query(T.succeed(RES.done(value)));
+}
+
+/**
+ * Constructs a query from an effect.
+ */
+export function fromEffect<R, E, A>(
+  effect: T.Effect<R & Has<QueryContext>, E, A>
+): Query<R, E, A> {
+  // TODO: Should the Has<QueryContext> be mixed in?
+  return new Query(T.foldCause_(effect, RES.fail, RES.done));
 }
