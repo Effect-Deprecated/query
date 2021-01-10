@@ -143,17 +143,7 @@ export function foldCauseM_<R, E, A, R2, E2, A2, R3, E3, A3>(
   success: (a: A) => Query<R3, E3, A3>
 ): Query<R & R2 & R3, E2 | E3, A2 | A3> {
   return new Query(
-    T.foldCauseM_<
-      readonly [R, QueryContext],
-      E,
-      RES.Result<R, E, A>,
-      readonly [R & R2 & R3, QueryContext],
-      E2 | E3,
-      RES.Result<R & R2 & R3, E2 | E3, A2 | A3>,
-      readonly [R & R2 & R3, QueryContext],
-      E2 | E3,
-      RES.Result<R & R2 & R3, E2 | E3, A2 | A3>
-    >(
+    T.foldCauseM_(
       self.step,
       (_) => failure(_).step,
       (_) => {
@@ -164,7 +154,7 @@ export function foldCauseM_<R, E, A, R2, E2, A2, R3, E3, A3>(
                 _.blockedRequests,
                 CONT.foldCauseM_(_.cont, failure, success)
               )
-            );
+            ) as Query<R & R2 & R3, E2 | E3, A2 | A3>["step"];
           case "Done":
             return success(_.value).step;
           case "Fail":
