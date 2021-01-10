@@ -1,7 +1,13 @@
+// port of: https://github.com/zio/zio-query/blob/3f9f4237ca2d879b629163f23fe79045eb29f0b0/zio-query/shared/src/main/scala/zio/query/DataSource.scala
 import * as A from "@effect-ts/core/Classic/Array";
+import * as E from "@effect-ts/core/Classic/Either";
+import * as O from "@effect-ts/core/Classic/Option";
 import * as T from "@effect-ts/core/Effect";
-import { CompletedRequestMap } from "./CompletedRequestMap";
+import { _A, _E } from "@effect-ts/core/Utils";
+import { tuple } from "@effect-ts/core/Function";
+import * as CR from "./CompletedRequestMap";
 import { Described } from "./Described";
+import { Request } from "./Request";
 
 /**
  * A `DataSource[R, A]` requires an environment `R` and is capable of executing
@@ -26,8 +32,6 @@ import { Described } from "./Described";
  */
 export class DataSource<R, A> {
   readonly _tag = "DataSource";
-  readonly _R!: (r: R) => void;
-  readonly _A!: (a: A) => void;
 
   constructor(
     /**
@@ -41,7 +45,7 @@ export class DataSource<R, A> {
      */
     public readonly runAll: (
       requests: A.Array<A.Array<A>>
-    ) => T.Effect<R, never, CompletedRequestMap>
+    ) => T.Effect<R, never, CR.CompletedRequestMap>
   ) {}
 }
 
@@ -93,4 +97,146 @@ export function contramapM<R1, B, A>(
           self.runAll
         )
     );
+}
+
+/**
+ * Returns a new data source that executes requests of type `C` using the
+ * specified function to transform `C` requests into requests that either
+ * this data source or that data source can execute.
+ */
+export function eitherWith<R1, B>(that: DataSource<R1, B>) {
+  return <C, A, B>(f: Described<(c: C) => E.Either<A, B>>) => <R>(
+    self: DataSource<R, A>
+  ): DataSource<R & R1, C> =>
+    new DataSource<R & R1, C>(
+      `${self.identifier}.eitherWith(${that.identifier})(${f.description})`,
+      (requests) =>
+        T.map_(
+          T.foreach_(requests, (requests) => {
+            const { left: as, right: bs } = A.partitionMap_(requests, f.value);
+            return T.zipWithPar_(
+              self.runAll([as]),
+              that.runAll([bs as any]),
+              CR.concat
+            );
+          }),
+          (_) => A.reduce_(_, CR.empty, CR.concat)
+        )
+    );
+}
+
+/**
+ * Provides this data source with its required environment.
+ */
+export function provide<R>(r: Described<R>) {
+  return <A>(self: DataSource<R, A>): DataSource<unknown, A> =>
+    provideSome(new Described(() => r.value, `_ => ${r.description}`))(self);
+}
+
+/**
+ * Provides this data source with part of its required environment.
+ */
+export function provideSome<R0, R>(f: Described<(r: R0) => R>) {
+  return <A>(self: DataSource<R, A>): DataSource<R0, A> =>
+    new DataSource(
+      `${self.identifier}.provideSome(${f.description})`,
+      (requests) => T.provideSome_(self.runAll(requests), f.value)
+    );
+}
+
+/**
+ * Returns a new data source that executes requests by sending them to this
+ * data source and that data source, returning the results from the first
+ * data source to complete and safely interrupting the loser.
+ */
+export function race<R1, A1>(that: DataSource<R1, A1>) {
+  return <R, A>(self: DataSource<R, A>): DataSource<R & R1, A & A1> =>
+    new DataSource(`${self.identifier}.race(${that.identifier})`, (requests) =>
+      T.race_(self.runAll(requests), that.runAll(requests))
+    );
+}
+
+/**
+ * A data source that executes requests that can be performed in parallel in
+ * batches but does not further optimize batches of requests that must be
+ * performed sequentially.
+ */
+export function makeBatched(identifier: string) {
+  return <R, A>(
+    run: (requests: A.Array<A>) => T.Effect<R, never, CR.CompletedRequestMap>
+  ): DataSource<R, A> => new DataSource(identifier, (requests) =>
+      T.reduce_(requests, CR.empty, (crm, requests) => {
+        const newRequests = A.filter_(requests, (e) => CR.contains(e)(crm));
+        return A.isEmpty(newRequests)
+          ? T.succeed(crm)
+          : T.map_(run(newRequests), (_) => CR.concat(crm, _));
+      })
+    );
+}
+
+
+  /**
+   * Constructs a data source from a pure function.
+   */
+  export function fromFunction(
+      identifier: string
+  ) {
+      return <A extends Request<never, any>, B extends _A<A>>(f: (a: A) => B): DataSource<unknown, A> =>
+        makeBatched(identifier)(requests => T.succeed(A.reduce_(requests, CR.empty, (crm, k) => CR.insert(k)(E.right(f(k)))(crm))))
+  }
+
+  /**
+   * Constructs a data source from a pure function that takes a list of
+   * requests and returns a list of results of the same size. Each item in the
+   * result list must correspond to the item at the same index in the request
+   * list.
+   */
+  export function fromFunctionBatched(identifier: string) {
+      return <A extends Request<any, any>, B extends _A<A>>(f: (a: A.Array<A>) => A.Array<B>) : DataSource<unknown, A> =>
+      fromFunctionBatchedM(identifier)(as => T.succeed(f(as)))
+
+  /**
+   * Constructs a data source from an effectual function that takes a list of
+   * requests and returns a list of results of the same size. Each item in the
+   * result list must correspond to the item at the same index in the request
+   * list.
+   */
+  export function fromFunctionBatchedM(
+      identifier: string
+  ) {
+      return <R, A extends Request<any, any>, E extends _E<A>, B extends _A<A>>(f: (a: A.Array<A>) => T.Effect<R, E, A.Array<B>>): DataSource<R, A>  =>
+      makeBatched(identifier)(requests => {
+          const a: T.Effect<R, never, A.Array<(readonly [A, E.Either<E, B>])>> = T.fold_(f(requests), e => A.map_(requests, _ => tuple(_, E.left(e))), bs => A.zip_(requests, A.map_(bs, _ => E.right(_))))
+          return T.map_(a, _ => A.reduce_(_, CR.empty, (crm, [k, v]) => CR.insert(k)(v)(crm)))
+      })
+  }
+
+  /**
+   * Constructs a data source from a pure function that takes a list of
+   * requests and returns a list of optional results of the same size. Each
+   * item in the result list must correspond to the item at the same index in
+   * the request list.
+   */
+  export function fromFunctionBatchedOption(
+      identifier: string
+  ) {
+      return <A extends Request<never, any>, B extends _A<A>>(f: (a: A.Array<A>) => A.Array<O.Option<B>>): DataSource<unknown, A> =>
+        fromFunctionBatchedOptionM(identifier)(as => T.succeed(f(as)))
+  }
+
+  /**
+   * Constructs a data source from an effectual function that takes a list of
+   * requests and returns a list of optional results of the same size. Each
+   * item in the result list must correspond to the item at the same index in
+   * the request list.
+   */
+export function fromFunctionBatchedOptionM(
+    identifier: string
+) {
+    return <A extends Request<any, any>, B extends _A<A>, E, R>(
+        f: (a: A.Array<A>) => T.Effect<R, E, A.Array<O.Option<B>>>
+    ): DataSource<R, A> => makeBatched(identifier)(requests => {
+            const a: T.Effect<R, never, A.Array<(readonly [A, E.Either<E, O.Option<B>>])>> = T.fold_(f(requests), e => A.map_(requests, _ => tuple(_, E.left(e))), bs => A.zip_(requests, A.map_(bs, _ => E.right(_))))
+            return T.map_(a, _ => A.reduce_(_, CR.empty, (crm, [k, v]) => CR.insertOption(k)(v)(crm)))
+        })
 }
