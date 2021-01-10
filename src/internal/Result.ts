@@ -1,9 +1,10 @@
 import * as C from "@effect-ts/system/Cause";
-import { BlockedRequests } from "./BlockedRequests";
+import * as BR from "./BlockedRequests";
 import { Continue } from "./Continue";
 import * as CONT from "./Continue";
 import { pipe } from "@effect-ts/core/Function";
 import * as E from "@effect-ts/core/Classic/Either";
+import { Described } from "src/Described";
 
 class Blocked<R, E, A> {
   readonly _tag = "Blocked";
@@ -11,7 +12,7 @@ class Blocked<R, E, A> {
   readonly _E!: () => E;
   readonly _A!: () => A;
   constructor(
-    public readonly blockedRequests: BlockedRequests<R>,
+    public readonly blockedRequests: BR.BlockedRequests<R>,
     public readonly cont: Continue<R, E, A>
   ) {}
 }
@@ -63,7 +64,7 @@ export function fold<E, A, B>(
  * specified continuation.
  */
 export function blocked<R, E, A>(
-  blockedRequests: BlockedRequests<R>,
+  blockedRequests: BR.BlockedRequests<R>,
   cont: Continue<R, E, A>
 ): Result<R, E, A> {
   return new Blocked(blockedRequests, cont);
@@ -81,4 +82,23 @@ export function done<A>(value: A): Result<unknown, never, A> {
  */
 export function fail<E>(cause: C.Cause<E>): Result<unknown, E, never> {
   return new Fail(cause);
+}
+
+/**
+ * Provides this result with part of its required environment.
+ */
+export function provideSome<R, R0>(f: Described<(r: R0) => R>) {
+  return <E, A>(self: Result<R, E, A>): Result<R0, E, A> => {
+    switch (self._tag) {
+      case "Blocked":
+        return blocked(
+          BR.provideSome(f)(self.blockedRequests),
+          CONT.provideSome(f)(self.cont)
+        );
+      case "Done":
+        return done(self.value);
+      case "Fail":
+        return fail(self.cause);
+    }
+  };
 }

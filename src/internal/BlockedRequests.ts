@@ -1,12 +1,8 @@
 // port of: https://github.com/zio/zio-query/blob/3f9f4237ca2d879b629163f23fe79045eb29f0b0/zio-query/shared/src/main/scala/zio/query/internal/BlockedRequests.scala
-
-import { Cache } from "src/Cache";
 import { DataSource } from "src/DataSource";
 import { DataSourceAspect } from "src/DataSourceAspect";
 import { Described } from "src/Described";
 import { BlockedRequest } from "./BlockedRequest";
-import * as T from "@effect-ts/core/Effect";
-import { Request } from "src/Request";
 
 class Both<R> {
   readonly _tag = "Both";

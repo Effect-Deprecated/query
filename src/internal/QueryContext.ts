@@ -1,5 +1,4 @@
 // port as of: https://github.com/zio/zio-query/blob/249ad1e67ff85db67250ec9d753b0aad5d669021/zio-query/shared/src/main/scala/zio/query/ZQuery.scala
-import { tag } from "@effect-ts/core/Has";
 import { Cache } from "src/Cache";
 
 /**
@@ -11,4 +10,3 @@ import { Cache } from "src/Cache";
 export interface QueryContext {
   cache: Cache;
 }
-export const QueryContext = tag<QueryContext>();

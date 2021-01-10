@@ -1,12 +1,12 @@
 // port of: https://github.com/zio/zio-query/blob/5746d54dfbed8e3c35415355b09c8e6a54c49889/zio-query/shared/src/main/scala/zio/query/ZQuery.scala
 import * as T from "@effect-ts/core/Effect";
-import { Has } from "@effect-ts/core/Has";
 import { QueryContext } from "./internal/QueryContext";
 import * as RES from "./internal/Result";
 import * as CONT from "./internal/Continue";
 import * as C from "@effect-ts/system/Cause";
-import { pipe } from "@effect-ts/core/Function";
+import { pipe, tuple } from "@effect-ts/core/Function";
 import * as E from "@effect-ts/core/Classic/Either";
+import { Described } from "./Described";
 
 /**
  * A `ZQuery[R, E, A]` is a purely functional description of an effectual query
@@ -51,7 +51,7 @@ export class Query<R, E, A> {
 
   constructor(
     public readonly step: T.Effect<
-      R & Has<QueryContext>,
+      readonly [R, QueryContext],
       E,
       RES.Result<R, E, A>
     >
@@ -143,22 +143,32 @@ export function foldCauseM_<R, E, A, R2, E2, A2, R3, E3, A3>(
   success: (a: A) => Query<R3, E3, A3>
 ): Query<R & R2 & R3, E2 | E3, A2 | A3> {
   return new Query(
-    T.foldCauseM_(
+    T.foldCauseM_<
+      readonly [R, QueryContext],
+      E,
+      RES.Result<R, E, A>,
+      readonly [R & R2 & R3, QueryContext],
+      E2 | E3,
+      RES.Result<R & R2 & R3, E2 | E3, A2 | A3>,
+      readonly [R & R2 & R3, QueryContext],
+      E2 | E3,
+      RES.Result<R & R2 & R3, E2 | E3, A2 | A3>
+    >(
       self.step,
       (_) => failure(_).step,
-      (res) => {
-        switch (res._tag) {
+      (_) => {
+        switch (_._tag) {
           case "Blocked":
             return T.succeed(
               RES.blocked(
-                res.blockedRequests,
-                CONT.foldCauseM_(res.cont, failure, success)
+                _.blockedRequests,
+                CONT.foldCauseM_(_.cont, failure, success)
               )
             );
           case "Done":
-            return success(res.value).step;
+            return success(_.value).step;
           case "Fail":
-            return failure(res.cause).step;
+            return failure(_.cause).step;
         }
       }
     )
@@ -207,9 +217,22 @@ export function succeed<A>(value: A) {
 /**
  * Constructs a query from an effect.
  */
-export function fromEffect<R, E, A>(
-  effect: T.Effect<R & Has<QueryContext>, E, A>
-): Query<R, E, A> {
-  // TODO: Should the Has<QueryContext> be mixed in?
-  return new Query(T.foldCause_(effect, RES.fail, RES.done));
+export function fromEffect<R, E, A>(effect: T.Effect<R, E, A>): Query<R, E, A> {
+  return new Query(
+    T.provideSome_(T.foldCause_(effect, RES.fail, RES.done), (r) => r[0])
+  );
+}
+
+/**
+ * Provides this query with part of its required environment.
+ */
+export function provideSome<R, R0>(f: Described<(r: R0) => R>) {
+  return <E, A>(self: Query<R, E, A>): Query<R0, E, A> =>
+    new Query(
+      pipe(
+        self.step,
+        T.map(RES.provideSome(f)),
+        T.provideSome((r) => tuple(f.value(r[0]), r[1]))
+      )
+    );
 }
