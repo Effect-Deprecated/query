@@ -1,7 +1,6 @@
 // port of: https://github.com/zio/zio-query/blob/3f9f4237ca2d879b629163f23fe79045eb29f0b0/zio-query/shared/src/main/scala/zio/query/internal/BlockedRequests.scala
-import { DataSource } from "src/DataSource";
+import * as DS from "src/DataSource";
 import { DataSourceAspect } from "src/DataSourceAspect";
-import { Described } from "src/Described";
 import { BlockedRequest } from "./BlockedRequest";
 
 class Both<R> {
@@ -24,7 +23,7 @@ class Single<R> {
   constructor(
     public readonly f: <X>(
       go: <A>(_: {
-        dataSource: DataSource<R, A>;
+        dataSource: DS.DataSource<R, A>;
         blockedRequest: BlockedRequest<A>;
       }) => X
     ) => X
@@ -110,7 +109,8 @@ export function mapDataSources<R, R1>(
  * Provides each data source with part of its required environment.
  */
 export function provideSome<R, R0>(
-  f: Described<(a: R0) => R>
+  description: string,
+  f: (a: R0) => R
 ): (fa: BlockedRequests<R>) => BlockedRequests<R0> {
   // TODO: Stack safety
   return (fa) => {
@@ -118,15 +118,21 @@ export function provideSome<R, R0>(
       case "Empty":
         return new Empty();
       case "Both":
-        return new Both(provideSome(f)(fa.left), provideSome(f)(fa.right));
+        return new Both(
+          provideSome(description, f)(fa.left),
+          provideSome(description, f)(fa.right)
+        );
       case "Then":
-        return new Then(provideSome(f)(fa.left), provideSome(f)(fa.right));
+        return new Then(
+          provideSome(description, f)(fa.left),
+          provideSome(description, f)(fa.right)
+        );
       case "Single":
         return fa.f(
           (_) =>
             new Single(($) =>
               $({
-                dataSource: DS.provideSome(f)(_.dataSource),
+                dataSource: DS.provideSome(description, f)(_.dataSource),
                 blockedRequest: _.blockedRequest,
               })
             )

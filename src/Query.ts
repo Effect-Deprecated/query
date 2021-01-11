@@ -6,7 +6,6 @@ import * as CONT from "./internal/Continue";
 import * as C from "@effect-ts/system/Cause";
 import { pipe, tuple } from "@effect-ts/core/Function";
 import * as E from "@effect-ts/core/Classic/Either";
-import { Described } from "./Described";
 
 /**
  * A `ZQuery[R, E, A]` is a purely functional description of an effectual query
@@ -216,13 +215,13 @@ export function fromEffect<R, E, A>(effect: T.Effect<R, E, A>): Query<R, E, A> {
 /**
  * Provides this query with part of its required environment.
  */
-export function provideSome<R, R0>(f: Described<(r: R0) => R>) {
+export function provideSome<R, R0>(description: string, f: (r: R0) => R) {
   return <E, A>(self: Query<R, E, A>): Query<R0, E, A> =>
     new Query(
       pipe(
         self.step,
-        T.map(RES.provideSome(f)),
-        T.provideSome((r) => tuple(f.value(r[0]), r[1]))
+        T.map(RES.provideSome(description, f)),
+        T.provideSome((r) => tuple(f(r[0]), r[1]))
       )
     );
 }

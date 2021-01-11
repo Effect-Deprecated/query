@@ -12,7 +12,6 @@ import { Request } from "src/Request";
 import { _A, _E } from "@effect-ts/core/Utils";
 import * as C from "@effect-ts/system/Cause";
 import { DataSourceAspect } from "src/DataSourceAspect";
-import { Described } from "src/Described";
 import { Cache } from "src/Cache";
 
 class Effect<R, E, A> {
@@ -191,12 +190,13 @@ export function mapM<A, R1, E1, B>(
  * Purely contramaps over the environment type of this continuation.
  */
 export function provideSome<R0, R>(
-  f: Described<(a: R0) => R>
+  description: string,
+  f: (a: R0) => R
 ): <E, A>(self: Continue<R, E, A>) => Continue<R0, E, A> {
   return (self) => {
     switch (self._tag) {
       case "Effect":
-        return effect(Q.provideSome(f)(self.query));
+        return effect(Q.provideSome(description, f)(self.query));
       case "Get":
         return get(self.io);
     }

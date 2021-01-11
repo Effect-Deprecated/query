@@ -6,8 +6,8 @@ import * as T from "@effect-ts/core/Effect";
 import { _A, _E } from "@effect-ts/core/Utils";
 import { tuple } from "@effect-ts/core/Function";
 import * as CR from "./CompletedRequestMap";
-import { Described } from "./Described";
 import { Request } from "./Request";
+import { DataSourceAspect } from "./DataSourceAspect";
 
 /**
  * A `DataSource[R, A]` requires an environment `R` and is capable of executing
@@ -46,7 +46,13 @@ export class DataSource<R, A> {
     public readonly runAll: (
       requests: A.Array<A.Array<A>>
     ) => T.Effect<R, never, CR.CompletedRequestMap>
-  ) {}
+  ) {
+    this["@"] = this["@"].bind(this);
+  }
+
+  ["@"]<R1 extends R, R2>(aspect: DataSourceAspect<R1, R2>): DataSource<R2, A> {
+    return aspect(this);
+  }
 }
 
 /**
@@ -72,11 +78,10 @@ export function batchN(n: number) {
  * specified function to transform `B` requests into requests that this data
  * source can execute.
  */
-export function contramap<B, A>(f: Described<(a: B) => A>) {
+export function contramap<B, A>(description: string, f: (a: B) => A) {
   return <R>(self: DataSource<R, A>): DataSource<R, B> =>
-    new DataSource(
-      `${self.identifier}.contramap(${f.description})`,
-      (requests) => self.runAll(A.map_(requests, (_) => A.map_(_, f.value)))
+    new DataSource(`${self.identifier}.contramap(${description})`, (requests) =>
+      self.runAll(A.map_(requests, (_) => A.map_(_, f)))
     );
 }
 
@@ -86,14 +91,15 @@ export function contramap<B, A>(f: Described<(a: B) => A>) {
  * this data source can execute.
  */
 export function contramapM<R1, B, A>(
-  f: Described<(b: B) => T.Effect<R1, never, A>>
+  description: string,
+  f: (b: B) => T.Effect<R1, never, A>
 ) {
   return <R>(self: DataSource<R, A>): DataSource<R & R1, B> =>
     new DataSource(
-      `${self.identifier}.contramapM(${f.description})`,
+      `${self.identifier}.contramapM(${description})`,
       (requests) =>
         T.chain_(
-          T.foreach_(requests, (_) => T.foreachPar_(_, f.value)),
+          T.foreach_(requests, (_) => T.foreachPar_(_, f)),
           self.runAll
         )
     );
@@ -105,15 +111,15 @@ export function contramapM<R1, B, A>(
  * this data source or that data source can execute.
  */
 export function eitherWith<R1, B>(that: DataSource<R1, B>) {
-  return <C, A, B>(f: Described<(c: C) => E.Either<A, B>>) => <R>(
+  return <C, A, B>(description: string, f: (c: C) => E.Either<A, B>) => <R>(
     self: DataSource<R, A>
   ): DataSource<R & R1, C> =>
     new DataSource<R & R1, C>(
-      `${self.identifier}.eitherWith(${that.identifier})(${f.description})`,
+      `${self.identifier}.eitherWith(${that.identifier})(${description})`,
       (requests) =>
         T.map_(
           T.foreach_(requests, (requests) => {
-            const { left: as, right: bs } = A.partitionMap_(requests, f.value);
+            const { left: as, right: bs } = A.partitionMap_(requests, f);
             return T.zipWithPar_(
               self.runAll([as]),
               that.runAll([bs as any]),
@@ -128,19 +134,19 @@ export function eitherWith<R1, B>(that: DataSource<R1, B>) {
 /**
  * Provides this data source with its required environment.
  */
-export function provide<R>(r: Described<R>) {
+export function provide<R>(description: string, r: R) {
   return <A>(self: DataSource<R, A>): DataSource<unknown, A> =>
-    provideSome(new Described(() => r.value, `_ => ${r.description}`))(self);
+    provideSome(`_ => ${description}`, () => r)(self);
 }
 
 /**
  * Provides this data source with part of its required environment.
  */
-export function provideSome<R0, R>(f: Described<(r: R0) => R>) {
+export function provideSome<R0, R>(description: string, f: (r: R0) => R) {
   return <A>(self: DataSource<R, A>): DataSource<R0, A> =>
     new DataSource(
-      `${self.identifier}.provideSome(${f.description})`,
-      (requests) => T.provideSome_(self.runAll(requests), f.value)
+      `${self.identifier}.provideSome(${description})`,
+      (requests) => T.provideSome_(self.runAll(requests), f)
     );
 }
 

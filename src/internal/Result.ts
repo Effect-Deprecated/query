@@ -4,7 +4,6 @@ import { Continue } from "./Continue";
 import * as CONT from "./Continue";
 import { pipe } from "@effect-ts/core/Function";
 import * as E from "@effect-ts/core/Classic/Either";
-import { Described } from "src/Described";
 
 class Blocked<R, E, A> {
   readonly _tag = "Blocked";
@@ -87,13 +86,13 @@ export function fail<E>(cause: C.Cause<E>): Result<unknown, E, never> {
 /**
  * Provides this result with part of its required environment.
  */
-export function provideSome<R, R0>(f: Described<(r: R0) => R>) {
+export function provideSome<R, R0>(description: string, f: (r: R0) => R) {
   return <E, A>(self: Result<R, E, A>): Result<R0, E, A> => {
     switch (self._tag) {
       case "Blocked":
         return blocked(
-          BR.provideSome(f)(self.blockedRequests),
-          CONT.provideSome(f)(self.cont)
+          BR.provideSome(description, f)(self.blockedRequests),
+          CONT.provideSome(description, f)(self.cont)
         );
       case "Done":
         return done(self.value);

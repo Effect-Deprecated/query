@@ -1,4 +1,5 @@
 import { literal } from "@effect-ts/core/Function";
+import * as T from "@effect-ts/core/Effect";
 import { Request } from "../src/Request";
 import * as DS from "../src/DataSource";
 
@@ -39,12 +40,24 @@ export class GetProduct extends Request<GetProductError, Product> {
     super();
   }
 }
+export interface GetUserEnv {
+  first: string;
+  last: string;
+}
 
-export const testUserDS = DS.fromFunctionBatched("TestUsers")<GetUser>((_) =>
-  _.map((_) => ({
-    firstName: `firstName: ${_.userId}`,
-    lastName: `lastName: ${_.userId}`,
-    userId: _.userId,
+export const testUserDS = DS.fromFunctionBatchedM("TestUsers")(
+  (_: readonly GetUser[]) =>
+    T.access((r: GetUserEnv) =>
+      _.map((_) => ({
+        firstName: `${r.first}: ${_.userId}`,
+        lastName: `${r.last}: ${_.userId}`,
+        userId: _.userId,
+      }))
+    )
+)["@"](
+  DS.provideSome("TestUsersEnvironment", () => ({
+    first: "firstName",
+    last: "lastName",
   }))
 );
 
