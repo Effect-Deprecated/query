@@ -164,7 +164,8 @@ export function race<R1, A1>(that: DataSource<R1, A1>) {
 export function makeBatched(identifier: string) {
   return <R, A>(
     run: (requests: A.Array<A>) => T.Effect<R, never, CR.CompletedRequestMap>
-  ): DataSource<R, A> => new DataSource(identifier, (requests) =>
+  ): DataSource<R, A> =>
+    new DataSource(identifier, (requests) =>
       T.reduce_(requests, CR.empty, (crm, requests) => {
         const newRequests = A.filter_(requests, (e) => CR.contains(e)(crm));
         return A.isEmpty(newRequests)
@@ -174,69 +175,103 @@ export function makeBatched(identifier: string) {
     );
 }
 
+/**
+ * Constructs a data source from a pure function.
+ */
+export function fromFunction(identifier: string) {
+  return <A extends Request<never, any>, B extends _A<A>>(
+    f: (a: A) => B
+  ): DataSource<unknown, A> =>
+    makeBatched(identifier)((requests) =>
+      T.succeed(
+        A.reduce_(requests, CR.empty, (crm, k) =>
+          CR.insert(k)(E.right(f(k)))(crm)
+        )
+      )
+    );
+}
 
-  /**
-   * Constructs a data source from a pure function.
-   */
-  export function fromFunction(
-      identifier: string
-  ) {
-      return <A extends Request<never, any>, B extends _A<A>>(f: (a: A) => B): DataSource<unknown, A> =>
-        makeBatched(identifier)(requests => T.succeed(A.reduce_(requests, CR.empty, (crm, k) => CR.insert(k)(E.right(f(k)))(crm))))
-  }
+/**
+ * Constructs a data source from a pure function that takes a list of
+ * requests and returns a list of results of the same size. Each item in the
+ * result list must correspond to the item at the same index in the request
+ * list.
+ */
+export function fromFunctionBatched(identifier: string) {
+  return <A extends Request<any, any>>(
+    f: (a: A.Array<A>) => A.Array<_A<A>>
+  ): DataSource<unknown, A> =>
+    fromFunctionBatchedM(identifier)((as) => T.succeed(f(as)));
+}
+/**
+ * Constructs a data source from an effectual function that takes a list of
+ * requests and returns a list of results of the same size. Each item in the
+ * result list must correspond to the item at the same index in the request
+ * list.
+ */
+export function fromFunctionBatchedM(identifier: string) {
+  return <R, A extends Request<any, any>>(
+    f: (a: A.Array<A>) => T.Effect<R, _E<A>, A.Array<_A<A>>>
+  ): DataSource<R, A> =>
+    makeBatched(identifier)((requests) => {
+      const a: T.Effect<
+        R,
+        never,
+        A.Array<readonly [A, E.Either<_E<A>, _A<A>>]>
+      > = T.fold_(
+        f(requests),
+        (e) => A.map_(requests, (_) => tuple(_, E.left(e))),
+        (bs) =>
+          A.zip_(
+            requests,
+            A.map_(bs, (_) => E.right(_))
+          )
+      );
+      return T.map_(a, (_) =>
+        A.reduce_(_, CR.empty, (crm, [k, v]) => CR.insert(k)(v)(crm))
+      );
+    });
+}
 
-  /**
-   * Constructs a data source from a pure function that takes a list of
-   * requests and returns a list of results of the same size. Each item in the
-   * result list must correspond to the item at the same index in the request
-   * list.
-   */
-  export function fromFunctionBatched(identifier: string) {
-      return <A extends Request<any, any>, B extends _A<A>>(f: (a: A.Array<A>) => A.Array<B>) : DataSource<unknown, A> =>
-      fromFunctionBatchedM(identifier)(as => T.succeed(f(as)))
+/**
+ * Constructs a data source from a pure function that takes a list of
+ * requests and returns a list of optional results of the same size. Each
+ * item in the result list must correspond to the item at the same index in
+ * the request list.
+ */
+export function fromFunctionBatchedOption(identifier: string) {
+  return <A extends Request<never, any>>(
+    f: (a: A.Array<A>) => A.Array<O.Option<_A<A>>>
+  ): DataSource<unknown, A> =>
+    fromFunctionBatchedOptionM(identifier)((as) => T.succeed(f(as)));
+}
 
-  /**
-   * Constructs a data source from an effectual function that takes a list of
-   * requests and returns a list of results of the same size. Each item in the
-   * result list must correspond to the item at the same index in the request
-   * list.
-   */
-  export function fromFunctionBatchedM(
-      identifier: string
-  ) {
-      return <R, A extends Request<any, any>, E extends _E<A>, B extends _A<A>>(f: (a: A.Array<A>) => T.Effect<R, E, A.Array<B>>): DataSource<R, A>  =>
-      makeBatched(identifier)(requests => {
-          const a: T.Effect<R, never, A.Array<(readonly [A, E.Either<E, B>])>> = T.fold_(f(requests), e => A.map_(requests, _ => tuple(_, E.left(e))), bs => A.zip_(requests, A.map_(bs, _ => E.right(_))))
-          return T.map_(a, _ => A.reduce_(_, CR.empty, (crm, [k, v]) => CR.insert(k)(v)(crm)))
-      })
-  }
-
-  /**
-   * Constructs a data source from a pure function that takes a list of
-   * requests and returns a list of optional results of the same size. Each
-   * item in the result list must correspond to the item at the same index in
-   * the request list.
-   */
-  export function fromFunctionBatchedOption(
-      identifier: string
-  ) {
-      return <A extends Request<never, any>, B extends _A<A>>(f: (a: A.Array<A>) => A.Array<O.Option<B>>): DataSource<unknown, A> =>
-        fromFunctionBatchedOptionM(identifier)(as => T.succeed(f(as)))
-  }
-
-  /**
-   * Constructs a data source from an effectual function that takes a list of
-   * requests and returns a list of optional results of the same size. Each
-   * item in the result list must correspond to the item at the same index in
-   * the request list.
-   */
-export function fromFunctionBatchedOptionM(
-    identifier: string
-) {
-    return <A extends Request<any, any>, B extends _A<A>, E, R>(
-        f: (a: A.Array<A>) => T.Effect<R, E, A.Array<O.Option<B>>>
-    ): DataSource<R, A> => makeBatched(identifier)(requests => {
-            const a: T.Effect<R, never, A.Array<(readonly [A, E.Either<E, O.Option<B>>])>> = T.fold_(f(requests), e => A.map_(requests, _ => tuple(_, E.left(e))), bs => A.zip_(requests, A.map_(bs, _ => E.right(_))))
-            return T.map_(a, _ => A.reduce_(_, CR.empty, (crm, [k, v]) => CR.insertOption(k)(v)(crm)))
-        })
+/**
+ * Constructs a data source from an effectual function that takes a list of
+ * requests and returns a list of optional results of the same size. Each
+ * item in the result list must correspond to the item at the same index in
+ * the request list.
+ */
+export function fromFunctionBatchedOptionM(identifier: string) {
+  return <A extends Request<any, any>, E, R>(
+    f: (a: A.Array<A>) => T.Effect<R, E, A.Array<O.Option<_A<A>>>>
+  ): DataSource<R, A> =>
+    makeBatched(identifier)((requests) => {
+      const a: T.Effect<
+        R,
+        never,
+        A.Array<readonly [A, E.Either<E, O.Option<_A<A>>>]>
+      > = T.fold_(
+        f(requests),
+        (e) => A.map_(requests, (_) => tuple(_, E.left(e))),
+        (bs) =>
+          A.zip_(
+            requests,
+            A.map_(bs, (_) => E.right(_))
+          )
+      );
+      return T.map_(a, (_) =>
+        A.reduce_(_, CR.empty, (crm, [k, v]) => CR.insertOption(k)(v)(crm))
+      );
+    });
 }

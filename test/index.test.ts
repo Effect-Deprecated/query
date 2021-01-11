@@ -1,5 +1,6 @@
 import { literal } from "@effect-ts/core/Function";
 import { Request } from "../src/Request";
+import * as DS from "../src/DataSource";
 
 export class GetUserError {
   readonly _tag = literal("GetUserError");
@@ -38,3 +39,20 @@ export class GetProduct extends Request<GetProductError, Product> {
     super();
   }
 }
+
+export const testUserDS = DS.fromFunctionBatched("TestUsers")<GetUser>((_) =>
+  _.map((_) => ({
+    firstName: `firstName: ${_.userId}`,
+    lastName: `lastName: ${_.userId}`,
+    userId: _.userId,
+  }))
+);
+
+export const testProductDS = DS.fromFunctionBatched("TestProducts")<GetProduct>(
+  (_) =>
+    _.map((_) => ({
+      description: `description: ${_.productId}`,
+      title: `title: ${_.productId}`,
+      productId: _.productId,
+    }))
+);
