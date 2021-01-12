@@ -1,4 +1,5 @@
 import { circularDeepEqual } from "fast-equals";
+import J from "fast-safe-stringify";
 import * as H from "@effect-ts/core/Common/Hash";
 
 export const eqSymbol = Symbol();
@@ -26,26 +27,17 @@ export abstract class Request<E, A> implements Equatable {
 }
 
 export abstract class StandardRequest<E, A> extends Request<E, A> {
+  #hash: number | undefined;
+
   [eqSymbol](that: this): boolean {
     return circularDeepEqual(this, that);
   }
 
   [hashSymbol](): number {
-    let h = H.string(this._tag);
-    for (const k in Object.keys(this)) {
-      if (k !== "_tag") {
-        if (typeof this[k] === "string") {
-          h = combineHash(h, H.string(this[k]));
-        }
-        if (typeof this[k] === "number") {
-          h = combineHash(h, this[k]);
-        }
-      }
+    if (this.#hash) {
+      return this.#hash;
     }
-    return h;
+    this.#hash = H.string(J.stableStringify(this));
+    return this.#hash;
   }
-}
-
-function combineHash(a: number, b: number): number {
-  return (a * 53) ^ b;
 }

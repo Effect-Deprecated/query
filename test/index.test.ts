@@ -1,7 +1,7 @@
 import * as T from "@effect-ts/core/Effect";
 import { literal } from "@effect-ts/core/Function";
 import * as DS from "../src/DataSource";
-import { StandardRequest, eqSymbol } from "../src/Request";
+import { StandardRequest, eqSymbol, hashSymbol } from "../src/Request";
 
 export class GetUserError {
   readonly _tag = literal("GetUserError");
@@ -72,3 +72,5 @@ export const testProductDS = DS.fromFunctionBatched("TestProducts")<GetProduct>(
 );
 
 console.log(new GetUser("efjnwejfje")[eqSymbol](new GetUser("efjnwejfje")));
+console.log(new GetUser("efjnwejfje")[hashSymbol]());
+console.log(new GetUser("efjnwejfje")[hashSymbol]());
