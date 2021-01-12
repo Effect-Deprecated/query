@@ -1,8 +1,7 @@
-import { literal } from "@effect-ts/core/Function";
-import * as H from "@effect-ts/core/Common/Hash";
 import * as T from "@effect-ts/core/Effect";
-import { Request } from "../src/Request";
+import { literal } from "@effect-ts/core/Function";
 import * as DS from "../src/DataSource";
+import { DescribedRequest, eqSymbol } from "../src/Request";
 
 export class GetUserError {
   readonly _tag = literal("GetUserError");
@@ -15,19 +14,12 @@ export interface User {
   lastName: string;
 }
 
-export class GetUser extends Request<GetUserError, User> {
-  _tag = literal("GetUser");
+export class GetUser extends DescribedRequest<GetUserError, User> {
+  readonly _tag = "GetUser";
+  readonly description = `GetUser(${this.userId})`;
 
   constructor(readonly userId: string) {
     super();
-  }
-
-  equals(that: this): boolean {
-    return that.userId === this.userId;
-  }
-
-  hash(): number {
-    return H.string(`GetUser(${this.userId})`);
   }
 }
 
@@ -42,19 +34,12 @@ export class GetProductError {
   constructor(readonly error: Error) {}
 }
 
-export class GetProduct extends Request<GetProductError, Product> {
-  _tag = literal("GetProduct");
+export class GetProduct extends DescribedRequest<GetProductError, Product> {
+  readonly _tag = "GetProduct";
+  readonly description = `GetProduct(${this.productId})`;
 
   constructor(readonly productId: string) {
     super();
-  }
-
-  equals(that: this): boolean {
-    return that.productId === this.productId;
-  }
-
-  hash(): number {
-    return H.string(`GetProduct(${this.productId})`);
   }
 }
 
@@ -87,3 +72,5 @@ export const testProductDS = DS.fromFunctionBatched("TestProducts")<GetProduct>(
       productId: _.productId,
     }))
 );
+
+console.log(new GetUser("efjnwejfje")[eqSymbol](new GetUser("efjnwejfje")));

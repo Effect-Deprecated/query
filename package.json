@@ -27,6 +27,9 @@
   "dependencies": {
     "@effect-ts/core": "^0.12.1",
     "@effect-ts/system": "^0.10.1",
-    "@effect-ts/tracing-utils": "^0.2.2"
+    "@effect-ts/tracing-utils": "^0.2.2",
+    "@types/node": "^14.14.20",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.1.3"
   }
 }
