@@ -20,6 +20,9 @@ export class GetUser extends Request<GetUserError, User> {
   constructor(readonly userId: string) {
     super();
   }
+
+  readonly equals: (that: this) => boolean = (that) =>
+    that.userId === this.userId;
 }
 
 export interface Product {
@@ -39,7 +42,10 @@ export class GetProduct extends Request<GetProductError, Product> {
   constructor(readonly productId: string) {
     super();
   }
+
+  equals: (that: this) => boolean = (that) => that.productId === this.productId;
 }
+
 export interface GetUserEnv {
   first: string;
   last: string;
