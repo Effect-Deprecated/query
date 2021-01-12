@@ -90,14 +90,30 @@ export interface Asset extends MO.AType<typeof Asset_> {}
 export interface AssetE extends MO.EType<typeof Asset_> {}
 export const Asset = MO.opaque<AssetE, Asset>()(Asset_);
 
+const GetAssetError_ = MO.make((F) =>
+  F.interface({ message: F.string() }, { name: "GetAssetError" })
+);
+
+export interface GetAssetError extends MO.AType<typeof GetAssetError_> {}
+export interface GetAssetErrorE extends MO.EType<typeof GetAssetError_> {}
+export const GetAssetError = MO.opaque<GetAssetErrorE, GetAssetError>()(
+  GetAssetError_
+);
+
+const GetAssetPayload_ = MO.make((F) =>
+  F.interface({ assetId: F.string() }, { name: "GetAssetPayload" })
+);
+
+export interface GetAssetPayload extends MO.AType<typeof GetAssetPayload_> {}
+export interface GetAssetPayloadE extends MO.EType<typeof GetAssetPayload_> {}
+export const GetAssetPayload = MO.opaque<GetAssetPayloadE, GetAssetPayload>()(
+  GetAssetPayload_
+);
+
 const GetAsset_ = morphicRequest(
   "GetAsset",
-  MO.make((F) =>
-    F.interface({ assetId: F.string() }, { name: "GetAssetPayload" })
-  ),
-  MO.make((F) =>
-    F.interface({ message: F.string() }, { name: "GetAssetError" })
-  ),
+  GetAssetPayload,
+  GetAssetError,
   Asset
 );
 
