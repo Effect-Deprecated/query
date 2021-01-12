@@ -10,6 +10,23 @@
     "@effect-ts/system" "^0.10.1"
     "@effect-ts/tracing-utils" "^0.2.4"
 
+"@effect-ts/monocle@^0.11.1":
+  version "0.11.1"
+  resolved "https://registry.yarnpkg.com/@effect-ts/monocle/-/monocle-0.11.1.tgz#530d154d4b28631ce644d3e66069605df937cdf6"
+  integrity sha512-imr181UGZoIGsIbcXJl0B7YL1QE0MF/3ED7lsQplJpWMOFWLVHE7xmPt2BxaBTWvK+S9ghE394HUcIs0CilIkw==
+  dependencies:
+    "@effect-ts/core" "^0.12.1"
+    "@effect-ts/tracing-utils" "^0.2.4"
+
+"@effect-ts/morphic@^0.12.1":
+  version "0.12.1"
+  resolved "https://registry.yarnpkg.com/@effect-ts/morphic/-/morphic-0.12.1.tgz#c1b56258ec55294abef86447aa8856d7c9d276d8"
+  integrity sha512-bfkVMvvPzB4VsgyhvqHOiGEgCBDhnFDxfaPVzhTt0mMKk7R0SU+dm7BhTOWQMImtYY0H7lY/Fx100ysQXqqhzg==
+  dependencies:
+    "@effect-ts/core" "^0.12.1"
+    "@effect-ts/monocle" "^0.11.1"
+    "@effect-ts/tracing-utils" "^0.2.4"
+
 "@effect-ts/system@^0.10.1":
   version "0.10.1"
   resolved "https://registry.yarnpkg.com/@effect-ts/system/-/system-0.10.1.tgz#c3eb79010de4c6b25626c0fbbded48852eb6cc63"

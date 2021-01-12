@@ -1,6 +1,9 @@
 import { circularDeepEqual } from "fast-equals";
 import J from "fast-safe-stringify";
 import * as H from "@effect-ts/core/Common/Hash";
+import { M } from "@effect-ts/morphic";
+import { equal } from "@effect-ts/morphic/Equal";
+import { Equal } from "@effect-ts/system/Equal";
 
 export const eqSymbol = Symbol();
 export const hashSymbol = Symbol();
@@ -40,4 +43,55 @@ export abstract class StandardRequest<E, A> extends Request<E, A> {
     this.#hash = H.string(J.stableStringify(this));
     return this.#hash;
   }
+}
+
+export class MorphicRequest<
+  K extends string,
+  EI,
+  AI,
+  EE,
+  AE,
+  EO,
+  AO
+> extends Request<AE, AO> {
+  #hash: number | undefined;
+
+  constructor(
+    readonly _tag: K,
+    readonly errorCodec: M<{}, EE, AE>,
+    readonly payloadCodec: M<{}, EI, AI>,
+    readonly responseCodec: M<{}, EO, AO>,
+    readonly payload: AI,
+    readonly eq: Equal<AI>
+  ) {
+    super();
+  }
+
+  [eqSymbol](that: this): boolean {
+    return this.eq.equals(that.payload)(this.payload);
+  }
+  [hashSymbol](): number {
+    if (this.#hash) {
+      return this.#hash;
+    }
+    this.#hash = H.string(J.stableStringify(this));
+    return this.#hash;
+  }
+}
+
+export function morphicRequest<K extends string, EI, AI, EE, AE, EO, AO>(
+  tag: K,
+  input: M<{}, EI, AI>,
+  error: M<{}, EE, AE>,
+  output: M<{}, EO, AO>
+) {
+  const eq = equal(input);
+  return (payload: AI) =>
+    new MorphicRequest(tag, error, input, output, payload, eq);
+}
+
+export function morphicOpaqueRequest<
+  A extends MorphicRequest<any, any, any, any, any, any, any>
+>() {
+  return <I>(f: (i: I) => A): ((i: I) => A) => f;
 }
