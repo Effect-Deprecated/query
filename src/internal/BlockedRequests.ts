@@ -140,3 +140,18 @@ export function provideSome<R, R0>(
     }
   };
 }
+
+/**
+ * The empty collection of blocked requests.
+ */
+export const empty: BlockedRequests<unknown> = new Empty();
+/**
+ * Constructs a collection of blocked requests from the specified blocked
+ * request and data source.
+ */
+export function single<R, K>(
+  dataSource: DS.DataSource<R, K>,
+  blockedRequest: BlockedRequest<K>
+): BlockedRequests<R> {
+  return new Single((_) => _({ dataSource, blockedRequest }));
+}

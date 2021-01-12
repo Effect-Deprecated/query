@@ -4,8 +4,15 @@ import { QueryContext } from "./internal/QueryContext";
 import * as RES from "./internal/Result";
 import * as CONT from "./internal/Continue";
 import * as C from "@effect-ts/system/Cause";
+import * as BRS from "./internal/BlockedRequests";
+import * as BR from "./internal/BlockedRequest";
 import { pipe, tuple } from "@effect-ts/core/Function";
 import * as E from "@effect-ts/core/Common/Either";
+import * as O from "@effect-ts/core/Common/Option";
+import * as REF from "@effect-ts/core/Effect/Ref";
+import { Request } from "./Request";
+import { DataSource } from "./DataSource";
+import { _A, _E } from "@effect-ts/core/Utils";
 
 /**
  * A `ZQuery[R, E, A]` is a purely functional description of an effectual query
@@ -225,3 +232,47 @@ export function provideSome<R, R0>(description: string, f: (r: R0) => R) {
       )
     );
 }
+
+/**
+ * Constructs a query from a request and a data source. Queries will die with
+ * a `QueryFailure` when run if the data source does not provide results for
+ * all requests received. Queries must be constructed with `fromRequest` or
+ * one of its variants for optimizations to be applied.
+ */
+export function fromRequest<A extends Request<any, any>>(request: A) {
+  return <R>(dataSource: DataSource<R, A>): Query<R, _E<A>, _A<A>> =>
+    new Query(
+      T.chain_(
+        T.accessM(([r, queryContext]: readonly [R, QueryContext]) =>
+          queryContext.cache.lookup(request)
+        ),
+        E.fold(
+          (leftRef) =>
+            T.succeed(
+              RES.blocked(
+                BRS.single(dataSource, BR.of(request, leftRef)),
+                CONT.apply(request, dataSource, leftRef)
+              )
+            ),
+          (rightRef) =>
+            T.map_(
+              REF.get(rightRef),
+              O.fold(
+                () =>
+                  RES.blocked(
+                    BRS.empty,
+                    CONT.apply(request, dataSource, rightRef)
+                  ),
+                (b) => RES.fromEither(b)
+              )
+            )
+        )
+      )
+    );
+}
+
+// TODO
+export declare function foreachPar_<R, E, A, B>(
+  as: Iterable<A>,
+  f: (a: A) => Query<R, E, B>
+): Query<R, E, readonly B[]>;

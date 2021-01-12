@@ -1,3 +1,4 @@
+// port of: https://github.com/zio/zio-query/blob/b55364683726cc6611bec80876048ec5290cbcf5/zio-query/shared/src/main/scala/zio/query/Cache.scala
 import * as T from "@effect-ts/core/Effect";
 import * as REF from "@effect-ts/system/Ref";
 import * as O from "@effect-ts/core/Common/Option";
@@ -5,6 +6,7 @@ import * as E from "@effect-ts/core/Common/Either";
 import * as MAP from "@effect-ts/core/Common/Map";
 import { Request } from "./Request";
 import { pipe } from "@effect-ts/core/Function";
+import { _A, _E } from "@effect-ts/core/Utils";
 
 /**
  * A `Cache` maintains an internal state with a mapping from requests to `Ref`s
@@ -29,12 +31,12 @@ export interface Cache {
    * that either contains `Some` with a result if the request has been executed
    * or `None` if the request has not been executed yet.
    */
-  lookup<R, E, A, B>(
+  lookup<A extends Request<any, any>>(
     request: A
   ): T.UIO<
     E.Either<
-      REF.Ref<O.Option<E.Either<E, B>>>,
-      REF.Ref<O.Option<E.Either<E, B>>>
+      REF.Ref<O.Option<E.Either<_E<A>, _A<A>>>>,
+      REF.Ref<O.Option<E.Either<_E<A>, _A<A>>>>
     >
   >;
 

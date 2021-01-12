@@ -84,6 +84,19 @@ export function fail<E>(cause: C.Cause<E>): Result<unknown, E, never> {
 }
 
 /**
+ * Lifts an `Either` into a result.
+ */
+export function fromEither<E, A>(
+  either: E.Either<E, A>
+): Result<unknown, E, A> {
+  return E.fold_(
+    either,
+    (e) => fail(C.fail(e)),
+    (a) => done(a)
+  );
+}
+
+/**
  * Provides this result with part of its required environment.
  */
 export function provideSome<R, R0>(description: string, f: (r: R0) => R) {
