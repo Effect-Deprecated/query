@@ -33,11 +33,13 @@ export abstract class StandardRequest<E, A> extends Request<E, A> {
   [hashSymbol](): number {
     let h = H.string(this._tag);
     for (const k in Object.keys(this)) {
-      if (typeof this[k] === "string") {
-        h = combineHash(h, H.string(this[k]));
-      }
-      if (typeof this[k] === "number") {
-        h = combineHash(h, this[k]);
+      if (k !== "_tag") {
+        if (typeof this[k] === "string") {
+          h = combineHash(h, H.string(this[k]));
+        }
+        if (typeof this[k] === "number") {
+          h = combineHash(h, this[k]);
+        }
       }
     }
     return h;
