@@ -1,7 +1,7 @@
 import * as T from "@effect-ts/core/Effect";
 import { literal } from "@effect-ts/core/Function";
 import * as DS from "../src/DataSource";
-import { DescribedRequest, eqSymbol } from "../src/Request";
+import { IdentifiedRequest, eqSymbol } from "../src/Request";
 
 export class GetUserError {
   readonly _tag = literal("GetUserError");
@@ -14,9 +14,9 @@ export interface User {
   lastName: string;
 }
 
-export class GetUser extends DescribedRequest<GetUserError, User> {
+export class GetUser extends IdentifiedRequest<GetUserError, User> {
   readonly _tag = "GetUser";
-  readonly description = `GetUser(${this.userId})`;
+  readonly identifier = `GetUser(${this.userId})`;
 
   constructor(readonly userId: string) {
     super();
@@ -34,9 +34,9 @@ export class GetProductError {
   constructor(readonly error: Error) {}
 }
 
-export class GetProduct extends DescribedRequest<GetProductError, Product> {
+export class GetProduct extends IdentifiedRequest<GetProductError, Product> {
   readonly _tag = "GetProduct";
-  readonly description = `GetProduct(${this.productId})`;
+  readonly identifier = `GetProduct(${this.productId})`;
 
   constructor(readonly productId: string) {
     super();
