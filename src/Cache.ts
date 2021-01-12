@@ -31,12 +31,12 @@ export interface Cache {
    * that either contains `Some` with a result if the request has been executed
    * or `None` if the request has not been executed yet.
    */
-  lookup<A extends Request<any, any>>(
-    request: A
+  lookup<E, A>(
+    request: Request<E, A>
   ): T.UIO<
     E.Either<
-      REF.Ref<O.Option<E.Either<_E<A>, _A<A>>>>,
-      REF.Ref<O.Option<E.Either<_E<A>, _A<A>>>>
+      REF.Ref<O.Option<E.Either<E, A>>>,
+      REF.Ref<O.Option<E.Either<E, A>>>
     >
   >;
 
