@@ -53,10 +53,9 @@ export type BlockedRequests<R> = Both<R> | Empty | Single<R> | Then<R>;
  * Combines this collection of blocked requests with the specified collection
  * of blocked requests, in parallel.
  */
-export function both<R>(
-  fb: BlockedRequests<R>
-): <R1>(fa: BlockedRequests<R1>) => BlockedRequests<R & R1> {
-  return (fa) => new Both(fa, fb as any); // TODO: SHAME!
+export function both<R>(fb: BlockedRequests<R>) {
+  return <R1>(fa: BlockedRequests<R1>): BlockedRequests<R & R1> =>
+    new Both<R & R1>(fa, fb);
 }
 
 /**
@@ -103,15 +102,13 @@ export function mapDataSourcesSafe<R, R1>(
             yield* _(mapDataSourcesSafe(f)(fa.right))
           );
         case "Single":
-          return fa.f(
-            (_) =>
-              new Single(($) =>
-                $({
-                  dataSource: f(_.dataSource),
-                  blockedRequest: _.blockedRequest,
-                })
-              )
-          );
+          return fa.f((_) => {
+            const req = {
+              dataSource: f(_.dataSource),
+              blockedRequest: _.blockedRequest,
+            };
+            return new Single(($) => $(req));
+          });
       }
     });
 }
@@ -149,15 +146,13 @@ export function provideSomeSafe<R, R0>(
             yield* _(provideSomeSafe(description, f)(fa.right))
           );
         case "Single":
-          return fa.f(
-            (_) =>
-              new Single(($) =>
-                $({
-                  dataSource: DS.provideSome(description, f)(_.dataSource),
-                  blockedRequest: _.blockedRequest,
-                })
-              )
-          );
+          return fa.f((_) => {
+            const req = {
+              dataSource: DS.provideSome(description, f)(_.dataSource),
+              blockedRequest: _.blockedRequest,
+            };
+            return new Single(($) => $(req));
+          });
       }
     });
 }
@@ -174,5 +169,6 @@ export function single<R, K>(
   dataSource: DS.DataSource<R, K>,
   blockedRequest: BlockedRequest<K>
 ): BlockedRequests<R> {
-  return new Single((_) => _({ dataSource, blockedRequest }));
+  const req = { dataSource, blockedRequest };
+  return new Single((_) => _(req));
 }
