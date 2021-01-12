@@ -1,6 +1,6 @@
 // port of: https://github.com/zio/zio-query/blob/3f9f4237ca2d879b629163f23fe79045eb29f0b0/zio-query/shared/src/main/scala/zio/query/internal/BlockedRequest.scala
-import { Either } from "@effect-ts/core/Classic/Either";
-import { Option } from "@effect-ts/core/Classic/Option";
+import { Either } from "@effect-ts/core/Common/Either";
+import { Option } from "@effect-ts/core/Common/Option";
 import { _A, _E } from "@effect-ts/core/Utils";
 import { Ref } from "@effect-ts/system/Ref";
 import { Request } from "src/Request";

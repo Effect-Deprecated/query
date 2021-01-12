@@ -1,4 +1,5 @@
 import { literal } from "@effect-ts/core/Function";
+import * as H from "@effect-ts/core/Common/Hash";
 import * as T from "@effect-ts/core/Effect";
 import { Request } from "../src/Request";
 import * as DS from "../src/DataSource";
@@ -21,8 +22,13 @@ export class GetUser extends Request<GetUserError, User> {
     super();
   }
 
-  readonly equals: (that: this) => boolean = (that) =>
-    that.userId === this.userId;
+  equals(that: this): boolean {
+    return that.userId === this.userId;
+  }
+
+  hash(): number {
+    return H.string(`GetUser(${this.userId})`);
+  }
 }
 
 export interface Product {
@@ -43,7 +49,13 @@ export class GetProduct extends Request<GetProductError, Product> {
     super();
   }
 
-  equals: (that: this) => boolean = (that) => that.productId === this.productId;
+  equals(that: this): boolean {
+    return that.productId === this.productId;
+  }
+
+  hash(): number {
+    return H.string(`GetProduct(${this.productId})`);
+  }
 }
 
 export interface GetUserEnv {

@@ -6,5 +6,6 @@ export abstract class Request<E, A> {
   readonly _E!: () => E;
   readonly _A!: () => A;
 
-  abstract readonly equals: (that: this) => boolean;
+  abstract equals(that: this): boolean;
+  abstract hash(): number;
 }

@@ -2,24 +2,22 @@
 # yarn lockfile v1
 
 
-"@effect-ts/core@^0.11.3":
-  version "0.11.3"
-  resolved "https://registry.yarnpkg.com/@effect-ts/core/-/core-0.11.3.tgz#c84fbba46d751051001da95fb492f2df8f3ab448"
-  integrity sha512-TrXHjVPixtwXnBWuKm0EhFKFg/8hl3Corc8yNXudk19nHsv+zvy9PseqjgWqynrjcDMtbDlyH/ktdFYTQLIy6g==
+"@effect-ts/core@^0.12.1":
+  version "0.12.1"
+  resolved "https://registry.yarnpkg.com/@effect-ts/core/-/core-0.12.1.tgz#a135b06112cceaaffdf8027a68a2eae90bfd2754"
+  integrity sha512-hDTAGs+rkf+eEV8AJdyYPQ1LVIdUjixF1vMKt4FaAeFOWKGFf8EUVUukiTcy0QJqiEcIJ6asChaapOgH+b4oRA==
   dependencies:
-    "@effect-ts/system" "^0.9.3"
+    "@effect-ts/system" "^0.10.1"
+    "@effect-ts/tracing-utils" "^0.2.4"
 
-"@effect-ts/system@^0.9.3":
-  version "0.9.3"
-  resolved "https://registry.yarnpkg.com/@effect-ts/system/-/system-0.9.3.tgz#7d23f6142fe6f058020b1703b5ec3347137a93c6"
-  integrity sha512-gMmoMXknKcl2P2Q2kZo3SoFAFLO6CtINN/RaBlBhD9qQ7L05yOG9vngb97m6SjPMJs+HHgeo9+VbactxZ5g66Q==
+"@effect-ts/system@^0.10.1":
+  version "0.10.1"
+  resolved "https://registry.yarnpkg.com/@effect-ts/system/-/system-0.10.1.tgz#c3eb79010de4c6b25626c0fbbded48852eb6cc63"
+  integrity sha512-n7Z0ZqBFb94dJjpKAzPMB2rn+7/8NnFENoaGHhVAuDg8RIXk5bijUMVE0pbjzdzwbhZIxmpz+82nVIzbwhqyAw==
   dependencies:
-    "@effect-ts/tracing-utils" "^0.2.2"
+    "@effect-ts/tracing-utils" "^0.2.4"
 
-"@effect-ts/tracing-utils@^0.2.2":
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/@effect-ts/tracing-utils/-/tracing-utils-0.2.2.tgz#470f3efec0b5a3a81d6b40e1a094003deb14674b"
-
-prettier@^2.2.1:
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.2.1.tgz#795a1a78dd52f073da0cd42b21f9c91381923ff5"
+"@effect-ts/tracing-utils@^0.2.2", "@effect-ts/tracing-utils@^0.2.4":
+  version "0.2.4"
+  resolved "https://registry.yarnpkg.com/@effect-ts/tracing-utils/-/tracing-utils-0.2.4.tgz#e0d70fd7b240799fa4ef534b07ac51833e7e9a6a"
+  integrity sha512-nsxvWYyoBmmVLvVZB3LCtH2hyrMIH+7adwfib1KjMg8mHhc/Zbi3ftNVty1Bem80310tF/sPbR2C5rYDKYHavA==

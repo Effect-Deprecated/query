@@ -2,8 +2,8 @@
 import { IO } from "@effect-ts/core/Effect";
 import * as T from "@effect-ts/core/Effect";
 import * as REF from "@effect-ts/system/Ref";
-import * as O from "@effect-ts/core/Classic/Option";
-import * as E from "@effect-ts/core/Classic/Either";
+import * as O from "@effect-ts/core/Common/Option";
+import * as E from "@effect-ts/core/Common/Either";
 import { pipe } from "@effect-ts/core/Function";
 import * as Q from "src/Query";
 import { DataSource } from "src/DataSource";

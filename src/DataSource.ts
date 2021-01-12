@@ -1,7 +1,7 @@
 // port of: https://github.com/zio/zio-query/blob/3f9f4237ca2d879b629163f23fe79045eb29f0b0/zio-query/shared/src/main/scala/zio/query/DataSource.scala
-import * as A from "@effect-ts/core/Classic/Array";
-import * as E from "@effect-ts/core/Classic/Either";
-import * as O from "@effect-ts/core/Classic/Option";
+import * as A from "@effect-ts/core/Common/Array";
+import * as E from "@effect-ts/core/Common/Either";
+import * as O from "@effect-ts/core/Common/Option";
 import * as T from "@effect-ts/core/Effect";
 import { _A, _E } from "@effect-ts/core/Utils";
 import { tuple } from "@effect-ts/core/Function";

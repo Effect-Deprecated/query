@@ -3,7 +3,7 @@ import * as BR from "./BlockedRequests";
 import { Continue } from "./Continue";
 import * as CONT from "./Continue";
 import { pipe } from "@effect-ts/core/Function";
-import * as E from "@effect-ts/core/Classic/Either";
+import * as E from "@effect-ts/core/Common/Either";
 
 class Blocked<R, E, A> {
   readonly _tag = "Blocked";

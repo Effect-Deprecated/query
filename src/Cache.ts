@@ -1,8 +1,8 @@
 import * as T from "@effect-ts/core/Effect";
 import * as REF from "@effect-ts/system/Ref";
-import * as O from "@effect-ts/core/Classic/Option";
-import * as E from "@effect-ts/core/Classic/Either";
-import * as MAP from "@effect-ts/core/Classic/Map";
+import * as O from "@effect-ts/core/Common/Option";
+import * as E from "@effect-ts/core/Common/Either";
+import * as MAP from "@effect-ts/core/Common/Map";
 import { Request } from "./Request";
 import { pipe } from "@effect-ts/core/Function";
 

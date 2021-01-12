@@ -5,7 +5,7 @@ import * as RES from "./internal/Result";
 import * as CONT from "./internal/Continue";
 import * as C from "@effect-ts/system/Cause";
 import { pipe, tuple } from "@effect-ts/core/Function";
-import * as E from "@effect-ts/core/Classic/Either";
+import * as E from "@effect-ts/core/Common/Either";
 
 /**
  * A `ZQuery[R, E, A]` is a purely functional description of an effectual query
