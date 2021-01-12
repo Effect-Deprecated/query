@@ -53,7 +53,7 @@ export interface Cache {
 export const empty = pipe(
   REF.makeRef(
     MAP.make<Request<any, any>, any>({
-      equals: (y) => (x) => x[eqSymbol](y),
+      equals: (y) => (x) => y._tag === x._tag && x[eqSymbol](y),
       hash: (x) => x[hashSymbol](),
     })
   ),

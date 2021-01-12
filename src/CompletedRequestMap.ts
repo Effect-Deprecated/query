@@ -95,7 +95,7 @@ export function requests(fa: CompletedRequestMap): Set<Request<any, any>> {
  */
 export const empty = new CompletedRequestMap(
   M.make({
-    equals: (y) => (x) => x[eqSymbol](y),
+    equals: (y) => (x) => y._tag === x._tag && x[eqSymbol](y),
     hash: (x) => x[hashSymbol](),
   })
 );
