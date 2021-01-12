@@ -110,10 +110,12 @@ export function contramapM<R1, B, A>(
  * specified function to transform `C` requests into requests that either
  * this data source or that data source can execute.
  */
-export function eitherWith<R1, B>(that: DataSource<R1, B>) {
-  return <C, A, B>(description: string, f: (c: C) => E.Either<A, B>) => <R>(
-    self: DataSource<R, A>
-  ): DataSource<R & R1, C> =>
+export function eitherWith<C, A, B, R1>(
+  description: string,
+  that: DataSource<R1, B>,
+  f: (c: C) => E.Either<A, B>
+) {
+  return <R>(self: DataSource<R, A>): DataSource<R & R1, C> =>
     new DataSource<R & R1, C>(
       `${self.identifier}.eitherWith(${that.identifier})(${description})`,
       (requests) =>
@@ -185,8 +187,8 @@ export function makeBatched(identifier: string) {
  * Constructs a data source from a pure function.
  */
 export function fromFunction(identifier: string) {
-  return <A extends Request<never, any>, B extends _A<A>>(
-    f: (a: A) => B
+  return <A extends Request<never, any>>(
+    f: (a: A) => _A<A>
   ): DataSource<unknown, A> =>
     makeBatched(identifier)((requests) =>
       T.succeed(
