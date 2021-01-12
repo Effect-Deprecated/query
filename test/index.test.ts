@@ -123,8 +123,10 @@ export const GetAsset = morphicOpaqueRequest<GetAsset>()(GetAsset_);
 
 export const assetDS = DS.fromFunctionBatched("AssetDS")(
   (_: readonly GetAsset[]) =>
-    _.map((a) => ({
-      assetId: a.payload.assetId,
-      isin: `isin: ${a.payload.assetId}`,
-    }))
+    _.map((a) =>
+      a.responseCodec.build({
+        assetId: a.payload.assetId,
+        isin: `isin: ${a.payload.assetId}`,
+      })
+    )
 );
