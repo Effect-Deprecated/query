@@ -1,3 +1,4 @@
+import { circularDeepEqual } from "fast-equals";
 import * as H from "@effect-ts/core/Common/Hash";
 
 export const eqSymbol = Symbol();
@@ -24,20 +25,25 @@ export abstract class Request<E, A> implements Equatable {
   abstract [hashSymbol](): number;
 }
 
-export abstract class IdentifiedRequest<E, A> extends Request<E, A> {
-  /**
-   * String representation of a unique request identifier that
-   * should be build using request specific parameters.
-   *
-   * It will be used to compare requests to identify duplicates.
-   */
-  abstract readonly identifier: string;
-
+export abstract class StandardRequest<E, A> extends Request<E, A> {
   [eqSymbol](that: this): boolean {
-    return this.identifier === that.identifier;
+    return circularDeepEqual(this, that);
   }
 
   [hashSymbol](): number {
-    return H.string(this.identifier);
+    let h = H.string(this._tag);
+    for (const k in Object.keys(this)) {
+      if (typeof this[k] === "string") {
+        h = combineHash(h, H.string(this[k]));
+      }
+      if (typeof this[k] === "number") {
+        h = combineHash(h, this[k]);
+      }
+    }
+    return h;
   }
+}
+
+function combineHash(a: number, b: number): number {
+  return (a * 53) ^ b;
 }
