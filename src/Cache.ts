@@ -3,8 +3,8 @@ import * as T from "@effect-ts/core/Effect";
 import * as REF from "@effect-ts/system/Ref";
 import * as O from "@effect-ts/core/Common/Option";
 import * as E from "@effect-ts/core/Common/Either";
-import * as MAP from "@effect-ts/core/Common/Map";
-import { Request } from "./Request";
+import * as MAP from "@effect-ts/core/Persistent/HashMap";
+import { eqSymbol, hashSymbol, Request } from "./Request";
 import { pipe } from "@effect-ts/core/Function";
 import { _A, _E } from "@effect-ts/core/Utils";
 
@@ -50,37 +50,51 @@ export interface Cache {
   ): T.UIO<void>;
 }
 
-export const empty = pipe(REF.makeRef(MAP.make([])), T.map(makeDefaultCache));
+export const empty = pipe(
+  REF.makeRef(
+    MAP.make<Request<any, any>, any>({
+      equals: (y) => (x) => x[eqSymbol](y),
+      hash: (x) => x[hashSymbol](),
+    })
+  ),
+  T.map(makeDefaultCache)
+);
 
-function makeDefaultCache(state: REF.Ref<MAP.Map<any, any>>): Cache {
+function makeDefaultCache(
+  state: REF.Ref<MAP.HashMap<Request<any, any>, any>>
+): Cache {
   function get<E, A>(
     request: Request<E, A>
   ): T.IO<void, REF.Ref<O.Option<E.Either<E, A>>>> {
     return pipe(
       REF.get(state),
-      T.map(MAP.lookup(request)),
+      T.map(MAP.get(request)),
       T.get,
       T.orElseFail(undefined)
     );
   }
 
-  function lookup<R, E, A, B>(
-    request: A
+  function lookup<E, A>(
+    request: Request<E, A>
   ): T.UIO<
     E.Either<
-      REF.Ref<O.Option<E.Either<E, B>>>,
-      REF.Ref<O.Option<E.Either<E, B>>>
+      REF.Ref<O.Option<E.Either<E, A>>>,
+      REF.Ref<O.Option<E.Either<E, A>>>
     >
   > {
+    type RET = E.Either<
+      REF.Ref<O.Option<E.Either<E, A>>>,
+      REF.Ref<O.Option<E.Either<E, A>>>
+    >;
     return pipe(
-      REF.makeRef(O.emptyOf<E.Either<E, B>>()),
+      REF.makeRef(O.emptyOf<E.Either<E, A>>()),
       T.chain((ref) =>
         REF.modify_(state, (cache) =>
           pipe(
-            MAP.lookup_(cache, request),
+            cache.get(request),
             O.fold(
-              () => [E.left(ref), MAP.insert(request, ref)(cache)],
-              (value) => [E.right(ref), cache] as any // TODO: use better infer of fold
+              () => [E.left(ref) as RET, cache.set(request, ref)],
+              () => [E.right(ref), cache]
             )
           )
         )
@@ -92,7 +106,7 @@ function makeDefaultCache(state: REF.Ref<MAP.Map<any, any>>): Cache {
     request: Request<E, A>,
     result: REF.Ref<O.Option<E.Either<E, A>>>
   ): T.UIO<void> {
-    return pipe(state, REF.update(MAP.insert(request, result)));
+    return pipe(state, REF.update(MAP.set(request, result)));
   }
 
   return { get, lookup, put };
