@@ -1,8 +1,8 @@
 // port of: https://github.com/zio/zio-query/blob/9dfe9ca0b1e3077fc56cf5c983082af3ca7a62e7/zio-query/shared/src/main/scala/zio/query/CompletedRequestMap.scala
 import * as E from "@effect-ts/core/Common/Either";
-import * as M from "@effect-ts/core/Common/Map";
+import * as M from "@effect-ts/core/Persistent/HashMap";
 import * as O from "@effect-ts/core/Common/Option";
-import { Request } from "./Request";
+import { eqSymbol, hashSymbol, Request } from "./Request";
 
 /**
  * A `CompletedRequestMap` is a universally quantified mapping from requests
@@ -16,25 +16,29 @@ import { Request } from "./Request";
 
 export class CompletedRequestMap {
   readonly _tag = "CompletedRequestMap";
-  constructor(public readonly map: ReadonlyMap<any, E.Either<any, any>>) {}
+  constructor(
+    public readonly map: M.HashMap<Request<any, any>, E.Either<any, any>>
+  ) {}
 }
 
 export function concat(
   a: CompletedRequestMap,
   b: CompletedRequestMap
 ): CompletedRequestMap {
-  let merged: ReadonlyMap<any, E.Either<any, any>> = M.copy(a.map);
-  for (const [k, v] of b.map.entries()) {
-    merged = M.insert(k, v)(merged);
-  }
-  return new CompletedRequestMap(merged);
+  return new CompletedRequestMap(
+    a.map.mutate((m) => {
+      for (const [k, v] of b.map) {
+        m.set(k, v);
+      }
+    })
+  );
 }
 
 /**
  * Returns whether a result exists for the specified request.
  */
 export function contains(request: any): (fa: CompletedRequestMap) => boolean {
-  return (fa) => O.isSome(M.lookup_(fa.map, request));
+  return (fa) => fa.map.has(request);
 }
 
 /**
@@ -46,7 +50,7 @@ export function insert<E, A>(
   result: E.Either<E, A>
 ) => (fa: CompletedRequestMap) => CompletedRequestMap {
   return (result) => (fa) =>
-    new CompletedRequestMap(M.insert(request, result)(fa.map));
+    new CompletedRequestMap(fa.map.set(request, result));
 }
 
 /**
@@ -61,10 +65,10 @@ export function insertOption<E, A>(
     new CompletedRequestMap(
       E.fold_(
         result,
-        (e) => M.insert_(fa.map, request, E.left(e)),
+        (e) => fa.map.set(request, E.left(e)),
         O.fold(
           () => fa.map,
-          (a) => M.insert_(fa.map, request, E.right(a))
+          (a) => fa.map.set(request, E.right(a))
         )
       )
     );
@@ -76,7 +80,7 @@ export function insertOption<E, A>(
 export function lookup<E, A>(
   request: Request<E, A>
 ): (fa: CompletedRequestMap) => O.Option<E.Either<E, A>> {
-  return (fa) => M.lookup_(fa.map, request);
+  return (fa) => fa.map.get(request);
 }
 
 /**
@@ -89,4 +93,9 @@ export function requests(fa: CompletedRequestMap): Set<Request<any, any>> {
 /**
  * An empty completed requests map.
  */
-export const empty = new CompletedRequestMap(M.empty);
+export const empty = new CompletedRequestMap(
+  M.make({
+    equals: (y) => (x) => x[eqSymbol](y),
+    hash: (x) => x[hashSymbol](),
+  })
+);
