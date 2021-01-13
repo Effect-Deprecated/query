@@ -12,6 +12,11 @@ import { Parallel, Sequential } from "@effect-ts/core/Effect";
 import { pipe, tuple } from "@effect-ts/core/Function";
 import * as PL from "./Parallel";
 import { right } from "@effect-ts/system/Either";
+import * as HM from "@effect-ts/core/Persistent/HashMap";
+import * as HS from "@effect-ts/core/Persistent/HashSet";
+import * as REF from "@effect-ts/core/Effect/Ref";
+import * as CRM from "../CompletedRequestMap";
+import { Http2ServerRequest } from "http2";
 
 function scalaHead<A>(a: A.Array<A>): A.Array<A> {
   return a.length === 0 ? [] : [a[0]];
@@ -223,7 +228,7 @@ export function flatten<R>(
   ): A.Array<SQ.Sequential<R>> {
     const [parallel, sequential] = A.reduce_(
       blockedRequests,
-      tuple(PL.empty, A.empty),
+      tuple<[PL.Parallel<R>, A.Array<BlockedRequests<R>>]>(PL.empty, A.empty),
       ([parallel, sequential], blockedRequest) => {
         const [par, seq] = step(blockedRequest);
         return tuple(PL.combine(parallel)(par), A.concat_(sequential, seq));
@@ -317,22 +322,49 @@ export function step<R>(
  * Executes all requests, submitting requests to each data source in
  * parallel.
  */
-//   def run(cache: Cache): ZIO[R, Nothing, Unit] =
-//     ZIO.effectSuspendTotal {
-//       ZIO.foreach_(BlockedRequests.flatten(self)) { requestsByDataSource =>
-//         ZIO.foreachPar_(requestsByDataSource.toIterable) { case (dataSource, sequential) =>
-//           for {
-//             completedRequests <- dataSource.runAll(sequential.map(_.map(_.request)))
-//             blockedRequests    = sequential.flatten
-//             leftovers          = completedRequests.requests -- blockedRequests.map(_.request)
-//             _ <- ZIO.foreach_(blockedRequests) { blockedRequest =>
-//                    blockedRequest.result.set(completedRequests.lookup(blockedRequest.request))
-//                  }
-//             _ <- ZIO.foreach_(leftovers) { request =>
-//                    Ref.make(completedRequests.lookup(request)).flatMap(cache.put(request, _))
-//                  }
-//           } yield ()
-//         }
-//       }
-//     }
-// }
+export function run(cache: Cache) {
+  return <R>(self: BlockedRequests<R>) =>
+    T.foreach_(flatten(self), (requestsByDataSource) =>
+      T.foreachPar_(
+        SQ.toIterable(requestsByDataSource),
+        ([dataSource, sequential]) =>
+          pipe(
+            T.do,
+            T.bind("completedRequests", () =>
+              dataSource.runAll(
+                A.map_(sequential, (_) =>
+                  A.map_(_, (br) => br((d) => d.request))
+                )
+              )
+            ),
+            T.bind("blockedRequests", () => T.succeed(A.flatten(sequential))),
+            T.bind("leftovers", (_) =>
+              T.succeed(
+                HS.difference_(
+                  CRM.requests(_.completedRequests),
+                  A.map_(_.blockedRequests, (a) => a((g) => g.request))
+                )
+              )
+            ),
+            T.tap((_) =>
+              T.foreach_(_.blockedRequests, (blockedRequest) =>
+                REF.set_(
+                  blockedRequest((g) => g.result as any /* TODO: SHAME */),
+                  CRM.lookup(blockedRequest((g) => g.request))(
+                    _.completedRequests
+                  )
+                )
+              )
+            ),
+            T.tap((_) =>
+              T.foreach_(_.leftovers, (request) =>
+                T.chain_(
+                  REF.makeRef(CRM.lookup(request)(_.completedRequests)),
+                  (res) => cache.put(request, res)
+                )
+              )
+            )
+          )
+      )
+    );
+}

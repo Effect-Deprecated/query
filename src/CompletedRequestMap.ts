@@ -1,6 +1,7 @@
 // port of: https://github.com/zio/zio-query/blob/9dfe9ca0b1e3077fc56cf5c983082af3ca7a62e7/zio-query/shared/src/main/scala/zio/query/CompletedRequestMap.scala
 import * as E from "@effect-ts/core/Common/Either";
 import * as M from "@effect-ts/core/Persistent/HashMap";
+import * as HS from "@effect-ts/core/Persistent/HashSet";
 import * as O from "@effect-ts/core/Common/Option";
 import { eqSymbol, hashSymbol, Request } from "./Request";
 
@@ -86,8 +87,10 @@ export function lookup<E, A>(
 /**
  * Collects all requests in a set.
  */
-export function requests(fa: CompletedRequestMap): Set<Request<any, any>> {
-  return new Set(fa.map.keys());
+export function requests(
+  fa: CompletedRequestMap
+): HS.HashSet<Request<any, any>> {
+  return M.keySet(fa.map);
 }
 
 /**
