@@ -74,7 +74,7 @@ export class MorphicRequest<
     if (this.#hash) {
       return this.#hash;
     }
-    this.#hash = H.string(J.stableStringify(this));
+    this.#hash = H.string(J.stableStringify(this.payload));
     return this.#hash;
   }
 }
