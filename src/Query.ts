@@ -13,6 +13,8 @@ import * as REF from "@effect-ts/core/Effect/Ref";
 import { Request } from "./Request";
 import { DataSource } from "./DataSource";
 import { _A, _E } from "@effect-ts/core/Utils";
+import { Cache } from "./Cache";
+import { reserve } from "@effect-ts/system/Managed";
 
 /**
  * A `ZQuery[R, E, A]` is a purely functional description of an effectual query
@@ -268,6 +270,27 @@ export function fromRequest<A extends Request<any, any>>(request: A) {
             )
         )
       )
+    );
+}
+
+/**
+ * Returns an effect that models executing this query with the specified
+ * cache.
+ */
+export function runCache(cache: Cache) {
+  return <R, E, A>(self: Query<R, E, A>) =>
+    T.chain_(
+      T.provideSome_(self.step, (r: R) => tuple(r, { cache })),
+      (_) => {
+        switch (_._tag) {
+          case "Blocked":
+            return T.strange_(BRS.run(cache), CONT.runCache(cache)(_.cont));
+          case "Done":
+            return T.succeed(_.value);
+          case "Fail":
+            return T.halt(_.cause);
+        }
+      }
     );
 }
 

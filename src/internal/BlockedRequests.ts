@@ -1,8 +1,24 @@
 // port of: https://github.com/zio/zio-query/blob/3f9f4237ca2d879b629163f23fe79045eb29f0b0/zio-query/shared/src/main/scala/zio/query/internal/BlockedRequests.scala
 import * as S from "@effect-ts/core/Sync";
-import * as DS from "src/DataSource";
-import { DataSourceAspect } from "src/DataSourceAspect";
+import * as DS from "../DataSource";
+import * as T from "@effect-ts/core/Effect";
+import * as A from "@effect-ts/core/Common/Array";
+import * as O from "@effect-ts/core/Common/Option";
+import { DataSourceAspect } from "../DataSourceAspect";
 import { BlockedRequest } from "./BlockedRequest";
+import { Cache } from "../Cache";
+import * as SQ from "./Sequential";
+import { Parallel, Sequential } from "@effect-ts/core/Effect";
+import { pipe, tuple } from "@effect-ts/core/Function";
+import * as PL from "./Parallel";
+import { right } from "@effect-ts/system/Either";
+
+function scalaHead<A>(a: A.Array<A>): A.Array<A> {
+  return a.length === 0 ? [] : [a[0]];
+}
+function scalaTail<A>(a: A.Array<A>): A.Array<A> {
+  return a.length === 0 ? [] : a.slice(1);
+}
 
 class Both<R> {
   readonly _tag = "Both";
@@ -172,3 +188,151 @@ export function single<R, K>(
   const req = { dataSource, blockedRequest };
   return new Single((_) => _(req));
 }
+
+/**
+ * Merges a collection of requests that must be executed sequentially with a
+ * collection of requests that can be executed in parallel. If the
+ * collections are both from the same single data source then the requests
+ * can be pipelined while preserving ordering guarantees.
+ */
+export function merge<R>(
+  sequential: A.Array<SQ.Sequential<R>>,
+  parallel: PL.Parallel<R>
+): A.Array<SQ.Sequential<R>> {
+  if (A.isEmpty(sequential)) return [PL.sequential(parallel)];
+  if (PL.isEmpty(parallel)) return sequential;
+  // TODO: there is one missing case
+  /**
+   *  else if (sequential.head.keys.size == 1 && parallel.keys.size == 1 && sequential.head.keys == parallel.keys)
+   *  (sequential.head ++ parallel.sequential) :: sequential.tail
+   */
+  return A.concat_([PL.sequential(parallel)], sequential);
+}
+
+/**
+ * Flattens a collection of blocked requests into a collection of pipelined
+ * and batched requests that can be submitted for execution.
+ */
+export function flatten<R>(
+  blockedRequests: BlockedRequests<R>
+): A.Array<SQ.Sequential<R>> {
+  // TODO: Stack safety
+  function loop(
+    blockedRequests: A.Array<BlockedRequests<R>>,
+    flattened: A.Array<SQ.Sequential<R>>
+  ): A.Array<SQ.Sequential<R>> {
+    const [parallel, sequential] = A.reduce_(
+      blockedRequests,
+      tuple(PL.empty, A.empty),
+      ([parallel, sequential], blockedRequest) => {
+        const [par, seq] = step(blockedRequest);
+        return tuple(PL.combine(parallel)(par), A.concat_(sequential, seq));
+      }
+    );
+    const updated = merge(flattened, parallel);
+    if (A.isEmpty(sequential)) return A.reverse(updated);
+    return loop(sequential, updated);
+  }
+
+  return loop([blockedRequests], []);
+}
+
+/**
+ * Takes one step in evaluating a collection of blocked requests, returning a
+ * collection of blocked requests that can be performed in parallel and a
+ * list of blocked requests that must be performed sequentially after those
+ * requests.
+ */
+export function step<R>(
+  c: BlockedRequests<R>
+): readonly [PL.Parallel<R>, A.Array<BlockedRequests<R>>] {
+  function loop(
+    blockedRequests: BlockedRequests<R>,
+    stack: A.Array<BlockedRequests<R>>,
+    parallel: PL.Parallel<R>,
+    sequential: A.Array<BlockedRequests<R>>
+  ): readonly [PL.Parallel<R>, A.Array<BlockedRequests<R>>] {
+    switch (blockedRequests._tag) {
+      case "Empty":
+        return pipe(
+          A.head(stack),
+          O.map((head) => loop(head, scalaTail(stack), parallel, sequential)),
+          O.getOrElse(() => tuple(parallel, sequential))
+        );
+      case "Both":
+        return loop(
+          blockedRequests.left,
+          A.concat_([blockedRequests.right], stack),
+          parallel,
+          sequential
+        );
+      case "Single":
+        return pipe(
+          A.head(stack),
+          O.map((head) => loop(head, scalaTail(stack), parallel, sequential)),
+          O.getOrElse(() => {
+            const f = blockedRequests.f((_) =>
+              PL.apply(_.dataSource, _.blockedRequest)
+            );
+            return tuple(PL.combine(parallel)(f), sequential);
+          })
+        );
+      case "Then":
+        switch (blockedRequests.left._tag) {
+          case "Empty":
+            return loop(blockedRequests.right, stack, parallel, sequential);
+          case "Then":
+            return loop(
+              then(blockedRequests.left.left)(
+                then(blockedRequests.left.right)(blockedRequests.right)
+              ),
+              stack,
+              parallel,
+              sequential
+            );
+          case "Both":
+            return loop(
+              both(then(blockedRequests.left.left)(blockedRequests.right))(
+                then(blockedRequests.left.right)(blockedRequests.right)
+              ),
+              stack,
+              parallel,
+              sequential
+            );
+          case "Single":
+            return loop(
+              blockedRequests.left,
+              stack,
+              parallel,
+              A.concat_([blockedRequests.right], sequential)
+            );
+        }
+    }
+  }
+
+  return loop(c, A.empty, PL.empty, A.empty);
+}
+
+/**
+ * Executes all requests, submitting requests to each data source in
+ * parallel.
+ */
+//   def run(cache: Cache): ZIO[R, Nothing, Unit] =
+//     ZIO.effectSuspendTotal {
+//       ZIO.foreach_(BlockedRequests.flatten(self)) { requestsByDataSource =>
+//         ZIO.foreachPar_(requestsByDataSource.toIterable) { case (dataSource, sequential) =>
+//           for {
+//             completedRequests <- dataSource.runAll(sequential.map(_.map(_.request)))
+//             blockedRequests    = sequential.flatten
+//             leftovers          = completedRequests.requests -- blockedRequests.map(_.request)
+//             _ <- ZIO.foreach_(blockedRequests) { blockedRequest =>
+//                    blockedRequest.result.set(completedRequests.lookup(blockedRequest.request))
+//                  }
+//             _ <- ZIO.foreach_(leftovers) { request =>
+//                    Ref.make(completedRequests.lookup(request)).flatMap(cache.put(request, _))
+//                  }
+//           } yield ()
+//         }
+//       }
+//     }
+// }

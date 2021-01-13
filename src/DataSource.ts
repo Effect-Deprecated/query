@@ -3,6 +3,7 @@ import * as A from "@effect-ts/core/Common/Array";
 import * as E from "@effect-ts/core/Common/Either";
 import * as O from "@effect-ts/core/Common/Option";
 import * as T from "@effect-ts/core/Effect";
+import * as H from "@effect-ts/core/Common/Hash";
 import { _A, _E } from "@effect-ts/core/Utils";
 import { tuple } from "@effect-ts/core/Function";
 import * as CR from "./CompletedRequestMap";
@@ -53,6 +54,16 @@ export class DataSource<R, A> {
   ["@"]<R1 extends R, R2>(aspect: DataSourceAspect<R1, R2>): DataSource<R2, A> {
     return aspect(this);
   }
+}
+
+export function equals(a: DataSource<any, any>) {
+  return (b: DataSource<any, any>): boolean => {
+    return a.identifier === b.identifier;
+  };
+}
+
+export function hash(a: DataSource<any, any>): number {
+  return H.string(a.identifier);
 }
 
 /**
