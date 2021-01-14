@@ -4,23 +4,17 @@ import * as DS from "../DataSource";
 import * as T from "@effect-ts/core/Effect";
 import * as A from "@effect-ts/core/Common/Array";
 import * as O from "@effect-ts/core/Common/Option";
+import * as E from "@effect-ts/core/Common/Either";
 import { DataSourceAspect } from "../DataSourceAspect";
 import { BlockedRequest } from "./BlockedRequest";
 import { Cache } from "../Cache";
 import * as SQ from "./Sequential";
-import { Parallel, Sequential } from "@effect-ts/core/Effect";
 import { pipe, tuple } from "@effect-ts/core/Function";
 import * as PL from "./Parallel";
-import { right } from "@effect-ts/system/Either";
-import * as HM from "@effect-ts/core/Persistent/HashMap";
 import * as HS from "@effect-ts/core/Persistent/HashSet";
 import * as REF from "@effect-ts/core/Effect/Ref";
 import * as CRM from "../CompletedRequestMap";
-import { Http2ServerRequest } from "http2";
 
-function scalaHead<A>(a: A.Array<A>): A.Array<A> {
-  return a.length === 0 ? [] : [a[0]];
-}
 function scalaTail<A>(a: A.Array<A>): A.Array<A> {
   return a.length === 0 ? [] : a.slice(1);
 }
@@ -251,6 +245,7 @@ export function flatten<R>(
 export function step<R>(
   c: BlockedRequests<R>
 ): readonly [PL.Parallel<R>, A.Array<BlockedRequests<R>>] {
+  // TODO: Stack safety
   function loop(
     blockedRequests: BlockedRequests<R>,
     stack: A.Array<BlockedRequests<R>>,
@@ -323,7 +318,7 @@ export function step<R>(
  * parallel.
  */
 export function run(cache: Cache) {
-  return <R>(self: BlockedRequests<R>) =>
+  return <R>(self: BlockedRequests<R>): T.Effect<R, never, void> =>
     T.foreach_(flatten(self), (requestsByDataSource) =>
       T.foreachPar_(
         SQ.toIterable(requestsByDataSource),
@@ -349,7 +344,9 @@ export function run(cache: Cache) {
             T.tap((_) =>
               T.foreach_(_.blockedRequests, (blockedRequest) =>
                 REF.set_(
-                  blockedRequest((g) => g.result as any /* TODO: SHAME */),
+                  blockedRequest(
+                    (g) => g.result as REF.Ref<O.Option<E.Either<any, any>>>
+                  ),
                   CRM.lookup(blockedRequest((g) => g.request))(
                     _.completedRequests
                   )
@@ -363,7 +360,8 @@ export function run(cache: Cache) {
                   (res) => cache.put(request, res)
                 )
               )
-            )
+            ),
+            T.chain(() => T.unit)
           )
       )
     );

@@ -5,14 +5,14 @@ import * as REF from "@effect-ts/system/Ref";
 import * as O from "@effect-ts/core/Common/Option";
 import * as E from "@effect-ts/core/Common/Either";
 import { pipe } from "@effect-ts/core/Function";
-import * as Q from "src/Query";
-import { DataSource } from "src/DataSource";
-import { QueryFailure } from "src/QueryFailure";
-import { Request } from "src/Request";
+import * as Q from "../Query";
+import { DataSource } from "../DataSource";
+import { QueryFailure } from "../QueryFailure";
+import { Request } from "../Request";
 import { _A, _E } from "@effect-ts/core/Utils";
 import * as C from "@effect-ts/system/Cause";
-import { DataSourceAspect } from "src/DataSourceAspect";
-import { Cache } from "src/Cache";
+import { DataSourceAspect } from "../DataSourceAspect";
+import { Cache } from "../Cache";
 
 class Effect<R, E, A> {
   readonly _tag = "Effect";
@@ -143,7 +143,7 @@ export function map<A, B>(
  */
 export function mapDataSources<R, R1>(
   f: DataSourceAspect<R, R1>
-): <E, A>(self: Continue<R, E, A>) => Continue<R & R1, E, A> {
+): <E, A>(self: Continue<R, E, A>) => Continue<R1, E, A> {
   return (self) => {
     switch (self._tag) {
       case "Effect":

@@ -6,15 +6,15 @@ import * as CONT from "./internal/Continue";
 import * as C from "@effect-ts/system/Cause";
 import * as BRS from "./internal/BlockedRequests";
 import * as BR from "./internal/BlockedRequest";
-import { pipe, tuple } from "@effect-ts/core/Function";
+import { identity, pipe, tuple } from "@effect-ts/core/Function";
 import * as E from "@effect-ts/core/Common/Either";
 import * as O from "@effect-ts/core/Common/Option";
 import * as REF from "@effect-ts/core/Effect/Ref";
 import { Request } from "./Request";
 import { DataSource } from "./DataSource";
 import { _A, _E } from "@effect-ts/core/Utils";
-import { Cache } from "./Cache";
-import { reserve } from "@effect-ts/system/Managed";
+import * as CH from "./Cache";
+import { DataSourceAspect } from "./DataSourceAspect";
 
 /**
  * A `ZQuery[R, E, A]` is a purely functional description of an effectual query
@@ -189,6 +189,51 @@ export function foldM<E, A, R2, E2, A2, R3, E3, A3>(
 }
 
 /**
+ * Maps the specified function over the successful result of this query.
+ */
+export function map<A, B>(f: (a: A) => B) {
+  return <R, E>(self: Query<R, E, A>): Query<R, E, B> =>
+    new Query(T.map_(self.step, RES.map(f)));
+}
+
+/**
+ * Transforms all data sources with the specified data source aspect.
+ */
+export function mapDataSources<R, R1>(f: DataSourceAspect<R, R1>) {
+  return <E, A>(self: Query<R, E, A>): Query<R1, E, A> =>
+    // TODO: fix
+    // @ts-expect-error
+    new Query(T.map_(self.step, RES.mapDataSources(f)));
+}
+// final def mapDataSources[R1 <: R](f: DataSourceAspect[R1]): ZQuery[R1, E, A] =
+//   ZQuery(step.map(_.mapDataSources(f)))
+
+/**
+ * Maps the specified function over the failed result of this query.
+ */
+export function mapError<E, E1>(f: (a: E) => E1) {
+  return <R, A>(self: Query<R, E, A>): Query<R, E1, A> =>
+    pipe(self, bimap(f, identity));
+}
+// final def mapError[E1](f: E => E1)(implicit ev: CanFail[E]): ZQuery[R, E1, A] =
+//   bimap(f, identity)
+
+/**
+ * Returns a query whose failure and success channels have been mapped by the
+ * specified pair of functions, `f` and `g`.
+ */
+export function bimap<E, E1, A, B>(f: (e: E) => E1, g: (a: A) => B) {
+  return <R>(self: Query<R, E, A>): Query<R, E1, B> =>
+    pipe(
+      self,
+      foldM(
+        (e) => fail(f(e)),
+        (a) => succeed(g(a))
+      )
+    );
+}
+
+/**
  * Constructs a query that fails with the specified cause.
  */
 export function halt<E>(cause: C.Cause<E>) {
@@ -210,6 +255,13 @@ export const none = fromEffect(T.none);
  */
 export function succeed<A>(value: A) {
   return new Query(T.succeed(RES.done(value)));
+}
+
+/**
+ *  Constructs a query that succeeds with the specified value.
+ */
+export function fail<E>(value: E) {
+  return new Query(T.succeed(RES.fail(C.fail(value))));
 }
 
 /**
@@ -277,14 +329,17 @@ export function fromRequest<A extends Request<any, any>>(request: A) {
  * Returns an effect that models executing this query with the specified
  * cache.
  */
-export function runCache(cache: Cache) {
+export function runCache(cache: CH.Cache) {
   return <R, E, A>(self: Query<R, E, A>) =>
     T.chain_(
       T.provideSome_(self.step, (r: R) => tuple(r, { cache })),
       (_) => {
         switch (_._tag) {
           case "Blocked":
-            return T.strange_(BRS.run(cache), CONT.runCache(cache)(_.cont));
+            return T.andThen_(
+              BRS.run(cache)(_.blockedRequests),
+              CONT.runCache(cache)(_.cont)
+            );
           case "Done":
             return T.succeed(_.value);
           case "Fail":
@@ -292,6 +347,25 @@ export function runCache(cache: Cache) {
         }
       }
     );
+}
+
+/**
+ * Returns an effect that models executing this query.
+ */
+export function run<R, E, A>(query: Query<R, E, A>): T.Effect<R, E, A> {
+  return T.map_(runLog(query), ([_, a]) => a);
+}
+
+/**
+ * Returns an effect that models executing this query, returning the query
+ * result along with the cache.
+ */
+export function runLog<R, E, A>(
+  query: Query<R, E, A>
+): T.Effect<R, E, readonly [CH.Cache, A]> {
+  return T.chain_(CH.empty, (cache) =>
+    T.map_(runCache(cache)(query), (a) => tuple(cache, a))
+  );
 }
 
 // TODO

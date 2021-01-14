@@ -1,7 +1,7 @@
 import * as HM from "@effect-ts/core/Persistent/HashMap";
 import * as A from "@effect-ts/core/Common/Array";
 import * as O from "@effect-ts/core/Common/Option";
-import * as DS from "src/DataSource";
+import * as DS from "../DataSource";
 import { BlockedRequest } from "./BlockedRequest";
 import { Sequential } from "./Sequential";
 import { BlockedRequests } from "./BlockedRequests";

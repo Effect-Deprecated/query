@@ -2,8 +2,10 @@ import * as C from "@effect-ts/system/Cause";
 import * as BR from "./BlockedRequests";
 import { Continue } from "./Continue";
 import * as CONT from "./Continue";
+import * as BRS from "./BlockedRequests";
 import { pipe } from "@effect-ts/core/Function";
 import * as E from "@effect-ts/core/Common/Either";
+import { DataSourceAspect } from "src/DataSourceAspect";
 
 class Blocked<R, E, A> {
   readonly _tag = "Blocked";
@@ -54,6 +56,57 @@ export function fold<E, A, B>(
             (c) => fail(c)
           )
         );
+    }
+  };
+}
+
+/**
+ * Maps the specified function over the successful value of this result.
+ */
+export function map<A, B>(f: (a: A) => B) {
+  return <R, E>(self: Result<R, E, A>): Result<R, E, B> => {
+    switch (self._tag) {
+      case "Blocked":
+        return blocked(self.blockedRequests, CONT.map(f)(self.cont));
+      case "Done":
+        return done(f(self.value));
+      case "Fail":
+        return fail(self.cause);
+    }
+  };
+}
+
+/**
+ * Transforms all data sources with the specified data source aspect.
+ */
+export function mapDataSources<R, R1>(f: DataSourceAspect<R, R1>) {
+  return <E, A>(self: Result<R, E, A>): Result<R1, E, A> => {
+    switch (self._tag) {
+      case "Blocked":
+        return blocked(
+          BRS.mapDataSources(f)(self.blockedRequests),
+          CONT.mapDataSources(f)(self.cont)
+        );
+      case "Done":
+        return done(self.value);
+      case "Fail":
+        return fail(self.cause);
+    }
+  };
+}
+
+/**
+ * Maps the specified function over the failed value of this result.
+ */
+export function mapError<E, E1>(f: (a: E) => E1) {
+  return <R, A>(self: Result<R, E, A>): Result<R, E1, A> => {
+    switch (self._tag) {
+      case "Blocked":
+        return blocked(self.blockedRequests, CONT.mapError(f)(self.cont));
+      case "Done":
+        return done(self.value);
+      case "Fail":
+        return fail(C.map(f)(self.cause));
     }
   };
 }
