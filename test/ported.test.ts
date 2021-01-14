@@ -1,3 +1,5 @@
+import "@effect-ts/tracing-utils/Enable";
+
 import * as A from "@effect-ts/core/Common/Array";
 import * as MAP from "@effect-ts/core/Common/Map";
 import * as E from "@effect-ts/core/Common/Either";
@@ -51,7 +53,14 @@ class GetNameById extends StandardRequest<never, string> {
   }
 }
 
-type UserRequest = GetAllIds | GetNameById;
+class GetAgeByName extends StandardRequest<never, number> {
+  readonly _tag = "GetAgeByName";
+  constructor(public readonly name: string) {
+    super(); // TODO: MEH
+  }
+}
+
+type UserRequest = GetAllIds | GetNameById | GetAgeByName;
 
 const UserRequestDataSource = DS.makeBatched("UserRequestDataSource")(
   (requests: A.Array<UserRequest>) =>
@@ -68,6 +77,8 @@ const UserRequestDataSource = DS.makeBatched("UserRequestDataSource")(
                 () => crm,
                 (userName) => CR.insert(_)(E.right(userName))(crm)
               );
+            case "GetAgeByName":
+              return CR.insert(_)(E.right(18 + _.name.length))(crm);
           }
         })
       )
@@ -82,7 +93,27 @@ const getAllUserNames = Q.chain_(getAllUserIds, (userIds) =>
   Q.foreachPar_(userIds, getUserNameById)
 );
 
+const getAgeByName = (name: string) =>
+  Q.fromRequest(new GetAgeByName(name))(UserRequestDataSource);
+
+const getAgeById = (id: number) =>
+  Q.chain_(getUserNameById(id), (name) => getAgeByName(name));
+
 describe("Query", () => {
+  it("basic query", async () => {
+    const f = pipe(
+      Q.run(getAllUserIds),
+      T.provideServiceM(TestConsole)(emptyTestConsole)
+    );
+    expect(await T.runPromise(f)).toEqual(userIds);
+  });
+  it("sequential query", async () => {
+    const f = pipe(
+      Q.run(getAgeById(1)),
+      T.provideServiceM(TestConsole)(emptyTestConsole)
+    );
+    expect(await T.runPromise(f)).toEqual(19);
+  });
   it("solves N+1 problem", async () => {
     const f = pipe(
       Q.run(getAllUserNames),

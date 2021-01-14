@@ -3,6 +3,14 @@
     "files": [],
     "compilerOptions": {
       "baseUrl": ".",
-      "target": "ES2017"
+      "target": "ES2017",
+      "plugins": [
+        {
+          "transform": "@effect-ts/tracing-plugin",
+          "moduleMap": {
+            "^src/(.*)": "(@effect-ts/query): src/$1"
+          }
+        }
+      ]
     }
   }
