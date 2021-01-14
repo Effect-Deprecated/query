@@ -186,7 +186,7 @@ export function makeBatched(identifier: string) {
   ): DataSource<R, A> =>
     new DataSource(identifier, (requests) =>
       T.reduce_(requests, CR.empty, (crm, requests) => {
-        const newRequests = A.filter_(requests, (e) => CR.contains(e)(crm));
+        const newRequests = A.filter_(requests, (e) => !CR.contains(e)(crm));
         return A.isEmpty(newRequests)
           ? T.succeed(crm)
           : T.map_(run(newRequests), (_) => CR.concat(crm, _));

@@ -137,6 +137,12 @@ export function map<A, B>(
     }
   };
 }
+export function map_<R, E, A, B>(
+  self: Continue<R, E, A>,
+  f: (a: A) => B
+): Continue<R, E, B> {
+  return map(f)(self);
+}
 
 /**
  * Transforms all data sources with the specified data source aspect.
@@ -199,6 +205,62 @@ export function provideSome<R0, R>(
         return effect(Q.provideSome(description, f)(self.query));
       case "Get":
         return get(self.io);
+    }
+  };
+}
+
+/**
+ * Combines this continuation with that continuation using the specified
+ * function, in sequence.
+ */
+export function zipWith<R1, E1, B, A, C>(
+  that: Continue<R1, E1, B>,
+  f: (a: A, b: B) => C
+) {
+  return <R, E>(self: Continue<R, E, A>): Continue<R & R1, E | E1, C> => {
+    switch (self._tag) {
+      case "Effect":
+        switch (that._tag) {
+          case "Effect":
+            return effect(Q.zipWith(that.query, f)(self.query));
+          case "Get":
+            return effect(Q.zipWith(Q.fromEffect(that.io), f)(self.query));
+        }
+      case "Get":
+        switch (that._tag) {
+          case "Effect":
+            return effect(Q.zipWith(that.query, f)(Q.fromEffect(self.io)));
+          case "Get":
+            return get(T.zipWith_(self.io, that.io, f));
+        }
+    }
+  };
+}
+
+/**
+ * Combines this continuation with that continuation using the specified
+ * function, in parallel.
+ */
+export function zipWithPar<R1, E1, B, A, C>(
+  that: Continue<R1, E1, B>,
+  f: (a: A, b: B) => C
+) {
+  return <R, E>(self: Continue<R, E, A>): Continue<R & R1, E | E1, C> => {
+    switch (self._tag) {
+      case "Effect":
+        switch (that._tag) {
+          case "Effect":
+            return effect(Q.zipWithPar(that.query, f)(self.query));
+          case "Get":
+            return effect(Q.zipWith(Q.fromEffect(that.io), f)(self.query));
+        }
+      case "Get":
+        switch (that._tag) {
+          case "Effect":
+            return effect(Q.zipWith(that.query, f)(Q.fromEffect(self.io)));
+          case "Get":
+            return get(T.zipWith_(self.io, that.io, f));
+        }
     }
   };
 }

@@ -9,6 +9,7 @@ import * as BR from "./internal/BlockedRequest";
 import { identity, pipe, tuple } from "@effect-ts/core/Function";
 import * as E from "@effect-ts/core/Common/Either";
 import * as O from "@effect-ts/core/Common/Option";
+import * as A from "@effect-ts/core/Common/Array";
 import * as REF from "@effect-ts/core/Effect/Ref";
 import { Request } from "./Request";
 import { DataSource } from "./DataSource";
@@ -195,6 +196,9 @@ export function map<A, B>(f: (a: A) => B) {
   return <R, E>(self: Query<R, E, A>): Query<R, E, B> =>
     new Query(T.map_(self.step, RES.map(f)));
 }
+export function map_<R, E, A, B>(self: Query<R, E, A>, f: (a: A) => B) {
+  return map(f)(self);
+}
 
 /**
  * Transforms all data sources with the specified data source aspect.
@@ -368,8 +372,128 @@ export function runLog<R, E, A>(
   );
 }
 
+/**
+ * Returns a query that models the execution of this query and the specified
+ * query sequentially, combining their results with the specified function.
+ * Requests composed with `zipWith` or combinators derived from it will
+ * automatically be pipelined.
+ */
+export function zipWith<R1, E1, B, A, C>(
+  that: Query<R1, E1, B>,
+  f: (a: A, b: B) => C
+) {
+  return <R, E>(self: Query<R, E, A>): Query<R & R1, E | E1, C> =>
+    new Query(
+      T.chain_(self.step, (res) => {
+        switch (res._tag) {
+          case "Blocked":
+            return T.map_(that.step, (res2) => {
+              // TODO: ZIO.succeedNow(Result.blocked(br, Continue.effect(c.zipWith(that)(f))))
+              switch (res2._tag) {
+                case "Blocked":
+                  return RES.blocked(
+                    BRS.then(res2.blockedRequests)(res.blockedRequests),
+                    CONT.zipWith(res2.cont, f)(res.cont)
+                  );
+                case "Done":
+                  return RES.blocked(
+                    res.blockedRequests,
+                    CONT.map_(res.cont, (a) => f(a, res2.value))
+                  );
+                case "Fail":
+                  return RES.fail(res2.cause);
+              }
+            });
+          case "Done":
+            return T.map_(that.step, (res2) => {
+              switch (res2._tag) {
+                case "Blocked":
+                  return RES.blocked(
+                    res2.blockedRequests,
+                    CONT.map_(res2.cont, (b) => f(res.value, b))
+                  );
+                case "Done":
+                  return RES.done(f(res.value, res2.value));
+                case "Fail":
+                  return RES.fail(res2.cause);
+              }
+            });
+          case "Fail":
+            return T.succeed(RES.fail(res.cause));
+        }
+      })
+    );
+}
+
+/**
+ * Returns a query that models the execution of this query and the specified
+ * query in parallel, combining their results with the specified function.
+ * Requests composed with `zipWithPar` or combinators derived from it will
+ * automatically be batched.
+ */
+export function zipWithPar<R1, E1, B, A, C>(
+  that: Query<R1, E1, B>,
+  f: (a: A, b: B) => C
+) {
+  return <R, E>(self: Query<R, E, A>): Query<R & R1, E | E1, C> =>
+    new Query(
+      T.zipWithPar_(self.step, that.step, (a, b) => {
+        switch (a._tag) {
+          case "Blocked":
+            switch (b._tag) {
+              case "Blocked":
+                return RES.blocked(
+                  BRS.both(b.blockedRequests)(a.blockedRequests),
+                  CONT.zipWithPar(b.cont, f)(a.cont)
+                );
+              case "Done":
+                return RES.blocked(
+                  a.blockedRequests,
+                  CONT.map_(a.cont, (a) => f(a, b.value))
+                );
+              case "Fail":
+                return RES.fail(b.cause);
+            }
+          case "Done":
+            switch (b._tag) {
+              case "Blocked":
+                return RES.blocked(
+                  b.blockedRequests,
+                  CONT.map_(b.cont, (b) => f(a.value, b))
+                );
+              case "Done":
+                return RES.done(f(a.value, b.value));
+              case "Fail":
+                return RES.fail(b.cause);
+            }
+          case "Fail":
+            switch (b._tag) {
+              case "Blocked":
+                return RES.fail(a.cause);
+              case "Done":
+                return RES.fail(a.cause);
+              case "Fail":
+                return RES.fail(C.both(a.cause, b.cause));
+            }
+        }
+      })
+    );
+}
+
 // TODO
-export declare function foreachPar_<R, E, A, B>(
+export function foreachPar_<R, E, A, B>(
   as: Iterable<A>,
   f: (a: A) => Query<R, E, B>
-): Query<R, E, readonly B[]>;
+): Query<R, E, A.Array<B>> {
+  const arr = A.from(as);
+  // TODO: What if is empty?
+  return A.reduce_(
+    arr.slice(1),
+    map_(f(arr[0]), (a) => A.from([a])),
+    (q, a) =>
+      pipe(
+        q,
+        zipWithPar(f(a), (a, b) => A.concat_(a, [b]))
+      )
+  );
+}

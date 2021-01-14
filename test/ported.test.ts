@@ -36,7 +36,7 @@ const userIds: A.Array<number> = A.range(1, 26);
 const userNames: MAP.Map<number, string> = MAP.make(
   A.zip_(
     userIds,
-    A.map_(A.range(1, 21), (_) => _.toString(36))
+    A.map_(A.range(1, 26), (_) => _.toString(36))
   )
 );
 
