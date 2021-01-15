@@ -443,7 +443,7 @@ export function zipWithPar<R1, E1, B, A, C>(
             switch (b._tag) {
               case "Blocked":
                 return RES.blocked(
-                  BRS.both(b.blockedRequests)(a.blockedRequests),
+                  BRS.both_(a.blockedRequests, b.blockedRequests),
                   CONT.zipWithPar(b.cont, f)(a.cont)
                 );
               case "Done":

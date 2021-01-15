@@ -68,18 +68,31 @@ export type BlockedRequests<R> = Both<R> | Empty | Single<R> | Then<R>;
  * Combines this collection of blocked requests with the specified collection
  * of blocked requests, in parallel.
  */
-export function both<R>(fb: BlockedRequests<R>) {
-  return <R1>(fa: BlockedRequests<R1>): BlockedRequests<R & R1> =>
-    new Both<R & R1>(fa, fb);
+export function both<R>(that: BlockedRequests<R>) {
+  return <R1>(self: BlockedRequests<R1>): BlockedRequests<R & R1> =>
+    both_(self, that);
+}
+
+export function both_<R1, R>(
+  self: BlockedRequests<R1>,
+  that: BlockedRequests<R>
+) {
+  return new Both<R & R1>(self, that);
 }
 
 /**
  * Combines this collection of blocked requests with the specified collection
  * of blocked requests, in sequence.
  */
-export function then<R>(fb: BlockedRequests<R>) {
-  return <R1>(fa: BlockedRequests<R1>): BlockedRequests<R & R1> =>
-    new Then<R & R1>(fa, fb);
+export function then<R>(that: BlockedRequests<R>) {
+  return <R1>(self: BlockedRequests<R1>): BlockedRequests<R & R1> =>
+    then_(self, that);
+}
+export function then_<R1, R>(
+  self: BlockedRequests<R1>,
+  that: BlockedRequests<R>
+) {
+  return new Then<R & R1>(self, that);
 }
 
 /**
@@ -278,30 +291,29 @@ export function step<R>(
           })
         );
       case "Then":
-        switch (blockedRequests.left._tag) {
+        const { left, right } = blockedRequests;
+        switch (left._tag) {
           case "Empty":
-            return loop(blockedRequests.right, stack, parallel, sequential);
+            return loop(right, stack, parallel, sequential);
           case "Then":
             return loop(
-              then(blockedRequests.left.left)(
-                then(blockedRequests.left.right)(blockedRequests.right)
-              ),
+              then_(left.left, then_(left.right, blockedRequests.right)),
               stack,
               parallel,
               sequential
             );
           case "Both":
+            const l = left.left;
+            const r = left.right;
             return loop(
-              both(then(blockedRequests.left.left)(blockedRequests.right))(
-                then(blockedRequests.left.right)(blockedRequests.right)
-              ),
+              both_(then_(l, right), then_(r, right)),
               stack,
               parallel,
               sequential
             );
           case "Single":
             return loop(
-              blockedRequests.left,
+              left,
               stack,
               parallel,
               A.concat_([blockedRequests.right], sequential)

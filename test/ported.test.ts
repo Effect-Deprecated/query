@@ -1,4 +1,5 @@
 import "@effect-ts/tracing-utils/Enable";
+import "@effect-ts/node/Modules/Traced";
 
 import * as A from "@effect-ts/core/Common/Array";
 import * as MAP from "@effect-ts/core/Common/Map";
@@ -12,6 +13,18 @@ import * as Q from "../src/Query";
 import * as CR from "../src/CompletedRequestMap";
 import { Has, tag } from "@effect-ts/core/Has";
 import { pipe } from "@effect-ts/core/Function";
+import * as C from "@effect-ts/core/Effect/Cause";
+import type { Trace } from "@effect-ts/core/Effect/Fiber";
+
+import { prettyTraceNode } from "@effect-ts/node/Runtime";
+
+const customNodeRender = (_: Trace): string =>
+  prettyTraceNode(_, (path) =>
+    path
+      .replace("/build/", "/")
+      .replace("/_traced/", "/")
+      .replace("_src", "src")
+  );
 
 interface TestConsole {
   lines: REF.Ref<A.Array<string>>;
@@ -107,12 +120,21 @@ describe("Query", () => {
     );
     expect(await T.runPromise(f)).toEqual(userIds);
   });
-  it("sequential query", async () => {
+  it("sequential", async () => {
     const f = pipe(
       Q.run(getAgeById(1)),
       T.provideServiceM(TestConsole)(emptyTestConsole)
     );
     expect(await T.runPromise(f)).toEqual(19);
+  });
+  it("parallel", async () => {
+    const f = pipe(
+      getUserNameById(1),
+      Q.zipWithPar(getUserNameById(2), (a, b) => a + b),
+      Q.run,
+      T.provideServiceM(TestConsole)(emptyTestConsole)
+    );
+    expect(await T.runPromise(f)).toEqual("ab");
   });
   it("solves N+1 problem", async () => {
     const f = pipe(
@@ -120,6 +142,9 @@ describe("Query", () => {
       T.chain(() => getLogSize),
       T.provideServiceM(TestConsole)(emptyTestConsole)
     );
-    expect(await T.runPromise(f)).toEqual(2);
+    const data = await T.runPromiseExit(f);
+    if (data._tag === "Failure")
+      console.log(C.pretty(data.cause, customNodeRender));
+    expect(data).toEqual(2);
   });
 });
