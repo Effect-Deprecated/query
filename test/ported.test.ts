@@ -127,6 +127,15 @@ describe("Query", () => {
     );
     expect(await T.runPromise(f)).toEqual(19);
   });
+  it("sequential zip", async () => {
+    const f = pipe(
+      getUserNameById(1),
+      Q.zipWith(getUserNameById(2), (a, b) => a + b),
+      Q.run,
+      T.provideServiceM(TestConsole)(emptyTestConsole)
+    );
+    expect(await T.runPromise(f)).toEqual("12");
+  });
   it("parallel", async () => {
     const f = pipe(
       getUserNameById(1),
@@ -134,7 +143,7 @@ describe("Query", () => {
       Q.run,
       T.provideServiceM(TestConsole)(emptyTestConsole)
     );
-    expect(await T.runPromise(f)).toEqual("ab");
+    expect(await T.runPromise(f)).toEqual("12");
   });
   it("solves N+1 problem", async () => {
     const f = pipe(
