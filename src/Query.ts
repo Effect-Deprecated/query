@@ -18,6 +18,7 @@ import * as CH from "./Cache";
 import { DataSourceAspect } from "./DataSourceAspect";
 import { Has } from "@effect-ts/core/Has";
 import * as CL from "@effect-ts/system/Clock";
+import { QueryFailure } from "./QueryFailure";
 
 /**
  * A `ZQuery[R, E, A]` is a purely functional description of an effectual query
@@ -564,4 +565,19 @@ export function timed<R, E, A>(
   self: Query<R, E, A>
 ): Query<R & Has<CL.Clock>, E, readonly [number, A]> {
   return summarized_(self, CL.currentTime, (start, end) => end - start);
+}
+
+/**
+ * Converts this query to one that returns `Some` if data sources return
+ * results for all requests received and `None` otherwise.
+ */
+export function optional<R, E, A>(
+  self: Query<R, E, A>
+): Query<R, E, O.Option<A>> {
+  return foldCauseM_(
+    self,
+    (_) =>
+      _._tag === "Die" && _.value instanceof QueryFailure ? none : halt(_),
+    (_) => succeed(O.some(_))
+  );
 }

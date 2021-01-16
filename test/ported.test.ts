@@ -198,4 +198,14 @@ describe("Query", () => {
     );
     expect(await T.runPromise(f)).toEqual(2);
   });
+  it("optional converts a query to one that returns its value optionally", async () => {
+    const f = pipe(
+      getUserNameById(27),
+      Q.map(identity),
+      Q.optional,
+      Q.run,
+      T.provideServiceM(TestConsole)(emptyTestConsole)
+    );
+    expect(await T.runPromise(f)).toEqual(O.none);
+  });
 });
