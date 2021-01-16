@@ -244,13 +244,6 @@
     exec-sh "^0.3.2"
     minimist "^1.2.0"
 
-"@effect-ts/core@^0.12.4":
-  version "0.12.4"
-  resolved "https://registry.yarnpkg.com/@effect-ts/core/-/core-0.12.4.tgz#c0a550fe5388632d0878290e13588fa433cdc91d"
-  dependencies:
-    "@effect-ts/system" "^0.10.4"
-    "@effect-ts/tracing-utils" "^0.2.4"
-
 "@effect-ts/core@^0.12.6":
   version "0.12.6"
   resolved "https://registry.yarnpkg.com/@effect-ts/core/-/core-0.12.6.tgz#c33082528dad2b5037b5b51108545c914c0c95ee"
@@ -273,17 +266,11 @@
     "@effect-ts/monocle" "^0.11.6"
     "@effect-ts/tracing-utils" "^0.2.4"
 
-"@effect-ts/node@^0.4.4":
-  version "0.4.4"
-  resolved "https://registry.yarnpkg.com/@effect-ts/node/-/node-0.4.4.tgz#e6bc8209e61105a2736dc29a1daec2f9983858bb"
+"@effect-ts/node@^0.4.6":
+  version "0.4.6"
+  resolved "https://registry.yarnpkg.com/@effect-ts/node/-/node-0.4.6.tgz#f0015a1d85c9db0b06e93d9cd12661bbca13ee48"
   dependencies:
-    "@effect-ts/core" "^0.12.4"
-    "@effect-ts/tracing-utils" "^0.2.4"
-
-"@effect-ts/system@^0.10.4":
-  version "0.10.4"
-  resolved "https://registry.yarnpkg.com/@effect-ts/system/-/system-0.10.4.tgz#5be9f5d8293760c570c342183e684612de5827ba"
-  dependencies:
+    "@effect-ts/core" "^0.12.6"
     "@effect-ts/tracing-utils" "^0.2.4"
 
 "@effect-ts/system@^0.10.5":
