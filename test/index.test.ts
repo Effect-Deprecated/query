@@ -130,3 +130,5 @@ export const assetDS = DS.fromFunctionBatched("AssetDS")(
       })
     )
 );
+
+it("dummy", () => {});
