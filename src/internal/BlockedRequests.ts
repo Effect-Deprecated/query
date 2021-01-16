@@ -14,6 +14,7 @@ import * as PL from "./Parallel";
 import * as HS from "@effect-ts/core/Persistent/HashSet";
 import * as REF from "@effect-ts/core/Effect/Ref";
 import * as CRM from "../CompletedRequestMap";
+import { Request } from "src/Request";
 
 function scalaTail<A>(a: A.Array<A>): A.Array<A> {
   return a.length === 0 ? [] : a.slice(1);
@@ -282,12 +283,29 @@ export function step<R>(
       case "Single":
         return pipe(
           A.head(stack),
-          O.map((head) => loop(head, scalaTail(stack), parallel, sequential)),
+          O.map((head) =>
+            loop(
+              head,
+              scalaTail(stack),
+              PL.combine_(
+                parallel,
+                blockedRequests.f((_) =>
+                  PL.apply(_.dataSource, _.blockedRequest)
+                )
+              ),
+              sequential
+            )
+          ),
           O.getOrElse(() => {
-            const f = blockedRequests.f((_) =>
-              PL.apply(_.dataSource, _.blockedRequest)
+            return tuple(
+              PL.combine_(
+                parallel,
+                blockedRequests.f((_) =>
+                  PL.apply(_.dataSource, _.blockedRequest)
+                )
+              ),
+              sequential
             );
-            return tuple(PL.combine(parallel)(f), sequential);
           })
         );
       case "Then":
@@ -345,14 +363,19 @@ export function run(cache: Cache) {
               )
             ),
             T.bind("blockedRequests", () => T.succeed(A.flatten(sequential))),
-            T.bind("leftovers", (_) =>
-              T.succeed(
-                HS.difference_(
-                  CRM.requests(_.completedRequests),
-                  A.map_(_.blockedRequests, (a) => a((g) => g.request))
-                )
-              )
-            ),
+            T.bind("leftovers", (_) => {
+              var a: any = undefined;
+              const arg1 = CRM.requests(_.completedRequests);
+              const arg2 = A.map_(_.blockedRequests, (a) =>
+                a((g) => g.request)
+              );
+              try {
+                a = HS.difference_(arg1, arg2);
+              } catch (e) {
+                console.log(e, "exception");
+              }
+              return T.succeed(a as HS.HashSet<Request<unknown, unknown>>);
+            }),
             T.tap((_) =>
               T.foreach_(_.blockedRequests, (blockedRequest) =>
                 REF.set_(

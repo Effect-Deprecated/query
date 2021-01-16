@@ -145,7 +145,7 @@ describe("Query", () => {
     );
     expect(await T.runPromise(f)).toEqual("12");
   });
-  it("solves N+1 problem", async () => {
+  it("solves_N_1_problem", async () => {
     const f = pipe(
       Q.run(getAllUserNames),
       T.chain(() => getLogSize),
@@ -154,6 +154,6 @@ describe("Query", () => {
     const data = await T.runPromiseExit(f);
     if (data._tag === "Failure")
       console.log(C.pretty(data.cause, customNodeRender));
-    expect(data).toEqual(2);
+    expect(await T.runPromise(f)).toEqual(2);
   });
 });

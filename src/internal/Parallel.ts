@@ -26,20 +26,23 @@ export class Parallel<R> {
  * return a new collection of requests that can be executed in parallel.
  */
 export function combine<R1>(that: Parallel<R1>) {
-  return <R>(self: Parallel<R>): Parallel<R & R1> =>
-    new Parallel(
-      HM.reduceWithIndex_(self.map, that.map, (map, k, v) =>
-        HM.set_(
-          map,
-          k,
-          O.fold_(
-            HM.get_(map, k),
-            () => v,
-            (_) => A.concat_(_, v)
-          )
+  return <R>(self: Parallel<R>): Parallel<R & R1> => combine_(self, that);
+}
+
+export function combine_<R, R1>(self: Parallel<R>, that: Parallel<R1>) {
+  return new Parallel(
+    HM.reduceWithIndex_(self.map, that.map, (map, k, v) =>
+      HM.set_(
+        map,
+        k,
+        O.fold_(
+          HM.get_(map, k),
+          () => v,
+          (_) => A.concat_(_, v)
         )
       )
-    );
+    )
+  );
 }
 
 /**
