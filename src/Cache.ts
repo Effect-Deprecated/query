@@ -3,7 +3,7 @@ import * as T from "@effect-ts/core/Effect";
 import * as REF from "@effect-ts/system/Ref";
 import * as O from "@effect-ts/core/Common/Option";
 import * as E from "@effect-ts/core/Common/Either";
-import * as MAP from "@effect-ts/core/Persistent/HashMap";
+import * as HM from "@effect-ts/core/Persistent/HashMap";
 import { eqSymbol, hashSymbol, Request } from "./Request";
 import { pipe } from "@effect-ts/core/Function";
 import { _A, _E } from "@effect-ts/core/Utils";
@@ -52,7 +52,7 @@ export interface Cache {
 
 export const empty = pipe(
   REF.makeRef(
-    MAP.make<Request<any, any>, any>({
+    HM.make<Request<any, any>, any>({
       equals: (y) => (x) => y._tag === x._tag && x[eqSymbol](y),
       hash: (x) => x[hashSymbol](),
     })
@@ -61,14 +61,14 @@ export const empty = pipe(
 );
 
 function makeDefaultCache(
-  state: REF.Ref<MAP.HashMap<Request<any, any>, any>>
+  state: REF.Ref<HM.HashMap<Request<any, any>, any>>
 ): Cache {
   function get<E, A>(
     request: Request<E, A>
   ): T.IO<void, REF.Ref<O.Option<E.Either<E, A>>>> {
     return pipe(
       REF.get(state),
-      T.map(MAP.get(request)),
+      T.map(HM.get(request)),
       T.get,
       T.orElseFail(undefined)
     );
@@ -91,9 +91,9 @@ function makeDefaultCache(
       T.chain((ref) =>
         REF.modify_(state, (cache) =>
           pipe(
-            cache.get(request),
+            HM.get_(cache, request),
             O.fold(
-              () => [E.left(ref) as RET, cache.set(request, ref)],
+              () => [E.left(ref) as RET, HM.set_(cache, request, ref)],
               () => [E.right(ref), cache]
             )
           )
@@ -106,7 +106,7 @@ function makeDefaultCache(
     request: Request<E, A>,
     result: REF.Ref<O.Option<E.Either<E, A>>>
   ): T.UIO<void> {
-    return pipe(state, REF.update(MAP.set(request, result)));
+    return pipe(state, REF.update(HM.set(request, result)));
   }
 
   return { get, lookup, put };

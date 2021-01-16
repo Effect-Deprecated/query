@@ -27,9 +27,9 @@ export function concat(
   b: CompletedRequestMap
 ): CompletedRequestMap {
   return new CompletedRequestMap(
-    a.map.mutate((m) => {
+    M.mutate_(a.map, (m) => {
       for (const [k, v] of b.map) {
-        m.set(k, v);
+        M.set_(m, k, v);
       }
     })
   );
@@ -39,7 +39,7 @@ export function concat(
  * Returns whether a result exists for the specified request.
  */
 export function contains(request: any): (fa: CompletedRequestMap) => boolean {
-  return (fa) => fa.map.has(request);
+  return (fa) => M.has_(fa.map, request);
 }
 
 /**
@@ -51,7 +51,7 @@ export function insert<E, A>(
   result: E.Either<E, A>
 ) => (fa: CompletedRequestMap) => CompletedRequestMap {
   return (result) => (fa) =>
-    new CompletedRequestMap(fa.map.set(request, result));
+    new CompletedRequestMap(M.set_(fa.map, request, result));
 }
 
 /**
@@ -66,10 +66,10 @@ export function insertOption<E, A>(
     new CompletedRequestMap(
       E.fold_(
         result,
-        (e) => fa.map.set(request, E.left(e)),
+        (e) => M.set_(fa.map, request, E.left(e)),
         O.fold(
           () => fa.map,
-          (a) => fa.map.set(request, E.right(a))
+          (a) => M.set_(fa.map, request, E.right(a))
         )
       )
     );
@@ -81,7 +81,7 @@ export function insertOption<E, A>(
 export function lookup<E, A>(
   request: Request<E, A>
 ): (fa: CompletedRequestMap) => O.Option<E.Either<E, A>> {
-  return (fa) => fa.map.get(request);
+  return (fa) => M.get_(fa.map, request);
 }
 
 /**
