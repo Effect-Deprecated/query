@@ -582,12 +582,12 @@ export function optional<R, E, A>(
           cause,
           C.find((_) =>
             _._tag === "Die" && _.value instanceof QueryFailure
-              ? O.none
-              : O.some(_)
+              ? O.some(_.value)
+              : O.none
           )
         ),
-        () => none,
-        halt
+        () => halt(cause),
+        () => none
       ),
     (_) => succeed(O.some(_))
   );
