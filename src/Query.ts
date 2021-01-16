@@ -576,8 +576,19 @@ export function optional<R, E, A>(
 ): Query<R, E, O.Option<A>> {
   return foldCauseM_(
     self,
-    (_) =>
-      _._tag === "Die" && _.value instanceof QueryFailure ? none : halt(_),
+    (cause) =>
+      O.fold_(
+        pipe(
+          cause,
+          C.find((_) =>
+            _._tag === "Die" && _.value instanceof QueryFailure
+              ? O.none
+              : O.some(_)
+          )
+        ),
+        () => none,
+        halt
+      ),
     (_) => succeed(O.some(_))
   );
 }
