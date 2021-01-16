@@ -286,7 +286,7 @@
   dependencies:
     "@effect-ts/tracing-utils" "^0.2.4"
 
-"@effect-ts/system@^0.10.5", "@effect-ts/system@^0.10.6":
+"@effect-ts/system@^0.10.5":
   version "0.10.5"
   resolved "https://registry.yarnpkg.com/@effect-ts/system/-/system-0.10.5.tgz#0533cef65d9cae0c6e232dead9c5872b7bcc3aa2"
   dependencies:
