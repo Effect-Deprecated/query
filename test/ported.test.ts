@@ -4,6 +4,7 @@ import "@effect-ts/node/Modules/Traced";
 import * as A from "@effect-ts/core/Common/Array";
 import * as MAP from "@effect-ts/core/Common/Map";
 import * as E from "@effect-ts/core/Common/Either";
+import * as Ex from "@effect-ts/core/Effect/Exit";
 import * as O from "@effect-ts/core/Common/Option";
 import * as T from "@effect-ts/core/Effect";
 import * as REF from "@effect-ts/core/Effect/Ref";
@@ -12,11 +13,11 @@ import * as DS from "../src/DataSource";
 import * as Q from "../src/Query";
 import * as CR from "../src/CompletedRequestMap";
 import { Has, tag } from "@effect-ts/core/Has";
-import { pipe } from "@effect-ts/core/Function";
-import * as C from "@effect-ts/core/Effect/Cause";
+import { identity, pipe } from "@effect-ts/core/Function";
 import type { Trace } from "@effect-ts/core/Effect/Fiber";
 
 import { prettyTraceNode } from "@effect-ts/node/Runtime";
+import { QueryFailure } from "../src/QueryFailure";
 
 const customNodeRender = (_: Trace): string =>
   prettyTraceNode(_, (path) =>
@@ -25,6 +26,7 @@ const customNodeRender = (_: Trace): string =>
       .replace("/_traced/", "/")
       .replace("_src", "src")
   );
+console.log(customNodeRender);
 
 interface TestConsole {
   lines: REF.Ref<A.Array<string>>;
@@ -103,7 +105,7 @@ const getUserNameById = (id: number) =>
   Q.fromRequest(new GetNameById(id))(UserRequestDataSource);
 
 const getAllUserNames = Q.chain_(getAllUserIds, (userIds) =>
-  Q.foreachPar_(userIds, getUserNameById)
+  Q.foreachPar(userIds, getUserNameById)
 );
 
 const getAgeByName = (name: string) =>
@@ -151,9 +153,49 @@ describe("Query", () => {
       T.chain(() => getLogSize),
       T.provideServiceM(TestConsole)(emptyTestConsole)
     );
-    const data = await T.runPromiseExit(f);
-    if (data._tag === "Failure")
-      console.log(C.pretty(data.cause, customNodeRender));
+    expect(await T.runPromise(f)).toEqual(2);
+  });
+  it("mapError does not prevent batching", async () => {
+    const a = pipe(
+      getUserNameById(1),
+      Q.zip(getUserNameById(2)),
+      Q.mapError(identity)
+    );
+    const b = pipe(
+      getUserNameById(3),
+      Q.zip(getUserNameById(4)),
+      Q.mapError(identity)
+    );
+
+    const f = pipe(
+      Q.collectAllPar([a, b]),
+      Q.run,
+      T.chain(() => getLogSize),
+      T.provideServiceM(TestConsole)(emptyTestConsole)
+    );
+    expect(await T.runPromise(f)).toEqual(2);
+  });
+
+  it("failure to complete request is query failure", async () => {
+    const f = pipe(
+      getUserNameById(27),
+      Q.run,
+      T.provideServiceM(TestConsole)(emptyTestConsole)
+    );
+    expect(await T.runPromiseExit(T.untraced(f))).toEqual(
+      Ex.die(new QueryFailure(UserRequestDataSource, new GetNameById(27)))
+    );
+  });
+  it("timed does not prevent batching", async () => {
+    const a = pipe(getUserNameById(1), Q.zip(getUserNameById(2)), Q.timed);
+    const b = pipe(getUserNameById(3), Q.zip(getUserNameById(4)), Q.timed);
+
+    const f = pipe(
+      Q.collectAllPar([a, b]),
+      Q.run,
+      T.chain(() => getLogSize),
+      T.provideServiceM(TestConsole)(emptyTestConsole)
+    );
     expect(await T.runPromise(f)).toEqual(2);
   });
 });
