@@ -1,12 +1,14 @@
 // port of: https://github.com/zio/zio-query/blob/b55364683726cc6611bec80876048ec5290cbcf5/zio-query/shared/src/main/scala/zio/query/Cache.scala
-import * as T from "@effect-ts/core/Effect";
-import * as REF from "@effect-ts/system/Ref";
-import * as O from "@effect-ts/core/Common/Option";
 import * as E from "@effect-ts/core/Common/Either";
-import * as HM from "@effect-ts/core/Persistent/HashMap";
-import { eqSymbol, hashSymbol, Request } from "./Request";
+import * as O from "@effect-ts/core/Common/Option";
+import * as T from "@effect-ts/core/Effect";
 import { pipe } from "@effect-ts/core/Function";
+import * as HM from "@effect-ts/core/Persistent/HashMap";
 import { _A, _E } from "@effect-ts/core/Utils";
+import * as REF from "@effect-ts/system/Ref";
+
+import type { Request } from "./Request";
+import { eqSymbol, hashSymbol } from "./Request";
 
 /**
  * A `Cache` maintains an internal state with a mapping from requests to `Ref`s

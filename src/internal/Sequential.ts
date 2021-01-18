@@ -1,8 +1,9 @@
-import * as HM from "@effect-ts/core/Persistent/HashMap";
 import * as A from "@effect-ts/core/Common/Array";
 import * as O from "@effect-ts/core/Common/Option";
-import { DataSource } from "src/DataSource";
-import { BlockedRequest } from "./BlockedRequest";
+import * as HM from "@effect-ts/core/Persistent/HashMap";
+import type { DataSource } from "src/DataSource";
+
+import type { BlockedRequest } from "./BlockedRequest";
 
 /**
  * A `Sequential[R]` maintains a mapping from data sources to batches of

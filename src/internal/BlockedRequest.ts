@@ -1,9 +1,9 @@
 // port of: https://github.com/zio/zio-query/blob/3f9f4237ca2d879b629163f23fe79045eb29f0b0/zio-query/shared/src/main/scala/zio/query/internal/BlockedRequest.scala
-import { Either } from "@effect-ts/core/Common/Either";
-import { Option } from "@effect-ts/core/Common/Option";
-import { _A, _E } from "@effect-ts/core/Utils";
-import { Ref } from "@effect-ts/system/Ref";
-import { Request } from "src/Request";
+import type { Either } from "@effect-ts/core/Common/Either";
+import type { Option } from "@effect-ts/core/Common/Option";
+import type { _A, _E } from "@effect-ts/core/Utils";
+import type { Ref } from "@effect-ts/system/Ref";
+import type { Request } from "src/Request";
 
 /**
  * A `BlockedRequest[A]` keeps track of a request of type `A` along with a

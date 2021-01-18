@@ -1,5 +1,5 @@
-import { DataSource } from "./DataSource";
-import { Request } from "./Request";
+import type { DataSource } from "./DataSource";
+import type { Request } from "./Request";
 
 export class QueryFailure {
   readonly _tag = "QueryFailure";

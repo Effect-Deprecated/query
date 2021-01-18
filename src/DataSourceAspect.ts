@@ -1,4 +1,4 @@
-import { DataSource } from "./DataSource";
+import type { DataSource } from "./DataSource";
 /**
  * A `DataSourceAspect` is an aspect that can be weaved into queries. You can
  * think of an aspect as a polymorphic function, capable of transforming one

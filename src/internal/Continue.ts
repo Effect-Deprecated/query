@@ -1,18 +1,19 @@
 // port of: https://github.com/zio/zio-query/blob/5746d54dfbed8e3c35415355b09c8e6a54c49889/zio-query/shared/src/main/scala/zio/query/internal/Continue.scala
-import { IO } from "@effect-ts/core/Effect";
-import * as T from "@effect-ts/core/Effect";
-import * as REF from "@effect-ts/system/Ref";
+import type * as E from "@effect-ts/core/Common/Either";
 import * as O from "@effect-ts/core/Common/Option";
-import * as E from "@effect-ts/core/Common/Either";
+import type { IO } from "@effect-ts/core/Effect";
+import * as T from "@effect-ts/core/Effect";
 import { pipe } from "@effect-ts/core/Function";
+import type { _A, _E } from "@effect-ts/core/Utils";
+import type * as C from "@effect-ts/system/Cause";
+import * as REF from "@effect-ts/system/Ref";
+
+import type { Cache } from "../Cache";
+import type { DataSource } from "../DataSource";
+import type { DataSourceAspect } from "../DataSourceAspect";
 import * as Q from "../Query";
-import { DataSource } from "../DataSource";
 import { QueryFailure } from "../QueryFailure";
-import { Request } from "../Request";
-import { _A, _E } from "@effect-ts/core/Utils";
-import * as C from "@effect-ts/system/Cause";
-import { DataSourceAspect } from "../DataSourceAspect";
-import { Cache } from "../Cache";
+import type { Request } from "../Request";
 
 class Effect<R, E, A> {
   readonly _tag = "Effect";

@@ -1,9 +1,11 @@
 // port of: https://github.com/zio/zio-query/blob/9dfe9ca0b1e3077fc56cf5c983082af3ca7a62e7/zio-query/shared/src/main/scala/zio/query/CompletedRequestMap.scala
 import * as E from "@effect-ts/core/Common/Either";
-import * as M from "@effect-ts/core/Persistent/HashMap";
-import * as HS from "@effect-ts/core/Persistent/HashSet";
 import * as O from "@effect-ts/core/Common/Option";
-import { eqSymbol, hashSymbol, Request } from "./Request";
+import * as M from "@effect-ts/core/Persistent/HashMap";
+import type * as HS from "@effect-ts/core/Persistent/HashSet";
+
+import type { Request } from "./Request";
+import { eqSymbol, hashSymbol } from "./Request";
 
 /**
  * A `CompletedRequestMap` is a universally quantified mapping from requests

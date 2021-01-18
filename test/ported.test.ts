@@ -2,22 +2,23 @@ import "@effect-ts/tracing-utils/Enable";
 import "@effect-ts/node/Modules/Traced";
 
 import * as A from "@effect-ts/core/Common/Array";
-import * as MAP from "@effect-ts/core/Common/Map";
 import * as E from "@effect-ts/core/Common/Either";
-import * as Ex from "@effect-ts/core/Effect/Exit";
+import * as MAP from "@effect-ts/core/Common/Map";
 import * as O from "@effect-ts/core/Common/Option";
 import * as T from "@effect-ts/core/Effect";
+import * as Ex from "@effect-ts/core/Effect/Exit";
+import type { Trace } from "@effect-ts/core/Effect/Fiber";
 import * as REF from "@effect-ts/core/Effect/Ref";
-import { StandardRequest } from "../src/Request";
+import { identity, pipe } from "@effect-ts/core/Function";
+import type { Has } from "@effect-ts/core/Has";
+import { tag } from "@effect-ts/core/Has";
+import { prettyTraceNode } from "@effect-ts/node/Runtime";
+
+import * as CR from "../src/CompletedRequestMap";
 import * as DS from "../src/DataSource";
 import * as Q from "../src/Query";
-import * as CR from "../src/CompletedRequestMap";
-import { Has, tag } from "@effect-ts/core/Has";
-import { identity, pipe } from "@effect-ts/core/Function";
-import type { Trace } from "@effect-ts/core/Effect/Fiber";
-
-import { prettyTraceNode } from "@effect-ts/node/Runtime";
 import { QueryFailure } from "../src/QueryFailure";
+import { StandardRequest } from "../src/Request";
 
 const customNodeRender = (_: Trace): string =>
   prettyTraceNode(_, (path) =>

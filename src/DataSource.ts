@@ -1,14 +1,15 @@
 // port of: https://github.com/zio/zio-query/blob/3f9f4237ca2d879b629163f23fe79045eb29f0b0/zio-query/shared/src/main/scala/zio/query/DataSource.scala
 import * as A from "@effect-ts/core/Common/Array";
 import * as E from "@effect-ts/core/Common/Either";
-import * as O from "@effect-ts/core/Common/Option";
-import * as T from "@effect-ts/core/Effect";
 import * as H from "@effect-ts/core/Common/Hash";
-import { _A, _E } from "@effect-ts/core/Utils";
+import type * as O from "@effect-ts/core/Common/Option";
+import * as T from "@effect-ts/core/Effect";
 import { tuple } from "@effect-ts/core/Function";
+import type { _A, _E } from "@effect-ts/core/Utils";
+
 import * as CR from "./CompletedRequestMap";
-import { Request } from "./Request";
-import { DataSourceAspect } from "./DataSourceAspect";
+import type { DataSourceAspect } from "./DataSourceAspect";
+import type { Request } from "./Request";
 
 /**
  * A `DataSource[R, A]` requires an environment `R` and is capable of executing

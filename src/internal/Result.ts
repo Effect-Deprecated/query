@@ -1,11 +1,11 @@
-import * as C from "@effect-ts/system/Cause";
-import * as BR from "./BlockedRequests";
-import { Continue } from "./Continue";
-import * as CONT from "./Continue";
-import * as BRS from "./BlockedRequests";
-import { pipe } from "@effect-ts/core/Function";
 import * as E from "@effect-ts/core/Common/Either";
-import { DataSourceAspect } from "src/DataSourceAspect";
+import { pipe } from "@effect-ts/core/Function";
+import * as C from "@effect-ts/system/Cause";
+import type { DataSourceAspect } from "src/DataSourceAspect";
+
+import * as BRS from "./BlockedRequests";
+import type { Continue } from "./Continue";
+import * as CONT from "./Continue";
 
 class Blocked<R, E, A> {
   readonly _tag = "Blocked";
@@ -13,7 +13,7 @@ class Blocked<R, E, A> {
   readonly _E!: () => E;
   readonly _A!: () => A;
   constructor(
-    public readonly blockedRequests: BR.BlockedRequests<R>,
+    public readonly blockedRequests: BRS.BlockedRequests<R>,
     public readonly cont: Continue<R, E, A>
   ) {}
 }
@@ -116,7 +116,7 @@ export function mapError<E, E1>(f: (a: E) => E1) {
  * specified continuation.
  */
 export function blocked<R, E, A>(
-  blockedRequests: BR.BlockedRequests<R>,
+  blockedRequests: BRS.BlockedRequests<R>,
   cont: Continue<R, E, A>
 ): Result<R, E, A> {
   return new Blocked(blockedRequests, cont);
@@ -157,7 +157,7 @@ export function provideSome<R, R0>(description: string, f: (r: R0) => R) {
     switch (self._tag) {
       case "Blocked":
         return blocked(
-          BR.provideSome(description, f)(self.blockedRequests),
+          BRS.provideSome(description, f)(self.blockedRequests),
           CONT.provideSome(description, f)(self.cont)
         );
       case "Done":

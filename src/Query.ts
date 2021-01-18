@@ -1,24 +1,25 @@
 // port of: https://github.com/zio/zio-query/blob/5746d54dfbed8e3c35415355b09c8e6a54c49889/zio-query/shared/src/main/scala/zio/query/ZQuery.scala
-import * as T from "@effect-ts/core/Effect";
-import { QueryContext } from "./internal/QueryContext";
-import * as RES from "./internal/Result";
-import * as CONT from "./internal/Continue";
-import * as C from "@effect-ts/system/Cause";
-import * as BRS from "./internal/BlockedRequests";
-import * as BR from "./internal/BlockedRequest";
-import { identity, pipe, tuple } from "@effect-ts/core/Function";
+import * as A from "@effect-ts/core/Common/Array";
 import * as E from "@effect-ts/core/Common/Either";
 import * as O from "@effect-ts/core/Common/Option";
-import * as A from "@effect-ts/core/Common/Array";
+import * as T from "@effect-ts/core/Effect";
 import * as REF from "@effect-ts/core/Effect/Ref";
-import { Request } from "./Request";
-import { DataSource } from "./DataSource";
-import { _A, _E } from "@effect-ts/core/Utils";
-import * as CH from "./Cache";
-import { DataSourceAspect } from "./DataSourceAspect";
-import { Has } from "@effect-ts/core/Has";
+import { identity, pipe, tuple } from "@effect-ts/core/Function";
+import type { Has } from "@effect-ts/core/Has";
+import type { _A, _E } from "@effect-ts/core/Utils";
+import * as C from "@effect-ts/system/Cause";
 import * as CL from "@effect-ts/system/Clock";
+
+import * as CH from "./Cache";
+import type { DataSource } from "./DataSource";
+import type { DataSourceAspect } from "./DataSourceAspect";
+import * as BR from "./internal/BlockedRequest";
+import * as BRS from "./internal/BlockedRequests";
+import * as CONT from "./internal/Continue";
+import type { QueryContext } from "./internal/QueryContext";
+import * as RES from "./internal/Result";
 import { QueryFailure } from "./QueryFailure";
+import type { Request } from "./Request";
 
 /**
  * A `ZQuery[R, E, A]` is a purely functional description of an effectual query

@@ -1,13 +1,14 @@
 import * as T from "@effect-ts/core/Effect";
-import * as MO from "@effect-ts/morphic";
 import { literal } from "@effect-ts/core/Function";
+import * as MO from "@effect-ts/morphic";
+
 import * as DS from "../src/DataSource";
 import {
-  StandardRequest,
   eqSymbol,
   hashSymbol,
-  morphicRequest,
   morphicOpaqueRequest,
+  morphicRequest,
+  StandardRequest,
 } from "../src/Request";
 
 export class GetUserError {
@@ -131,4 +132,6 @@ export const assetDS = DS.fromFunctionBatched("AssetDS")(
     )
 );
 
-it("dummy", () => {});
+it("dummy", () => {
+  expect(true).toEqual(true);
+});

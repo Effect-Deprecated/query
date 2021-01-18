@@ -1,20 +1,21 @@
 // port of: https://github.com/zio/zio-query/blob/3f9f4237ca2d879b629163f23fe79045eb29f0b0/zio-query/shared/src/main/scala/zio/query/internal/BlockedRequests.scala
-import * as S from "@effect-ts/core/Sync";
-import * as DS from "../DataSource";
-import * as T from "@effect-ts/core/Effect";
 import * as A from "@effect-ts/core/Common/Array";
+import type * as E from "@effect-ts/core/Common/Either";
 import * as O from "@effect-ts/core/Common/Option";
-import * as E from "@effect-ts/core/Common/Either";
-import { DataSourceAspect } from "../DataSourceAspect";
-import { BlockedRequest } from "./BlockedRequest";
-import { Cache } from "../Cache";
-import * as SQ from "./Sequential";
-import { pipe, tuple } from "@effect-ts/core/Function";
-import * as PL from "./Parallel";
-import * as HS from "@effect-ts/core/Persistent/HashSet";
+import * as T from "@effect-ts/core/Effect";
 import * as REF from "@effect-ts/core/Effect/Ref";
+import { pipe, tuple } from "@effect-ts/core/Function";
+import * as HS from "@effect-ts/core/Persistent/HashSet";
+import * as S from "@effect-ts/core/Sync";
+import type { Request } from "src/Request";
+
+import type { Cache } from "../Cache";
 import * as CRM from "../CompletedRequestMap";
-import { Request } from "src/Request";
+import * as DS from "../DataSource";
+import type { DataSourceAspect } from "../DataSourceAspect";
+import type { BlockedRequest } from "./BlockedRequest";
+import * as PL from "./Parallel";
+import * as SQ from "./Sequential";
 
 function scalaTail<A>(a: A.Array<A>): A.Array<A> {
   return a.length === 0 ? [] : a.slice(1);
@@ -32,7 +33,6 @@ class Both<R> {
 
 class Empty {
   readonly _tag = "Empty";
-  constructor() {}
 }
 
 class Single<R> {
@@ -308,7 +308,7 @@ export function step<R>(
             );
           })
         );
-      case "Then":
+      case "Then": {
         const { left, right } = blockedRequests;
         switch (left._tag) {
           case "Empty":
@@ -320,7 +320,7 @@ export function step<R>(
               parallel,
               sequential
             );
-          case "Both":
+          case "Both": {
             const l = left.left;
             const r = left.right;
             return loop(
@@ -329,6 +329,7 @@ export function step<R>(
               parallel,
               sequential
             );
+          }
           case "Single":
             return loop(
               left,
@@ -337,6 +338,7 @@ export function step<R>(
               A.concat_([blockedRequests.right], sequential)
             );
         }
+      }
     }
   }
 
@@ -364,7 +366,7 @@ export function run(cache: Cache) {
             ),
             T.bind("blockedRequests", () => T.succeed(A.flatten(sequential))),
             T.bind("leftovers", (_) => {
-              var a: any = undefined;
+              let a: any = undefined;
               const arg1 = CRM.requests(_.completedRequests);
               const arg2 = A.map_(_.blockedRequests, (a) =>
                 a((g) => g.request)

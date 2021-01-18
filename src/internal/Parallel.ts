@@ -1,10 +1,11 @@
-import * as HM from "@effect-ts/core/Persistent/HashMap";
 import * as A from "@effect-ts/core/Common/Array";
 import * as O from "@effect-ts/core/Common/Option";
+import * as HM from "@effect-ts/core/Persistent/HashMap";
+
 import * as DS from "../DataSource";
-import { BlockedRequest } from "./BlockedRequest";
+import type { BlockedRequest } from "./BlockedRequest";
+import type { BlockedRequests } from "./BlockedRequests";
 import { Sequential } from "./Sequential";
-import { BlockedRequests } from "./BlockedRequests";
 
 /**
  * A `Parallel[R]` maintains a mapping from data sources to requests from

@@ -1,9 +1,9 @@
+import * as H from "@effect-ts/core/Common/Hash";
+import type { M } from "@effect-ts/morphic";
+import { equal } from "@effect-ts/morphic/Equal";
+import type { Equal } from "@effect-ts/system/Equal";
 import { circularDeepEqual } from "fast-equals";
 import J from "fast-safe-stringify";
-import * as H from "@effect-ts/core/Common/Hash";
-import { M } from "@effect-ts/morphic";
-import { equal } from "@effect-ts/morphic/Equal";
-import { Equal } from "@effect-ts/system/Equal";
 
 export const eqSymbol = Symbol();
 export const hashSymbol = Symbol();
