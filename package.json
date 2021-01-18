@@ -36,7 +36,7 @@
     "typescript": "^4.1.3"
   },
   "dependencies": {
-    "@effect-ts/core": "^0.12.6",
+    "@effect-ts/core": "^0.12.13",
     "@effect-ts/morphic": "^0.12.6",
     "@effect-ts/node": "^0.4.6",
     "@effect-ts/system": "^0.10.5",
