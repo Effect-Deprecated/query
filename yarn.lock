@@ -244,26 +244,26 @@
     exec-sh "^0.3.2"
     minimist "^1.2.0"
 
-"@effect-ts/core@^0.12.6":
-  version "0.12.6"
-  resolved "https://registry.yarnpkg.com/@effect-ts/core/-/core-0.12.6.tgz#c33082528dad2b5037b5b51108545c914c0c95ee"
+"@effect-ts/core@^0.12.15", "@effect-ts/core@^0.12.6":
+  version "0.12.15"
+  resolved "https://registry.yarnpkg.com/@effect-ts/core/-/core-0.12.15.tgz#31475eb0c303bc8b8ac8f1fbe0343ed421dcbc10"
   dependencies:
-    "@effect-ts/system" "^0.10.5"
+    "@effect-ts/system" "^0.10.13"
     "@effect-ts/tracing-utils" "^0.2.4"
 
-"@effect-ts/monocle@^0.11.6":
-  version "0.11.6"
-  resolved "https://registry.yarnpkg.com/@effect-ts/monocle/-/monocle-0.11.6.tgz#b376eda9571b562ca82ef01acb1bc24b1283373d"
+"@effect-ts/monocle@^0.11.15":
+  version "0.11.15"
+  resolved "https://registry.yarnpkg.com/@effect-ts/monocle/-/monocle-0.11.15.tgz#0affdec51d8998440d0bcd0a2b345afa8311087b"
   dependencies:
-    "@effect-ts/core" "^0.12.6"
+    "@effect-ts/core" "^0.12.15"
     "@effect-ts/tracing-utils" "^0.2.4"
 
-"@effect-ts/morphic@^0.12.6":
-  version "0.12.6"
-  resolved "https://registry.yarnpkg.com/@effect-ts/morphic/-/morphic-0.12.6.tgz#e644bf10dd3723e449ef79c48dcb29b9bf447f9a"
+"@effect-ts/morphic@^0.12.15":
+  version "0.12.15"
+  resolved "https://registry.yarnpkg.com/@effect-ts/morphic/-/morphic-0.12.15.tgz#92ad81bb6c845fd14e5886f576ee17bda9624cd8"
   dependencies:
-    "@effect-ts/core" "^0.12.6"
-    "@effect-ts/monocle" "^0.11.6"
+    "@effect-ts/core" "^0.12.15"
+    "@effect-ts/monocle" "^0.11.15"
     "@effect-ts/tracing-utils" "^0.2.4"
 
 "@effect-ts/node@^0.4.6":
@@ -271,6 +271,12 @@
   resolved "https://registry.yarnpkg.com/@effect-ts/node/-/node-0.4.6.tgz#f0015a1d85c9db0b06e93d9cd12661bbca13ee48"
   dependencies:
     "@effect-ts/core" "^0.12.6"
+    "@effect-ts/tracing-utils" "^0.2.4"
+
+"@effect-ts/system@^0.10.13":
+  version "0.10.13"
+  resolved "https://registry.yarnpkg.com/@effect-ts/system/-/system-0.10.13.tgz#241c39f1ed4ea09a6e18ec485bc5b49c42267516"
+  dependencies:
     "@effect-ts/tracing-utils" "^0.2.4"
 
 "@effect-ts/system@^0.10.5":
