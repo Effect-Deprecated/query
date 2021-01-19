@@ -51,7 +51,7 @@
   "dependencies": {
     "@effect-ts/core": "^0.12.6",
     "@effect-ts/morphic": "^0.12.6",
-    "@effect-ts/node": "^0.4.6",
+    "@effect-ts/node": "^0.4.15",
     "@effect-ts/system": "^0.10.5",
     "@effect-ts/tracing-utils": "^0.2.2",
     "fast-equals": "^2.0.0",
