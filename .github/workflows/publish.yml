@@ -1,7 +1,7 @@
 name: Node CI
 
 on:
-  pull_request:
+  push:
     branches:
       - master
 
@@ -20,9 +20,7 @@ jobs:
           npm install -g yarn
           yarn
           yarn run ci
+          cp .ci.npmrc .npmrc
         env:
           CI: "true"
-
-      - uses: codecov/codecov-action@v1.0.3
-        with:
-          token: ${{secrets.CODECOV_TOKEN}}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

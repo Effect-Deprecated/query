@@ -1,0 +1,57 @@
+{
+  "name": "@effect-ts/query",
+  "version": "0.0.0",
+  "license": "MIT",
+  "homepage": "https://github.com/Matechs-Garage/effect-ts",
+  "private": false,
+  "scripts": {
+    "clean": "rimraf build tsbuildinfo",
+    "build:lib": "ttsc --build  tsconfig.build.json && ts-node ../../scripts/package.ts",
+    "build:traced:lib": "ttsc --build  tsconfig.traced.build.json && ts-node ../../scripts-traced/package.ts",
+    "build:es6": "ttsc --build  tsconfig.es6.json && ts-node ../../scripts/rewrite-esm.ts && babel build/esm/ -d build/esm/ -s --plugins annotate-pure-calls && ts-node ../../scripts/package-esm.ts",
+    "build:traced:es6": "ttsc --build  tsconfig.traced.es6.json && ts-node ../../scripts-traced/rewrite-esm.ts && babel build/_traced/esm/ -d build/_traced/esm/ -s --plugins annotate-pure-calls && ts-node ../../scripts-traced/package-esm.ts",
+    "build:post-process": "ts-node ../../scripts/rewrite-source-maps.ts && ts-node ../../scripts-traced/rewrite-source-maps.ts && ts-node ../../scripts/rewrite-locals.ts && ts-node ../../scripts-traced/rewrite-locals.ts && yarn prettier:lib",
+    "build": "yarn run build:lib && yarn run build:traced:lib && yarn run build:es6 && yarn run build:traced:es6 && yarn run build:post-process",
+    "lint": "eslint . --ext .ts,.tsx",
+    "autofix": "yarn prettier && yarn lint --fix && yarn prettier",
+    "prettier": "prettier --write \"./{src,test,demo}/**/*.ts\"",
+    "prettier:lib": "prettier --write \"./build/**/*.js\"",
+    "tc": "tsc --noEmit",
+    "demo": "ts-node -r tsconfig-paths/register"
+  },
+  "publishConfig": {
+    "access": "public",
+    "directory": "build"
+  },
+  "repository": "https://github.com/Matechs-Garage/effect-ts.git",
+  "sideEffects": false,
+  "config": {
+    "modules": [
+      "Cache",
+      "CompletedRequestMap",
+      "DataSource",
+      "DataSourceAspect",
+      "Described",
+      "Internal",
+      "Internal/BlockedRequest",
+      "Internal/BlockedRequests",
+      "Internal/Continue",
+      "Internal/Parallel",
+      "Internal/QueryContext",
+      "Internal/Result",
+      "Internal/Sequential",
+      "Query",
+      "QueryFailure",
+      "Request"
+    ]
+  },
+  "peerDependencies": {
+    "@effect-ts/core": "^0.12.6",
+    "@effect-ts/morphic": "^0.12.6",
+    "@effect-ts/node": "^0.4.6",
+    "@effect-ts/system": "^0.10.5",
+    "@effect-ts/tracing-utils": "^0.2.2",
+    "fast-equals": "^2.0.0",
+    "fast-safe-stringify": "^2.0.7"
+  }
+}

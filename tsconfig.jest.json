@@ -1,16 +1,17 @@
 {
-    "extends": "./tsconfig.json",
-    "files": [],
-    "compilerOptions": {
-      "baseUrl": ".",
-      "target": "ES2017",
-      "plugins": [
-        {
-          "transform": "@effect-ts/tracing-plugin",
-          "moduleMap": {
-            "^src/(.*)": "(@effect-ts/query): src/$1"
-          }
+  "extends": "./tsconfig.base.json",
+  "files": [],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "target": "ES2017",
+    "plugins": [
+      {
+        "transform": "@effect-ts/tracing-plugin",
+        "moduleMap": {
+          "^packages/morphic/src/(.*)": "(@effect-ts/morphic): src/$1",
+          "^packages/morphic/test/(.*)": "(@effect-ts/morphic/test): test/$1"
         }
-      ]
-    }
+      }
+    ]
   }
+}

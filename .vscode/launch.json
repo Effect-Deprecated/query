@@ -6,7 +6,7 @@
         "request": "launch",
         "name": "Jest All",
         "program": "${workspaceFolder}/node_modules/.bin/jest",
-        "args": ["--runInBand", "-t", "optional converts a query to one that returns its value optionally"],
+        "args": ["--runInBand"],
         "console": "integratedTerminal",
         "internalConsoleOptions": "neverOpen",
         "disableOptimisticBPs": true,

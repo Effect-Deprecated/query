@@ -1,6 +1,12 @@
+lib/
 node_modules/
-build/
-scripts/merge.ts
-scripts/genp.ts
-bench/
-compiler-debug/
+.idea/
+coverage/
+yarn-error.log
+.npmrc
+.ionide/
+.metals/
+.ultra.cache.json
+tsbuildinfo/
+del-tags.sh
+incubation/
