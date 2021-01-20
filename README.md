@@ -1,3 +1,3 @@
-## Welcome to Effect-TS - Morphic
+## Welcome to Effect-TS - Query
 
-Please follow up to: [https://github.com/Effect-TS/morphic/tree/master/packages/morphic](https://github.com/Effect-TS/morphic/tree/master/packages/morphic)
+Please follow up to: [https://github.com/Effect-TS/query/tree/master/packages/query](https://github.com/Effect-TS/query/tree/master/packages/query)

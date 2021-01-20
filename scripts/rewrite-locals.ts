@@ -7,7 +7,7 @@ import { modifyGlob, onLeft, onRight, runMain } from "./_common"
 
 const GLOB_PATTERN = "build/**/*.@(ts|js)"
 
-const packages = ["system", "core", "morphic", "monocle"]
+const packages = ["system", "core", "query", "monocle"]
 
 export const replace = pipe(
   packages,

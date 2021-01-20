@@ -8,8 +8,8 @@
       {
         "transform": "@effect-ts/tracing-plugin",
         "moduleMap": {
-          "^packages/morphic/src/(.*)": "(@effect-ts/morphic): src/$1",
-          "^packages/morphic/test/(.*)": "(@effect-ts/morphic/test): test/$1"
+          "^packages/query/src/(.*)": "(@effect-ts/query): src/$1",
+          "^packages/query/test/(.*)": "(@effect-ts/query/test): test/$1"
         }
       }
     ]
