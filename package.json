@@ -1,7 +1,7 @@
 {
   "name": "effect-ts",
   "private": true,
-  "repository": "https://github.com/Matechs-Garage/effect-ts.git",
+  "repository": "https://github.com/Effect-TS/system.git",
   "workspaces": [
     "packages/*",
     "incubation/*"

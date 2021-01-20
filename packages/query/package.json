@@ -2,7 +2,8 @@
   "name": "@effect-ts/query",
   "version": "0.0.0",
   "license": "MIT",
-  "homepage": "https://github.com/Matechs-Garage/effect-ts",
+  "repository": "https://github.com/Effect-TS/query.git",
+  "homepage": "https://www.matechs.com",
   "private": false,
   "scripts": {
     "clean": "rimraf build tsbuildinfo",
@@ -23,7 +24,6 @@
     "access": "public",
     "directory": "build"
   },
-  "repository": "https://github.com/Matechs-Garage/effect-ts.git",
   "sideEffects": false,
   "config": {
     "modules": [
