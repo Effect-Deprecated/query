@@ -339,8 +339,8 @@ export function step<R>(
  */
 export function run(cache: Cache) {
   return <R>(self: BlockedRequests<R>): T.Effect<R, never, void> =>
-    T.foreach_(flatten(self), (requestsByDataSource) =>
-      T.foreachPar_(SQ.toIterable(requestsByDataSource), ([dataSource, sequential]) =>
+    T.forEach_(flatten(self), (requestsByDataSource) =>
+      T.forEachPar_(SQ.toIterable(requestsByDataSource), ([dataSource, sequential]) =>
         pipe(
           T.do,
           T.bind("completedRequests", () =>
@@ -361,7 +361,7 @@ export function run(cache: Cache) {
             return T.succeed(a as HS.HashSet<Request<unknown, unknown>>)
           }),
           T.tap((_) =>
-            T.foreach_(_.blockedRequests, (blockedRequest) =>
+            T.forEach_(_.blockedRequests, (blockedRequest) =>
               REF.set_(
                 blockedRequest(
                   (g) => g.result as REF.Ref<O.Option<E.Either<any, any>>>
@@ -371,7 +371,7 @@ export function run(cache: Cache) {
             )
           ),
           T.tap((_) =>
-            T.foreach_(_.leftovers, (request) =>
+            T.forEach_(_.leftovers, (request) =>
               T.chain_(REF.makeRef(CRM.lookup(request)(_.completedRequests)), (res) =>
                 cache.put(request, res)
               )

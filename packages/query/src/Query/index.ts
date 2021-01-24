@@ -43,7 +43,7 @@ import type { Request } from "../Request"
  *
  * for {
  *   userIds   <- getAllUserIds
- *   userNames <- ZQuery.foreachPar(userIds)(getUserNameById)
+ *   userNames <- ZQuery.forEachPar(userIds)(getUserNameById)
  * } yield userNames
  * }}}
  *
@@ -488,7 +488,7 @@ export function zipWithPar<R1, E1, B, A, C>(
 }
 
 // TODO
-export function foreachPar<R, E, A, B>(
+export function forEachPar<R, E, A, B>(
   as: Iterable<A>,
   f: (a: A) => Query<R, E, B>
 ): Query<R, E, A.Array<B>> {
@@ -512,7 +512,7 @@ export function foreachPar<R, E, A, B>(
 export function collectAllPar<R, E, A>(
   as: Iterable<Query<R, E, A>>
 ): Query<R, E, A.Array<A>> {
-  return foreachPar(as, identity)
+  return forEachPar(as, identity)
 }
 
 /**

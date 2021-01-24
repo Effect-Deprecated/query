@@ -97,7 +97,7 @@ const getUserNameById = (id: number) =>
   Q.fromRequest(new GetNameById(id))(UserRequestDataSource)
 
 const getAllUserNames = Q.chain_(getAllUserIds, (userIds) =>
-  Q.foreachPar(userIds, getUserNameById)
+  Q.forEachPar(userIds, getUserNameById)
 )
 
 const getAgeByName = (name: string) =>

@@ -109,7 +109,7 @@ export function contramapM<R1, B, A>(
   return <R>(self: DataSource<R, A>): DataSource<R & R1, B> =>
     new DataSource(`${self.identifier}.contramapM(${description})`, (requests) =>
       T.chain_(
-        T.foreach_(requests, (_) => T.foreachPar_(_, f)),
+        T.forEach_(requests, (_) => T.forEachPar_(_, f)),
         self.runAll
       )
     )
@@ -130,7 +130,7 @@ export function eitherWith<C, A, B, R1>(
       `${self.identifier}.eitherWith(${that.identifier})(${description})`,
       (requests) =>
         T.map_(
-          T.foreach_(requests, (requests) => {
+          T.forEach_(requests, (requests) => {
             const { left: as, right: bs } = A.partitionMap_(requests, f)
             return T.zipWithPar_(self.runAll([as]), that.runAll([bs as any]), CR.concat)
           }),
