@@ -1,7 +1,7 @@
 {
   "name": "effect-ts",
   "private": true,
-  "repository": "https://github.com/Effect-TS/system.git",
+  "repository": "https://github.com/Effect-TS/query.git",
   "workspaces": [
     "packages/*",
     "incubation/*"
