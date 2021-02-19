@@ -29,11 +29,8 @@ const emptyTestConsole = T.map_(REF.makeRef<A.Array<string>>([]), (lines) => ({
 }))
 
 function putStrLn(line: string): T.RIO<Has<TestConsole>, void> {
-  return T.andThen_(
-    T.accessServiceM(TestConsole)((c) =>
-      REF.update_(c.lines, (lines) => A.concat_(lines, [line]))
-    ),
-    T.effectTotal(() => console.log(line))
+  return T.accessServiceM(TestConsole)((c) =>
+    REF.update_(c.lines, (lines) => A.concat_(lines, [line]))
   )
 }
 
@@ -56,14 +53,14 @@ class GetAllIds extends StandardRequest<never, A.Array<number>> {
 class GetNameById extends StandardRequest<never, string> {
   readonly _tag = "GetNameById"
   constructor(public readonly id: number) {
-    super() // TODO: MEH
+    super()
   }
 }
 
 class GetAgeByName extends StandardRequest<never, number> {
   readonly _tag = "GetAgeByName"
   constructor(public readonly name: string) {
-    super() // TODO: MEH
+    super()
   }
 }
 
