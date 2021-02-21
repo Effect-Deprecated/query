@@ -194,12 +194,20 @@ export function map_<R, E, A, B>(self: Query<R, E, A>, f: (a: A) => B) {
 /**
  * Transforms all data sources with the specified data source aspect.
  */
-export function mapDataSources<R, R1>(f: DataSourceAspect<R, R1>) {
-  return <E, A>(self: Query<R, E, A>): Query<R1, E, A> =>
-    // TODO: fix
-    // @ts-expect-error
-    new Query(T.map_(self.step, RES.mapDataSources(f)))
+export function mapDataSources_<R1, R, E, A>(
+  self: Query<R, E, A>,
+  f: DataSourceAspect<R1>
+): Query<R & R1, E, A> {
+  return new Query(T.map_(self.step, RES.mapDataSources(f)))
 }
+
+/**
+ * Transforms all data sources with the specified data source aspect.
+ */
+export function mapDataSources<R1, R>(f: DataSourceAspect<R1>) {
+  return <E, A>(self: Query<R, E, A>): Query<R & R1, E, A> => mapDataSources_(self, f)
+}
+
 // final def mapDataSources[R1 <: R](f: DataSourceAspect[R1]): ZQuery[R1, E, A] =
 //   ZQuery(step.map(_.mapDataSources(f)))
 

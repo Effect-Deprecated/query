@@ -1,3 +1,5 @@
+import "@effect-ts/core/Operators"
+
 import * as T from "@effect-ts/core/Effect"
 import { literal } from "@effect-ts/core/Function"
 import * as MO from "@effect-ts/morphic"
@@ -57,7 +59,7 @@ export const testUserDS = DS.fromFunctionBatchedM("TestUsers")(
         userId: _.userId
       }))
     )
-)["@"](
+)["|>"](
   DS.provideSome("TestUsersEnvironment", () => ({
     first: "firstName",
     last: "lastName"

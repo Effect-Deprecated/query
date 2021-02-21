@@ -1,5 +1,4 @@
-import "@effect-ts/node/Modules/Traced"
-import "@effect-ts/tracing-utils/Enable"
+import "@effect-ts/core/Operators"
 
 import * as A from "@effect-ts/core/Array"
 import * as T from "@effect-ts/core/Effect"
@@ -39,6 +38,7 @@ const getLogSize = T.accessServiceM(TestConsole)((c) =>
 )
 
 const userIds: A.Array<number> = A.range(1, 26)
+
 const userNames: MAP.Map<number, string> = MAP.make(
   A.zip_(
     userIds,
@@ -87,9 +87,10 @@ const UserRequestDataSource = DS.makeBatched("UserRequestDataSource")(
         })
       )
     )
-)
+)["|>"](DS.batchN(100))
 
 const getAllUserIds = Q.fromRequest(new GetAllIds())(UserRequestDataSource)
+
 const getUserNameById = (id: number) =>
   Q.fromRequest(new GetNameById(id))(UserRequestDataSource)
 

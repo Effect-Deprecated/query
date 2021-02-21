@@ -146,13 +146,28 @@ export function map_<R, E, A, B>(
 /**
  * Transforms all data sources with the specified data source aspect.
  */
-export function mapDataSources<R, R1>(
-  f: DataSourceAspect<R, R1>
+export function mapDataSources_<R1, R, E, A>(
+  self: Continue<R, E, A>,
+  f: DataSourceAspect<R1>
+): Continue<R & R1, E, A> {
+  switch (self._tag) {
+    case "Effect":
+      return effect(Q.mapDataSources_(self.query, f))
+    case "Get":
+      return get(self.io)
+  }
+}
+
+/**
+ * Transforms all data sources with the specified data source aspect.
+ */
+export function mapDataSources<R1 extends R, R>(
+  f: DataSourceAspect<R1>
 ): <E, A>(self: Continue<R, E, A>) => Continue<R1, E, A> {
   return (self) => {
     switch (self._tag) {
       case "Effect":
-        return effect(Q.mapDataSources(f)(self.query))
+        return effect(Q.mapDataSources_(self.query, f))
       case "Get":
         return get(self.io)
     }

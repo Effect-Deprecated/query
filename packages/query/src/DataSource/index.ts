@@ -8,7 +8,6 @@ import type * as O from "@effect-ts/core/Option"
 import type { _A, _E } from "@effect-ts/core/Utils"
 
 import * as CR from "../CompletedRequestMap"
-import type { DataSourceAspect } from "../DataSourceAspect"
 import type { Request } from "../Request"
 
 /**
@@ -48,13 +47,7 @@ export class DataSource<R, A> {
     public readonly runAll: (
       requests: A.Array<A.Array<A>>
     ) => T.Effect<R, never, CR.CompletedRequestMap>
-  ) {
-    this["@"] = this["@"].bind(this)
-  }
-
-  ["@"]<R1 extends R, R2>(aspect: DataSourceAspect<R1, R2>): DataSource<R2, A> {
-    return aspect(this)
-  }
+  ) {}
 }
 
 export function equals(a: DataSource<any, any>) {

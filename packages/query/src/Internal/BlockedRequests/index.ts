@@ -93,10 +93,10 @@ export function then_<R1, R>(self: BlockedRequests<R1>, that: BlockedRequests<R>
  * can change the environment type of data sources but must preserve the
  * request type of each data source.
  */
-export function mapDataSources<R, R1>(
-  f: DataSourceAspect<R, R1>
+export function mapDataSources<R1 extends R, R>(
+  f: DataSourceAspect<R1>
 ): (fa: BlockedRequests<R>) => BlockedRequests<R1> {
-  return (fa) => S.run(mapDataSourcesSafe(f)(fa))
+  return (fa) => S.run(mapDataSourcesSafe(fa, f))
 }
 
 /**
@@ -104,34 +104,46 @@ export function mapDataSources<R, R1>(
  * can change the environment type of data sources but must preserve the
  * request type of each data source.
  */
-export function mapDataSourcesSafe<R, R1>(
-  f: DataSourceAspect<R, R1>
-): (fa: BlockedRequests<R>) => S.UIO<BlockedRequests<R1>> {
-  return (fa) =>
-    S.gen(function* (_) {
-      switch (fa._tag) {
-        case "Empty":
-          return new Empty()
-        case "Both":
-          return new Both(
-            yield* _(mapDataSourcesSafe(f)(fa.left)),
-            yield* _(mapDataSourcesSafe(f)(fa.right))
-          )
-        case "Then":
-          return new Then(
-            yield* _(mapDataSourcesSafe(f)(fa.left)),
-            yield* _(mapDataSourcesSafe(f)(fa.right))
-          )
-        case "Single":
-          return fa.f((_) => {
-            const req = {
-              dataSource: f(_.dataSource),
-              blockedRequest: _.blockedRequest
-            }
-            return new Single(($) => $(req))
-          })
-      }
-    })
+export function mapDataSources_<R1, R>(
+  fa: BlockedRequests<R>,
+  f: DataSourceAspect<R1>
+): BlockedRequests<R & R1> {
+  return S.run(mapDataSourcesSafe(fa, f))
+}
+
+/**
+ * Transforms all data sources with the specified data source aspect, which
+ * can change the environment type of data sources but must preserve the
+ * request type of each data source.
+ */
+function mapDataSourcesSafe<R1, R>(
+  fa: BlockedRequests<R>,
+  f: DataSourceAspect<R1>
+): S.UIO<BlockedRequests<R & R1>> {
+  return S.gen(function* (_) {
+    switch (fa._tag) {
+      case "Empty":
+        return new Empty()
+      case "Both":
+        return new Both(
+          yield* _(mapDataSourcesSafe(fa.left, f)),
+          yield* _(mapDataSourcesSafe(fa.right, f))
+        )
+      case "Then":
+        return new Then(
+          yield* _(mapDataSourcesSafe(fa.left, f)),
+          yield* _(mapDataSourcesSafe(fa.right, f))
+        )
+      case "Single":
+        return fa.f((_) => {
+          const req = {
+            dataSource: f(_.dataSource),
+            blockedRequest: _.blockedRequest
+          }
+          return new Single(($) => $(req))
+        })
+    }
+  })
 }
 
 /**

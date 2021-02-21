@@ -76,13 +76,13 @@ export function map<A, B>(f: (a: A) => B) {
 /**
  * Transforms all data sources with the specified data source aspect.
  */
-export function mapDataSources<R, R1>(f: DataSourceAspect<R, R1>) {
-  return <E, A>(self: Result<R, E, A>): Result<R1, E, A> => {
+export function mapDataSources<R1>(f: DataSourceAspect<R1>) {
+  return <R, E, A>(self: Result<R, E, A>): Result<R & R1, E, A> => {
     switch (self._tag) {
       case "Blocked":
         return blocked(
-          BRS.mapDataSources(f)(self.blockedRequests),
-          CONT.mapDataSources(f)(self.cont)
+          BRS.mapDataSources_(self.blockedRequests, f),
+          CONT.mapDataSources_(self.cont, f)
         )
       case "Done":
         return done(self.value)
