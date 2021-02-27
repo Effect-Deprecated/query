@@ -38,47 +38,89 @@ export function concat(
 /**
  * Returns whether a result exists for the specified request.
  */
+export function contains_(fa: CompletedRequestMap, request: any): boolean {
+  return M.has_(fa.map, request)
+}
+
+/**
+ * Returns whether a result exists for the specified request.
+ * @dataFirst contains_
+ */
 export function contains(request: any): (fa: CompletedRequestMap) => boolean {
-  return (fa) => M.has_(fa.map, request)
+  return (fa) => contains_(fa, request)
 }
 
 /**
  * Appends the specified result to the completed requests map.
  */
+export function insert_<E, A>(
+  fa: CompletedRequestMap,
+  request: Request<E, A>,
+  result: E.Either<E, A>
+): CompletedRequestMap {
+  return new CompletedRequestMap(M.set_(fa.map, request, result))
+}
+
+/**
+ * Appends the specified result to the completed requests map.
+ * @dataFirst insert_
+ */
 export function insert<E, A>(
-  request: Request<E, A>
-): (result: E.Either<E, A>) => (fa: CompletedRequestMap) => CompletedRequestMap {
-  return (result) => (fa) => new CompletedRequestMap(M.set_(fa.map, request, result))
+  request: Request<E, A>,
+  result: E.Either<E, A>
+): (fa: CompletedRequestMap) => CompletedRequestMap {
+  return (fa) => insert_(fa, request, result)
 }
 
 /**
  * Appends the specified optional result to the completed request map.
  */
-export function insertOption<E, A>(
-  request: Request<E, A>
-): (
+export function insertOption_<E, A>(
+  fa: CompletedRequestMap,
+  request: Request<E, A>,
   result: E.Either<E, O.Option<A>>
-) => (fa: CompletedRequestMap) => CompletedRequestMap {
-  return (result) => (fa) =>
-    new CompletedRequestMap(
-      E.fold_(
-        result,
-        (e) => M.set_(fa.map, request, E.left(e)),
-        O.fold(
-          () => fa.map,
-          (a) => M.set_(fa.map, request, E.right(a))
-        )
+): CompletedRequestMap {
+  return new CompletedRequestMap(
+    E.fold_(
+      result,
+      (e) => M.set_(fa.map, request, E.left(e)),
+      O.fold(
+        () => fa.map,
+        (a) => M.set_(fa.map, request, E.right(a))
       )
     )
+  )
+}
+
+/**
+ * Appends the specified optional result to the completed request map.
+ * @dataFirst insertOption_
+ */
+export function insertOption<E, A>(
+  request: Request<E, A>,
+  result: E.Either<E, O.Option<A>>
+): (fa: CompletedRequestMap) => CompletedRequestMap {
+  return (fa) => insertOption_(fa, request, result)
 }
 
 /**
  * Retrieves the result of the specified request if it exists.
  */
+export function lookup_<E, A>(
+  fa: CompletedRequestMap,
+  request: Request<E, A>
+): O.Option<E.Either<E, A>> {
+  return M.get_(fa.map, request)
+}
+
+/**
+ * Retrieves the result of the specified request if it exists.
+ * @dataFirst lookup_
+ */
 export function lookup<E, A>(
   request: Request<E, A>
 ): (fa: CompletedRequestMap) => O.Option<E.Either<E, A>> {
-  return (fa) => M.get_(fa.map, request)
+  return (fa) => lookup_(fa, request)
 }
 
 /**

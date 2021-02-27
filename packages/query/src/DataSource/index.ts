@@ -173,7 +173,7 @@ export function makeBatched(identifier: string) {
   ): DataSource<R, A> =>
     new DataSource(identifier, (requests) =>
       T.reduce_(requests, CR.empty, (crm, requests) => {
-        const newRequests = A.filter_(requests, (e) => !CR.contains(e)(crm))
+        const newRequests = A.filter_(requests, (e) => !CR.contains_(crm, e))
         return A.isEmpty(newRequests)
           ? T.succeed(crm)
           : T.map_(run(newRequests), (_) => CR.concat(crm, _))
@@ -188,7 +188,7 @@ export function fromFunction(identifier: string) {
   return <A extends Request<never, any>>(f: (a: A) => _A<A>): DataSource<unknown, A> =>
     makeBatched(identifier)((requests) =>
       T.succeed(
-        A.reduce_(requests, CR.empty, (crm, k) => CR.insert(k)(E.right(f(k)))(crm))
+        A.reduce_(requests, CR.empty, (crm, k) => CR.insert_(crm, k, E.right(f(k))))
       )
     )
 }
@@ -230,7 +230,7 @@ export function fromFunctionBatchedM(identifier: string) {
           )
       )
       return T.map_(a, (_) =>
-        A.reduce_(_, CR.empty, (crm, [k, v]) => CR.insert(k)(v)(crm))
+        A.reduce_(_, CR.empty, (crm, [k, v]) => CR.insert_(crm, k, v))
       )
     })
 }
@@ -273,7 +273,7 @@ export function fromFunctionBatchedOptionM(identifier: string) {
           )
       )
       return T.map_(a, (_) =>
-        A.reduce_(_, CR.empty, (crm, [k, v]) => CR.insertOption(k)(v)(crm))
+        A.reduce_(_, CR.empty, (crm, [k, v]) => CR.insertOption_(crm, k, v))
       )
     })
 }

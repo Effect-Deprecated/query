@@ -378,13 +378,16 @@ export function run(cache: Cache) {
                 blockedRequest(
                   (g) => g.result as REF.Ref<O.Option<E.Either<any, any>>>
                 ),
-                CRM.lookup(blockedRequest((g) => g.request))(_.completedRequests)
+                CRM.lookup_(
+                  _.completedRequests,
+                  blockedRequest((g) => g.request)
+                )
               )
             )
           ),
           T.tap((_) =>
             T.forEach_(_.leftovers, (request) =>
-              T.chain_(REF.makeRef(CRM.lookup(request)(_.completedRequests)), (res) =>
+              T.chain_(REF.makeRef(CRM.lookup_(_.completedRequests, request)), (res) =>
                 cache.put(request, res)
               )
             )

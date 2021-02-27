@@ -74,15 +74,15 @@ const UserRequestDataSource = DS.makeBatched("UserRequestDataSource")(
         A.reduce_(requests, CR.empty, (crm, _) => {
           switch (_._tag) {
             case "GetAllIds":
-              return CR.insert(_)(E.right(userIds))(crm)
+              return CR.insert_(crm, _, E.right(userIds))
             case "GetNameById":
               return O.fold_(
                 MAP.lookup_(userNames, _.id),
                 () => crm,
-                (userName) => CR.insert(_)(E.right(userName))(crm)
+                (userName) => CR.insert_(crm, _, E.right(userName))
               )
             case "GetAgeByName":
-              return CR.insert(_)(E.right(18 + _.name.length))(crm)
+              return CR.insert_(crm, _, E.right(18 + _.name.length))
           }
         })
       )
