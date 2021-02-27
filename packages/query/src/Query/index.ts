@@ -74,10 +74,6 @@ export class Query<R, E, A> {
  * sequentially and will not be pipelined, though deduplication and caching of
  * requests may still be applied.
  */
-export function chain<R1, E1, A, B>(f: (a: A) => Query<R1, E1, B>) {
-  return <R, E>(self: Query<R, E, A>): Query<R & R1, E | E1, B> => chain_(self, f)
-}
-
 export function chain_<R, E, R1, E1, A, B>(
   self: Query<R, E, A>,
   f: (a: A) => Query<R1, E1, B>
@@ -97,12 +93,24 @@ export function chain_<R, E, R1, E1, A, B>(
 }
 
 /**
+ * Returns a query that models execution of this query, followed by passing
+ * its result to the specified function that returns a query. Requests
+ * composed with `flatMap` or combinators derived from it will be executed
+ * sequentially and will not be pipelined, though deduplication and caching of
+ * requests may still be applied.
+ * @dataFirst chain_
+ */
+export function chain<R1, E1, A, B>(f: (a: A) => Query<R1, E1, B>) {
+  return <R, E>(self: Query<R, E, A>): Query<R & R1, E | E1, B> => chain_(self, f)
+}
+
+/**
  * Returns a query whose failure and success have been lifted into an
  * `Either`. The resulting query cannot fail, because the failure case has
  * been exposed as part of the `Either` success case.
  */
 export function either<R, E, A>(self: Query<R, E, A>): Query<R, never, E.Either<E, A>> {
-  return pipe(self, fold<E.Either<E, A>, E, A>(E.left, E.right))
+  return fold_<R, E, A, E.Either<E, A>>(self, E.left, E.right)
 }
 
 /**
@@ -110,10 +118,6 @@ export function either<R, E, A>(self: Query<R, E, A>): Query<R, never, E.Either<
  * that does not fail, but succeeds with the value returned by the left or
  * right function passed to `fold`.
  */
-export function fold<B, E, A>(failure: (e: E) => B, success: (a: A) => B) {
-  return <R>(self: Query<R, E, A>): Query<R, never, B> => fold_(self, failure, success)
-}
-
 export function fold_<R, E, A, B>(
   self: Query<R, E, A>,
   failure: (e: E) => B,
@@ -129,17 +133,19 @@ export function fold_<R, E, A, B>(
 }
 
 /**
+ * Folds over the failed or successful result of this query to yield a query
+ * that does not fail, but succeeds with the value returned by the left or
+ * right function passed to `fold`.
+ * @dataFirst fold_
+ */
+export function fold<B, E, A>(failure: (e: E) => B, success: (a: A) => B) {
+  return <R>(self: Query<R, E, A>): Query<R, never, B> => fold_(self, failure, success)
+}
+
+/**
  * A more powerful version of `foldM` that allows recovering from any type
  * of failure except interruptions.
  */
-export function foldCauseM<E, A, R2, E2, A2, R3, E3, A3>(
-  failure: (cause: C.Cause<E>) => Query<R2, E2, A2>,
-  success: (a: A) => Query<R3, E3, A3>
-) {
-  return <R>(self: Query<R, E, A>): Query<R & R2 & R3, E2 | E3, A2 | A3> =>
-    foldCauseM_(self, failure, success)
-}
-
 export function foldCauseM_<R, E, A, R2, E2, A2, R3, E3, A3>(
   self: Query<R, E, A>,
   failure: (cause: C.Cause<E>) => Query<R2, E2, A2>,
@@ -166,29 +172,56 @@ export function foldCauseM_<R, E, A, R2, E2, A2, R3, E3, A3>(
 }
 
 /**
+ * A more powerful version of `foldM` that allows recovering from any type
+ * of failure except interruptions.
+ * @dataFirst foldCauseM_
+ */
+export function foldCauseM<E, A, R2, E2, A2, R3, E3, A3>(
+  failure: (cause: C.Cause<E>) => Query<R2, E2, A2>,
+  success: (a: A) => Query<R3, E3, A3>
+) {
+  return <R>(self: Query<R, E, A>): Query<R & R2 & R3, E2 | E3, A2 | A3> =>
+    foldCauseM_(self, failure, success)
+}
+
+/**
  * Recovers from errors by accepting one query to execute for the case of an
  * error, and one query to execute for the case of success.
+ */
+export function foldM_<R, E, A, R2, E2, A2, R3, E3, A3>(
+  self: Query<R, E, A>,
+  failure: (failure: E) => Query<R2, E2, A2>,
+  success: (a: A) => Query<R3, E3, A3>
+): Query<R & R2 & R3, E2 | E3, A2 | A3> {
+  return foldCauseM_(self, (c) => E.fold_(C.failureOrCause(c), failure, halt), success)
+}
+
+/**
+ * Recovers from errors by accepting one query to execute for the case of an
+ * error, and one query to execute for the case of success.
+ * @dataFirst foldM_
  */
 export function foldM<E, A, R2, E2, A2, R3, E3, A3>(
   failure: (failure: E) => Query<R2, E2, A2>,
   success: (a: A) => Query<R3, E3, A3>
 ) {
   return <R>(self: Query<R, E, A>): Query<R & R2 & R3, E2 | E3, A2 | A3> =>
-    pipe(
-      self,
-      foldCauseM((c) => E.fold_(C.failureOrCause(c), failure, halt), success)
-    )
+    foldM_(self, failure, success)
 }
 
 /**
  * Maps the specified function over the successful result of this query.
  */
-export function map<A, B>(f: (a: A) => B) {
-  return <R, E>(self: Query<R, E, A>): Query<R, E, B> =>
-    new Query(T.map_(self.step, RES.map(f)))
+export function map_<R, E, A, B>(self: Query<R, E, A>, f: (a: A) => B): Query<R, E, B> {
+  return new Query(T.map_(self.step, RES.map(f)))
 }
-export function map_<R, E, A, B>(self: Query<R, E, A>, f: (a: A) => B) {
-  return map(f)(self)
+
+/**
+ * Maps the specified function over the successful result of this query.
+ * @dataFirst map_
+ */
+export function map<A, B>(f: (a: A) => B) {
+  return <R, E>(self: Query<R, E, A>): Query<R, E, B> => map_(self, f)
 }
 
 /**
@@ -203,36 +236,259 @@ export function mapDataSources_<R1, R, E, A>(
 
 /**
  * Transforms all data sources with the specified data source aspect.
+ * @dataFirst mapDataSources_
  */
 export function mapDataSources<R1, R>(f: DataSourceAspect<R1>) {
   return <E, A>(self: Query<R, E, A>): Query<R & R1, E, A> => mapDataSources_(self, f)
 }
 
-// final def mapDataSources[R1 <: R](f: DataSourceAspect[R1]): ZQuery[R1, E, A] =
-//   ZQuery(step.map(_.mapDataSources(f)))
-
 /**
  * Maps the specified function over the failed result of this query.
  */
-export function mapError<E, E1>(f: (a: E) => E1) {
-  return <R, A>(self: Query<R, E, A>): Query<R, E1, A> => pipe(self, bimap(f, identity))
+export function mapError_<R, E, A, E1>(self: Query<R, E, A>, f: (a: E) => E1) {
+  return bimap_(self, f, identity)
 }
-// final def mapError[E1](f: E => E1)(implicit ev: CanFail[E]): ZQuery[R, E1, A] =
-//   bimap(f, identity)
+/**
+ * Maps the specified function over the failed result of this query.
+ * @dataFirst mapError_
+ */
+export function mapError<E, E1>(f: (a: E) => E1) {
+  return <R, A>(self: Query<R, E, A>): Query<R, E1, A> => mapError_(self, f)
+}
 
 /**
  * Returns a query whose failure and success channels have been mapped by the
  * specified pair of functions, `f` and `g`.
  */
+export function bimap_<R, E, A, E1, B>(
+  self: Query<R, E, A>,
+  f: (e: E) => E1,
+  g: (a: A) => B
+): Query<R, E1, B> {
+  return foldM_(
+    self,
+    (e) => fail(f(e)),
+    (a) => succeed(g(a))
+  )
+}
+
+/**
+ * Returns a query whose failure and success channels have been mapped by the
+ * specified pair of functions, `f` and `g`.
+ * @dataFirst bimap_
+ */
 export function bimap<E, E1, A, B>(f: (e: E) => E1, g: (a: A) => B) {
-  return <R>(self: Query<R, E, A>): Query<R, E1, B> =>
+  return <R>(self: Query<R, E, A>): Query<R, E1, B> => bimap_(self, f, g)
+}
+
+/**
+ * Provides this query with part of its required environment.
+ */
+export function provideSome_<R, E, A, R0>(
+  self: Query<R, E, A>,
+  description: string,
+  f: (r: R0) => R
+): Query<R0, E, A> {
+  return new Query(
     pipe(
-      self,
-      foldM(
-        (e) => fail(f(e)),
-        (a) => succeed(g(a))
-      )
+      self.step,
+      T.map(RES.provideSome(description, f)),
+      T.provideSome((r) => tuple(f(r[0]), r[1]))
     )
+  )
+}
+
+/**
+ * Provides this query with part of its required environment.
+ * @dataFirst provideSome_
+ */
+export function provideSome<R, R0>(description: string, f: (r: R0) => R) {
+  return <E, A>(self: Query<R, E, A>): Query<R0, E, A> =>
+    provideSome_(self, description, f)
+}
+/**
+ * Returns a query that models the execution of this query and the specified
+ * query sequentially, combining their results into a tuple.
+ */
+export function zip_<R, R1, E, E1, A, B>(
+  self: Query<R, E, A>,
+  that: Query<R1, E1, B>
+): Query<R & R1, E | E1, readonly [A, B]> {
+  return zipWith_(self, that, (a, b) => tuple(a, b))
+}
+
+/**
+ * Returns a query that models the execution of this query and the specified
+ * query sequentially, combining their results into a tuple.
+ * @dataFirst zip_
+ */
+export function zip<R1, E1, B>(that: Query<R1, E1, B>) {
+  return <R, E, A>(self: Query<R, E, A>): Query<R & R1, E | E1, readonly [A, B]> =>
+    zip_(self, that)
+}
+
+/**
+ * Returns a query that models the execution of this query and the specified
+ * query sequentially, combining their results with the specified function.
+ * Requests composed with `zipWith` or combinators derived from it will
+ * automatically be pipelined.
+ */
+export function zipWith_<R, E, R1, E1, B, A, C>(
+  self: Query<R, E, A>,
+  that: Query<R1, E1, B>,
+  f: (a: A, b: B) => C
+) {
+  return new Query(
+    T.chain_(self.step, (res) => {
+      switch (res._tag) {
+        case "Blocked":
+          return T.map_(that.step, (res2) => {
+            // TODO: ZIO.succeedNow(Result.blocked(br, Continue.effect(c.zipWith(that)(f))))
+            switch (res2._tag) {
+              case "Blocked":
+                return RES.blocked(
+                  BRS.then(res2.blockedRequests)(res.blockedRequests),
+                  CONT.zipWith(res2.cont, f)(res.cont)
+                )
+              case "Done":
+                return RES.blocked(
+                  res.blockedRequests,
+                  CONT.map_(res.cont, (a) => f(a, res2.value))
+                )
+              case "Fail":
+                return RES.fail(res2.cause)
+            }
+          })
+        case "Done":
+          return T.map_(that.step, (res2) => {
+            switch (res2._tag) {
+              case "Blocked":
+                return RES.blocked(
+                  res2.blockedRequests,
+                  CONT.map_(res2.cont, (b) => f(res.value, b))
+                )
+              case "Done":
+                return RES.done(f(res.value, res2.value))
+              case "Fail":
+                return RES.fail(res2.cause)
+            }
+          })
+        case "Fail":
+          return T.succeed(RES.fail(res.cause))
+      }
+    })
+  )
+}
+
+/**
+ * Returns a query that models the execution of this query and the specified
+ * query sequentially, combining their results with the specified function.
+ * Requests composed with `zipWith` or combinators derived from it will
+ * automatically be pipelined.
+ * @dataFirst zipWith_
+ */
+export function zipWith<R1, E1, B, A, C>(that: Query<R1, E1, B>, f: (a: A, b: B) => C) {
+  return <R, E>(self: Query<R, E, A>): Query<R & R1, E | E1, C> =>
+    zipWith_(self, that, f)
+}
+
+/**
+ * Returns a query that models the execution of this query and the specified
+ * query in parallel, combining their results with the specified function.
+ * Requests composed with `zipWithPar` or combinators derived from it will
+ * automatically be batched.
+ */
+export function zipWithPar_<R, E, A, R1, E1, B, C>(
+  self: Query<R, E, A>,
+  that: Query<R1, E1, B>,
+  f: (a: A, b: B) => C
+): Query<R & R1, E | E1, C> {
+  return new Query(
+    T.zipWithPar_(self.step, that.step, (a, b) => {
+      switch (a._tag) {
+        case "Blocked":
+          switch (b._tag) {
+            case "Blocked":
+              return RES.blocked(
+                BRS.both_(a.blockedRequests, b.blockedRequests),
+                CONT.zipWithPar(b.cont, f)(a.cont)
+              )
+            case "Done":
+              return RES.blocked(
+                a.blockedRequests,
+                CONT.map_(a.cont, (a) => f(a, b.value))
+              )
+            case "Fail":
+              return RES.fail(b.cause)
+          }
+        case "Done":
+          switch (b._tag) {
+            case "Blocked":
+              return RES.blocked(
+                b.blockedRequests,
+                CONT.map_(b.cont, (b) => f(a.value, b))
+              )
+            case "Done":
+              return RES.done(f(a.value, b.value))
+            case "Fail":
+              return RES.fail(b.cause)
+          }
+        case "Fail":
+          switch (b._tag) {
+            case "Blocked":
+              return RES.fail(a.cause)
+            case "Done":
+              return RES.fail(a.cause)
+            case "Fail":
+              return RES.fail(C.both(a.cause, b.cause))
+          }
+      }
+    })
+  )
+}
+
+/**
+ * Returns a query that models the execution of this query and the specified
+ * query in parallel, combining their results with the specified function.
+ * Requests composed with `zipWithPar` or combinators derived from it will
+ * automatically be batched.
+ * @dataFirst zipWithPar_
+ */
+export function zipWithPar<R1, E1, B, A, C>(
+  that: Query<R1, E1, B>,
+  f: (a: A, b: B) => C
+) {
+  return <R, E>(self: Query<R, E, A>): Query<R & R1, E | E1, C> =>
+    zipWithPar_(self, that, f)
+}
+
+/**
+ * Summarizes a query by computing some value before and after execution,
+ * and then combining the values to produce a summary, together with the
+ * result of execution.
+ */
+export function summarized_<R, E, A, R1, E1, B, C>(
+  self: Query<R, E, A>,
+  summary: T.Effect<R1, E1, B>,
+  f: (a: B, b: B) => C
+): Query<R & R1, E | E1, readonly [C, A]> {
+  return chain_(
+    chain_(fromEffect(summary), (start) => map_(self, (a) => tuple(start, a))),
+    ([start, a]) => map_(fromEffect(summary), (end) => tuple(f(start, end), a))
+  )
+}
+
+/**
+ * Summarizes a query by computing some value before and after execution,
+ * and then combining the values to produce a summary, together with the
+ * result of execution.
+ * @dataFirst summarized_
+ */
+export function summarized<A, R1, E1, B, C>(
+  summary: T.Effect<R1, E1, B>,
+  f: (a: B, b: B) => B
+) {
+  return <R, E>(self: Query<R, E, A>) => summarized_(self, summary, f)
 }
 
 /**
@@ -273,20 +529,6 @@ export function fromEffect<R, E, A>(effect: T.Effect<R, E, A>): Query<R, E, A> {
   return new Query(
     T.provideSome_(T.foldCause_(effect, RES.fail, RES.done), (r) => r[0])
   )
-}
-
-/**
- * Provides this query with part of its required environment.
- */
-export function provideSome<R, R0>(description: string, f: (r: R0) => R) {
-  return <E, A>(self: Query<R, E, A>): Query<R0, E, A> =>
-    new Query(
-      pipe(
-        self.step,
-        T.map(RES.provideSome(description, f)),
-        T.provideSome((r) => tuple(f(r[0]), r[1]))
-      )
-    )
 }
 
 /**
@@ -366,135 +608,6 @@ export function runLog<R, E, A>(
   )
 }
 
-/**
- * Returns a query that models the execution of this query and the specified
- * query sequentially, combining their results into a tuple.
- */
-export function zip<R1, E1, B>(that: Query<R1, E1, B>) {
-  return <R, E, A>(self: Query<R, E, A>): Query<R & R1, E | E1, readonly [A, B]> =>
-    zip_(self, that)
-}
-
-export function zip_<R, R1, E, E1, A, B>(
-  self: Query<R, E, A>,
-  that: Query<R1, E1, B>
-): Query<R & R1, E | E1, readonly [A, B]> {
-  return zipWith_(self, that, (a, b) => tuple(a, b))
-}
-
-/**
- * Returns a query that models the execution of this query and the specified
- * query sequentially, combining their results with the specified function.
- * Requests composed with `zipWith` or combinators derived from it will
- * automatically be pipelined.
- */
-export function zipWith<R1, E1, B, A, C>(that: Query<R1, E1, B>, f: (a: A, b: B) => C) {
-  return <R, E>(self: Query<R, E, A>): Query<R & R1, E | E1, C> =>
-    zipWith_(self, that, f)
-}
-
-export function zipWith_<R, E, R1, E1, B, A, C>(
-  self: Query<R, E, A>,
-  that: Query<R1, E1, B>,
-  f: (a: A, b: B) => C
-) {
-  return new Query(
-    T.chain_(self.step, (res) => {
-      switch (res._tag) {
-        case "Blocked":
-          return T.map_(that.step, (res2) => {
-            // TODO: ZIO.succeedNow(Result.blocked(br, Continue.effect(c.zipWith(that)(f))))
-            switch (res2._tag) {
-              case "Blocked":
-                return RES.blocked(
-                  BRS.then(res2.blockedRequests)(res.blockedRequests),
-                  CONT.zipWith(res2.cont, f)(res.cont)
-                )
-              case "Done":
-                return RES.blocked(
-                  res.blockedRequests,
-                  CONT.map_(res.cont, (a) => f(a, res2.value))
-                )
-              case "Fail":
-                return RES.fail(res2.cause)
-            }
-          })
-        case "Done":
-          return T.map_(that.step, (res2) => {
-            switch (res2._tag) {
-              case "Blocked":
-                return RES.blocked(
-                  res2.blockedRequests,
-                  CONT.map_(res2.cont, (b) => f(res.value, b))
-                )
-              case "Done":
-                return RES.done(f(res.value, res2.value))
-              case "Fail":
-                return RES.fail(res2.cause)
-            }
-          })
-        case "Fail":
-          return T.succeed(RES.fail(res.cause))
-      }
-    })
-  )
-}
-
-/**
- * Returns a query that models the execution of this query and the specified
- * query in parallel, combining their results with the specified function.
- * Requests composed with `zipWithPar` or combinators derived from it will
- * automatically be batched.
- */
-export function zipWithPar<R1, E1, B, A, C>(
-  that: Query<R1, E1, B>,
-  f: (a: A, b: B) => C
-) {
-  return <R, E>(self: Query<R, E, A>): Query<R & R1, E | E1, C> =>
-    new Query(
-      T.zipWithPar_(self.step, that.step, (a, b) => {
-        switch (a._tag) {
-          case "Blocked":
-            switch (b._tag) {
-              case "Blocked":
-                return RES.blocked(
-                  BRS.both_(a.blockedRequests, b.blockedRequests),
-                  CONT.zipWithPar(b.cont, f)(a.cont)
-                )
-              case "Done":
-                return RES.blocked(
-                  a.blockedRequests,
-                  CONT.map_(a.cont, (a) => f(a, b.value))
-                )
-              case "Fail":
-                return RES.fail(b.cause)
-            }
-          case "Done":
-            switch (b._tag) {
-              case "Blocked":
-                return RES.blocked(
-                  b.blockedRequests,
-                  CONT.map_(b.cont, (b) => f(a.value, b))
-                )
-              case "Done":
-                return RES.done(f(a.value, b.value))
-              case "Fail":
-                return RES.fail(b.cause)
-            }
-          case "Fail":
-            switch (b._tag) {
-              case "Blocked":
-                return RES.fail(a.cause)
-              case "Done":
-                return RES.fail(a.cause)
-              case "Fail":
-                return RES.fail(C.both(a.cause, b.cause))
-            }
-        }
-      })
-    )
-}
-
 // TODO
 export function forEachPar<R, E, A, B>(
   as: Iterable<A>,
@@ -505,11 +618,7 @@ export function forEachPar<R, E, A, B>(
   return A.reduce_(
     arr.slice(1),
     map_(f(arr[0]), (a) => A.from([a])),
-    (q, a) =>
-      pipe(
-        q,
-        zipWithPar(f(a), (a, b) => A.concat_(a, [b]))
-      )
+    (q, a) => zipWithPar_(q, f(a), (a, b) => A.concat_(a, [b]))
   )
 }
 
@@ -521,28 +630,6 @@ export function collectAllPar<R, E, A>(
   as: Iterable<Query<R, E, A>>
 ): Query<R, E, A.Array<A>> {
   return forEachPar(as, identity)
-}
-
-/**
- * Summarizes a query by computing some value before and after execution,
- * and then combining the values to produce a summary, together with the
- * result of execution.
- */
-export function summarized_<R, E, A, R1, E1, B, C>(
-  self: Query<R, E, A>,
-  summary: T.Effect<R1, E1, B>,
-  f: (a: B, b: B) => C
-): Query<R & R1, E | E1, readonly [C, A]> {
-  return chain_(
-    chain_(fromEffect(summary), (start) => map_(self, (a) => tuple(start, a))),
-    ([start, a]) => map_(fromEffect(summary), (end) => tuple(f(start, end), a))
-  )
-}
-export function summarized<A, R1, E1, B, C>(
-  summary: T.Effect<R1, E1, B>,
-  f: (a: B, b: B) => B
-) {
-  return <R, E>(self: Query<R, E, A>) => summarized_(self, summary, f)
 }
 
 /**
