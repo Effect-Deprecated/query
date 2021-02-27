@@ -13,8 +13,20 @@ export interface DataSourceAspect<R> {
  * Returns a new aspect that represents the sequential composition of this
  * aspect with the specified one.
  */
+export function andThen_<R1, R2>(
+  fa: DataSourceAspect<R1>,
+  fb: DataSourceAspect<R2>
+): DataSourceAspect<R1 & R2> {
+  return (dataSource) => fb(fa(dataSource))
+}
+
+/**
+ * Returns a new aspect that represents the sequential composition of this
+ * aspect with the specified one.
+ * @dataFirst andThen_
+ */
 export function andThen<R2>(
   fb: DataSourceAspect<R2>
 ): <R1>(fa: DataSourceAspect<R1>) => DataSourceAspect<R1 & R2> {
-  return (fa) => (dataSource) => fb(fa(dataSource))
+  return (fa) => andThen_(fa, fb)
 }

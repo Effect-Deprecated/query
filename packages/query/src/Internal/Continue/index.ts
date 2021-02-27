@@ -90,7 +90,7 @@ export function fold<E, A, B>(
   return (cont) => {
     switch (cont._tag) {
       case "Effect":
-        return effect(Q.fold(failure, success)(cont.query))
+        return effect(Q.fold_(cont.query, failure, success))
       case "Get":
         return get(T.fold_(cont.io, failure, success))
     }
