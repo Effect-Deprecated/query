@@ -1,5 +1,3 @@
-import "@effect-ts/core/Operators"
-
 import * as A from "@effect-ts/core/Array"
 import * as T from "@effect-ts/core/Effect"
 import * as Ex from "@effect-ts/core/Effect/Exit"

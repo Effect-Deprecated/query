@@ -63,19 +63,26 @@ export function hash(a: DataSource<any, any>): number {
 /**
  * Returns a data source that executes at most `n` requests in parallel.
  */
-export function batchN(n: number) {
-  return <R, A>(self: DataSource<R, A>): DataSource<R, A> =>
-    new DataSource(`${self.identifier}.batchN(${n})`, (requests) => {
-      if (n < 1) {
-        return T.die("batchN: n must be at least 1") // TODO: Error class
-      } else {
-        return self.runAll(
-          A.reduce_(requests, A.empty as A.Array<A.Array<A>>, (x, y) =>
-            A.concat_(x, A.chunksOf_(y, n))
-          )
+export function batchN_<R, A>(self: DataSource<R, A>, n: number): DataSource<R, A> {
+  return new DataSource(`${self.identifier}.batchN(${n})`, (requests) => {
+    if (n < 1) {
+      return T.die("batchN: n must be at least 1") // TODO: Error class
+    } else {
+      return self.runAll(
+        A.reduce_(requests, A.empty as A.Array<A.Array<A>>, (x, y) =>
+          A.concat_(x, A.chunksOf_(y, n))
         )
-      }
-    })
+      )
+    }
+  })
+}
+
+/**
+ * Returns a data source that executes at most `n` requests in parallel.
+ * @dataFirst batchN_
+ */
+export function batchN(n: number) {
+  return <R, A>(self: DataSource<R, A>): DataSource<R, A> => batchN_(self, n)
 }
 
 /**
@@ -83,11 +90,25 @@ export function batchN(n: number) {
  * specified function to transform `B` requests into requests that this data
  * source can execute.
  */
+export function contramap_<R, A, B>(
+  self: DataSource<R, A>,
+  description: string,
+  f: (a: B) => A
+): DataSource<R, B> {
+  return new DataSource(`${self.identifier}.contramap(${description})`, (requests) =>
+    self.runAll(A.map_(requests, (_) => A.map_(_, f)))
+  )
+}
+
+/**
+ * Returns a new data source that executes requests of type `B` using the
+ * specified function to transform `B` requests into requests that this data
+ * source can execute.
+ * @dataFirst contramap_
+ */
 export function contramap<B, A>(description: string, f: (a: B) => A) {
   return <R>(self: DataSource<R, A>): DataSource<R, B> =>
-    new DataSource(`${self.identifier}.contramap(${description})`, (requests) =>
-      self.runAll(A.map_(requests, (_) => A.map_(_, f)))
-    )
+    contramap_(self, description, f)
 }
 
 /**
@@ -95,17 +116,31 @@ export function contramap<B, A>(description: string, f: (a: B) => A) {
  * specified effectual function to transform `B` requests into requests that
  * this data source can execute.
  */
+export function contramapM_<R, A, B, R1>(
+  self: DataSource<R, A>,
+  description: string,
+  f: (b: B) => T.Effect<R1, never, A>
+): DataSource<R & R1, B> {
+  return new DataSource(`${self.identifier}.contramapM(${description})`, (requests) =>
+    T.chain_(
+      T.forEach_(requests, (_) => T.forEachPar_(_, f)),
+      self.runAll
+    )
+  )
+}
+
+/**
+ * Returns a new data source that executes requests of type `B` using the
+ * specified effectual function to transform `B` requests into requests that
+ * this data source can execute.
+ * @dataFirst contramapM_
+ */
 export function contramapM<R1, B, A>(
   description: string,
   f: (b: B) => T.Effect<R1, never, A>
 ) {
   return <R>(self: DataSource<R, A>): DataSource<R & R1, B> =>
-    new DataSource(`${self.identifier}.contramapM(${description})`, (requests) =>
-      T.chain_(
-        T.forEach_(requests, (_) => T.forEachPar_(_, f)),
-        self.runAll
-      )
-    )
+    contramapM_(self, description, f)
 }
 
 /**
@@ -113,41 +148,79 @@ export function contramapM<R1, B, A>(
  * specified function to transform `C` requests into requests that either
  * this data source or that data source can execute.
  */
+export function eitherWith_<R, A, R1, B, C>(
+  self: DataSource<R, A>,
+  description: string,
+  that: DataSource<R1, B>,
+  f: (c: C) => E.Either<A, B>
+): DataSource<R & R1, C> {
+  return new DataSource<R & R1, C>(
+    `${self.identifier}.eitherWith(${that.identifier})(${description})`,
+    (requests) =>
+      T.map_(
+        T.forEach_(requests, (requests) => {
+          const { left: as, right: bs } = A.partitionMap_(requests, f)
+          return T.zipWithPar_(self.runAll([as]), that.runAll([bs as any]), CR.concat)
+        }),
+        (_) => A.reduce_(_, CR.empty, CR.concat)
+      )
+  )
+}
+
+/**
+ * Returns a new data source that executes requests of type `C` using the
+ * specified function to transform `C` requests into requests that either
+ * this data source or that data source can execute.
+ * @dataFirst eitherWith_
+ */
 export function eitherWith<C, A, B, R1>(
   description: string,
   that: DataSource<R1, B>,
   f: (c: C) => E.Either<A, B>
 ) {
-  return <R>(self: DataSource<R, A>): DataSource<R & R1, C> =>
-    new DataSource<R & R1, C>(
-      `${self.identifier}.eitherWith(${that.identifier})(${description})`,
-      (requests) =>
-        T.map_(
-          T.forEach_(requests, (requests) => {
-            const { left: as, right: bs } = A.partitionMap_(requests, f)
-            return T.zipWithPar_(self.runAll([as]), that.runAll([bs as any]), CR.concat)
-          }),
-          (_) => A.reduce_(_, CR.empty, CR.concat)
-        )
-    )
+  return <R>(self: DataSource<R, A>) => eitherWith_(self, description, that, f)
 }
 
 /**
  * Provides this data source with its required environment.
  */
+export function provide_<R, A>(
+  self: DataSource<R, A>,
+  description: string,
+  r: R
+): DataSource<unknown, A> {
+  return provideSome(`_ => ${description}`, () => r)(self)
+}
+
+/**
+ * Provides this data source with its required environment.
+ * @dataFirst provide_
+ */
 export function provide<R>(description: string, r: R) {
   return <A>(self: DataSource<R, A>): DataSource<unknown, A> =>
-    provideSome(`_ => ${description}`, () => r)(self)
+    provide_(self, description, r)
 }
 
 /**
  * Provides this data source with part of its required environment.
  */
+export function provideSome_<R, A, R0>(
+  self: DataSource<R, A>,
+  description: string,
+  f: (r: R0) => R
+): DataSource<R0, A> {
+  return new DataSource(`${self.identifier}.provideSome(${description})`, (requests) =>
+    T.provideSome_(self.runAll(requests), f)
+  )
+}
+
+/**
+ * Provides this data source with part of its required environment.
+ * @dataFirst provideSome_
+ */
 export function provideSome<R0, R>(description: string, f: (r: R0) => R) {
   return <A>(self: DataSource<R, A>): DataSource<R0, A> =>
-    new DataSource(`${self.identifier}.provideSome(${description})`, (requests) =>
-      T.provideSome_(self.runAll(requests), f)
-    )
+    provideSome_(self, description, f)
 }
 
 /**
@@ -155,11 +228,23 @@ export function provideSome<R0, R>(description: string, f: (r: R0) => R) {
  * data source and that data source, returning the results from the first
  * data source to complete and safely interrupting the loser.
  */
+export function race_<R, A, R1, A1>(
+  self: DataSource<R, A>,
+  that: DataSource<R1, A1>
+): DataSource<R & R1, A & A1> {
+  return new DataSource(`${self.identifier}.race(${that.identifier})`, (requests) =>
+    T.race_(self.runAll(requests), that.runAll(requests))
+  )
+}
+
+/**
+ * Returns a new data source that executes requests by sending them to this
+ * data source and that data source, returning the results from the first
+ * data source to complete and safely interrupting the loser.
+ * @dataFirst race_
+ */
 export function race<R1, A1>(that: DataSource<R1, A1>) {
-  return <R, A>(self: DataSource<R, A>): DataSource<R & R1, A & A1> =>
-    new DataSource(`${self.identifier}.race(${that.identifier})`, (requests) =>
-      T.race_(self.runAll(requests), that.runAll(requests))
-    )
+  return <R, A>(self: DataSource<R, A>): DataSource<R & R1, A & A1> => race_(self, that)
 }
 
 /**
