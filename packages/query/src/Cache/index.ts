@@ -50,7 +50,7 @@ export interface Cache {
 export const empty = pipe(
   REF.makeRef(
     HM.make<Request<any, any>, any>({
-      equals: (y) => (x) => y._tag === x._tag && x[eqSymbol](y),
+      equals: (x, y) => y._tag === x._tag && x[eqSymbol](y),
       hash: (x) => x[hashSymbol]()
     })
   ),

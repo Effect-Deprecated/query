@@ -63,7 +63,7 @@ export class MorphicRequest<K extends string, EI, AI, EE, AE, EO, AO> extends Re
   }
 
   [eqSymbol](that: this): boolean {
-    return this.eq.equals(that.payload)(this.payload)
+    return this.eq.equals(this.payload, that.payload)
   }
   [hashSymbol](): number {
     if (this.#hash) {

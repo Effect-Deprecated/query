@@ -50,10 +50,8 @@ export class DataSource<R, A> {
   ) {}
 }
 
-export function equals(a: DataSource<any, any>) {
-  return (b: DataSource<any, any>): boolean => {
-    return a.identifier === b.identifier
-  }
+export function equals(a: DataSource<any, any>, b: DataSource<any, any>): boolean {
+  return a.identifier === b.identifier
 }
 
 export function hash(a: DataSource<any, any>): number {

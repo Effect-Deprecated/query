@@ -337,28 +337,37 @@ export function zipWith_<R, E, R1, E1, B, A, C>(
   self: Query<R, E, A>,
   that: Query<R1, E1, B>,
   f: (a: A, b: B) => C
-) {
+): Query<R & R1, E | E1, C> {
   return new Query(
     T.chain_(self.step, (res) => {
       switch (res._tag) {
-        case "Blocked":
-          return T.map_(that.step, (res2) => {
-            // TODO: ZIO.succeedNow(Result.blocked(br, Continue.effect(c.zipWith(that)(f))))
-            switch (res2._tag) {
-              case "Blocked":
-                return RES.blocked(
-                  BRS.then(res2.blockedRequests)(res.blockedRequests),
-                  CONT.zipWith(res2.cont, f)(res.cont)
-                )
-              case "Done":
-                return RES.blocked(
-                  res.blockedRequests,
-                  CONT.map_(res.cont, (a) => f(a, res2.value))
-                )
-              case "Fail":
-                return RES.fail(res2.cause)
-            }
-          })
+        case "Blocked": {
+          if (res.cont._tag === "Effect") {
+            return T.succeed(
+              RES.blocked(
+                res.blockedRequests,
+                CONT.effect(zipWith_(res.cont.query, that, f))
+              )
+            )
+          } else {
+            return T.map_(that.step, (res2) => {
+              switch (res2._tag) {
+                case "Blocked":
+                  return RES.blocked(
+                    BRS.then(res2.blockedRequests)(res.blockedRequests),
+                    CONT.zipWith(res2.cont, f)(res.cont)
+                  )
+                case "Done":
+                  return RES.blocked(
+                    res.blockedRequests,
+                    CONT.map_(res.cont, (a) => f(a, res2.value))
+                  )
+                case "Fail":
+                  return RES.fail(res2.cause)
+              }
+            })
+          }
+        }
         case "Done":
           return T.map_(that.step, (res2) => {
             switch (res2._tag) {
@@ -385,6 +394,7 @@ export function zipWith_<R, E, R1, E1, B, A, C>(
  * query sequentially, combining their results with the specified function.
  * Requests composed with `zipWith` or combinators derived from it will
  * automatically be pipelined.
+ *
  * @dataFirst zipWith_
  */
 export function zipWith<R1, E1, B, A, C>(that: Query<R1, E1, B>, f: (a: A, b: B) => C) {
@@ -452,6 +462,7 @@ export function zipWithPar_<R, E, A, R1, E1, B, C>(
  * query in parallel, combining their results with the specified function.
  * Requests composed with `zipWithPar` or combinators derived from it will
  * automatically be batched.
+ *
  * @dataFirst zipWithPar_
  */
 export function zipWithPar<R1, E1, B, A, C>(
@@ -482,6 +493,7 @@ export function summarized_<R, E, A, R1, E1, B, C>(
  * Summarizes a query by computing some value before and after execution,
  * and then combining the values to produce a summary, together with the
  * result of execution.
+ *
  * @dataFirst summarized_
  */
 export function summarized<A, R1, E1, B, C>(
@@ -545,16 +557,29 @@ export function absolve<R, E, A>(query: Query<R, E, E.Either<E, A>>): Query<R, E
  * into a query returning a collection of their results. Requests will be
  * executed sequentially and will be pipelined.
  */
-export function forEach<R, E, A, B>(
+export function forEach_<R, E, A, B>(
   as: Iterable<A>,
   f: (a: A) => Query<R, E, B>
 ): Query<R, E, A.Array<B>> {
-  // TODO: what if as is empty?
-  return A.reduce_(
-    A.from(as).slice(1),
-    map_(f(as[0]), (_) => A.from([_])),
-    (builder, a) => zipWith_(builder, f(a), (arr, item) => A.concat_(arr, [item]))
-  )
+  const arr = A.from(as)
+  return arr.length === 0
+    ? fromEffect(T.succeed([]))
+    : A.reduce_(
+        arr.slice(1),
+        map_(f(as[0]), (_) => A.from([_])),
+        (builder, a) => zipWith_(builder, f(a), (arr, item) => A.concat_(arr, [item]))
+      )
+}
+
+/**
+ * Performs a query for each element in a collection, collecting the results
+ * into a query returning a collection of their results. Requests will be
+ * executed sequentially and will be pipelined.
+ */
+export function forEach<R, E, A, B>(
+  f: (a: A) => Query<R, E, B>
+): (as: Iterable<A>) => Query<R, E, A.Array<B>> {
+  return (as) => forEach_(as, f)
 }
 
 /**
@@ -582,7 +607,7 @@ export function fromOption<A>(option: O.Option<A>): Query<unknown, O.Option<neve
 export function collectAll<R, E, A>(
   as: Iterable<Query<R, E, A>>
 ): Query<R, E, A.Array<A>> {
-  return forEach(as, identity)
+  return forEach_(as, identity)
 }
 
 /**
@@ -662,18 +687,36 @@ export function runLog<R, E, A>(
   )
 }
 
-// TODO
-export function forEachPar<R, E, A, B>(
+/**
+ * Performs a query for each element in a collection, collecting the results
+ * into a query returning a collection of their results. Requests will be
+ * executed parallely and will be pipelined.
+ */
+export function forEachPar_<R, E, A, B>(
   as: Iterable<A>,
   f: (a: A) => Query<R, E, B>
 ): Query<R, E, A.Array<B>> {
   const arr = A.from(as)
-  // TODO: What if is empty?
-  return A.reduce_(
-    arr.slice(1),
-    map_(f(arr[0]), (a) => A.from([a])),
-    (q, a) => zipWithPar_(q, f(a), (a, b) => A.concat_(a, [b]))
-  )
+  return arr.length === 0
+    ? fromEffect(T.succeed([]))
+    : A.reduce_(
+        arr.slice(1),
+        map_(f(arr[0]), (a) => A.from([a])),
+        (q, a) => zipWithPar_(q, f(a), (a, b) => A.concat_(a, [b]))
+      )
+}
+
+/**
+ * Performs a query for each element in a collection, collecting the results
+ * into a query returning a collection of their results. Requests will be
+ * executed parallely and will be pipelined.
+ *
+ * @dataFirst forEachPar
+ */
+export function forEachPar<R, E, A, B>(
+  f: (a: A) => Query<R, E, B>
+): (as: Iterable<A>) => Query<R, E, A.Array<B>> {
+  return (as) => forEachPar_(as, f)
 }
 
 /**
@@ -683,7 +726,7 @@ export function forEachPar<R, E, A, B>(
 export function collectAllPar<R, E, A>(
   as: Iterable<Query<R, E, A>>
 ): Query<R, E, A.Array<A>> {
-  return forEachPar(as, identity)
+  return forEachPar_(as, identity)
 }
 
 /**
