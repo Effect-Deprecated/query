@@ -532,6 +532,60 @@ export function fromEffect<R, E, A>(effect: T.Effect<R, E, A>): Query<R, E, A> {
 }
 
 /**
+ * Returns a query which submerges the error case of `Either` into the error channel of the query
+ *
+ * The inverse of [[ZQuery.either]]
+ */
+export function absolve<R, E, A>(query: Query<R, E, E.Either<E, A>>): Query<R, E, A> {
+  return chain_(query, fromEither)
+}
+
+/**
+ * Performs a query for each element in a collection, collecting the results
+ * into a query returning a collection of their results. Requests will be
+ * executed sequentially and will be pipelined.
+ */
+export function forEach<R, E, A, B>(
+  as: Iterable<A>,
+  f: (a: A) => Query<R, E, B>
+): Query<R, E, A.Array<B>> {
+  // TODO: what if as is empty?
+  return A.reduce_(
+    A.from(as).slice(1),
+    map_(f(as[0]), (_) => A.from([_])),
+    (builder, a) => zipWith_(builder, f(a), (arr, item) => A.concat_(arr, [item]))
+  )
+}
+
+/**
+ * Constructs a query from an either
+ */
+export function fromEither<E, A>(either: E.Either<E, A>): Query<unknown, E, A> {
+  return chain_(succeed(either), E.fold(fail, succeed))
+}
+
+/**
+ * Constructs a query from an option
+ */
+export function fromOption<A>(option: O.Option<A>): Query<unknown, O.Option<never>, A> {
+  return chain_(
+    succeed(option),
+    O.fold(() => fail(O.none), succeed)
+  )
+}
+
+/**
+ * Collects a collection of queries into a query returning a collection of
+ * their results. Requests will be executed sequentially and will be
+ * pipelined.
+ */
+export function collectAll<R, E, A>(
+  as: Iterable<Query<R, E, A>>
+): Query<R, E, A.Array<A>> {
+  return forEach(as, identity)
+}
+
+/**
  * Constructs a query from a request and a data source. Queries will die with
  * a `QueryFailure` when run if the data source does not provide results for
  * all requests received. Queries must be constructed with `fromRequest` or
