@@ -231,7 +231,7 @@ export function merge<R>(
       parKeys
     )
   ) {
-    return [SQ.add_(seqHead, PL.sequential(parallel)), ...sequential.slice(1)]
+    return [SQ.add_(seqHead, PL.sequential(parallel)), ...scalaTail(sequential)]
   }
 
   return A.concat_([PL.sequential(parallel)], sequential)
