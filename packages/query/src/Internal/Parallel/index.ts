@@ -26,12 +26,12 @@ export class Parallel<R> {
  * with that collection of requests that can be executed in parallel to
  * return a new collection of requests that can be executed in parallel.
  */
-export function combine<R1>(that: Parallel<R1>) {
-  return <R>(self: Parallel<R>): Parallel<R & R1> => combine_(self, that)
+export function add<R1>(that: Parallel<R1>) {
+  return <R>(self: Parallel<R>): Parallel<R & R1> => add_(self, that)
 }
 
-export function combine_<R, R1>(self: Parallel<R>, that: Parallel<R1>) {
-  return new Parallel(
+export function add_<R, R1>(self: Parallel<R>, that: Parallel<R1>) {
+  return new Parallel<R & R1>(
     HM.reduceWithIndex_(self.map, that.map, (map, k, v) =>
       HM.set_(
         map,
@@ -67,7 +67,7 @@ export function keys<R>(self: Parallel<R>): Iterable<DS.DataSource<R, unknown>> 
  * sequentially.
  */
 export function sequential<R>(self: Parallel<R>): Sequential<R> {
-  return new Sequential(HM.mapWithIndex_(self.map, (k, v) => [v]))
+  return new Sequential(HM.mapWithIndex_(self.map, (_, v) => [v]))
 }
 
 /**
@@ -84,6 +84,13 @@ export function toIterable<R>(
 }
 
 /**
+ * The empty collection of requests.
+ */
+export const empty = new Parallel<unknown>(
+  HM.make({ hash: DS.hash, equals: DS.equals })
+)
+
+/**
  * Constructs a new collection of requests containing a mapping from the
  * specified data source to the specified request.
  */
@@ -91,12 +98,15 @@ export function apply<R, A>(
   dataSource: DS.DataSource<R, A>,
   blockedRequest: BlockedRequest<A>
 ): Parallel<R> {
-  return new Parallel(HM.set_(HM.make(DS), dataSource, [blockedRequest]) as any) // TODO: SHAME
+  return new Parallel(
+    // @ts-expect-error
+    HM.set_(
+      HM.make({
+        hash: DS.hash,
+        equals: DS.equals
+      }),
+      dataSource,
+      [blockedRequest]
+    )
+  )
 }
-
-/**
- * The empty collection of requests.
- */
-export const empty = new Parallel<unknown>(
-  HM.make({ hash: DS.hash, equals: DS.equals })
-)

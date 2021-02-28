@@ -25,21 +25,33 @@ export class Sequential<R> {
  * executed sequentially to return a new collection of batches of requests
  * that must be executed sequentially.
  */
-export function combine<R1>(that: Sequential<R1>) {
-  return <R>(self: Sequential<R>): Sequential<R & R1> =>
-    new Sequential(
-      HM.reduceWithIndex_(that.map, self.map, (map, k, v) =>
-        HM.set_(
-          map,
-          k,
-          O.fold_(
-            HM.get_(map, k),
-            () => A.empty,
-            (_) => A.concat_(_, v)
-          )
+export function add<R1>(that: Sequential<R1>) {
+  return <R>(self: Sequential<R>): Sequential<R & R1> => add_(self, that)
+}
+
+/**
+ * Combines this collection of batches of requests that must be executed
+ * sequentially with that collection of batches of requests that must be
+ * executed sequentially to return a new collection of batches of requests
+ * that must be executed sequentially.
+ */
+export function add_<R, R1>(
+  self: Sequential<R>,
+  that: Sequential<R1>
+): Sequential<R & R1> {
+  return new Sequential(
+    HM.reduceWithIndex_(that.map, self.map, (map, k, v) =>
+      HM.set_(
+        map,
+        k,
+        O.fold_(
+          HM.get_(map, k),
+          () => A.empty,
+          (_) => A.concat_(_, v)
         )
       )
     )
+  )
 }
 
 /**

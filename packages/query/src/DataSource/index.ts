@@ -50,7 +50,7 @@ export class DataSource<R, A> {
   ) {}
 }
 
-export function equals(a: DataSource<any, any>, b: DataSource<any, any>): boolean {
+export function equals<R, A>(a: DataSource<R, A>, b: DataSource<R, A>): boolean {
   return a.identifier === b.identifier
 }
 
@@ -58,16 +58,22 @@ export function hash(a: DataSource<any, any>): number {
   return H.string(a.identifier)
 }
 
+export class InvalidBatchConfig {
+  readonly _tag = "InvalidBatchConfig"
+  readonly message = "batchN: n must be at least 1 and must be an integer"
+  constructor(readonly n: number) {}
+}
+
 /**
  * Returns a data source that executes at most `n` requests in parallel.
  */
 export function batchN_<R, A>(self: DataSource<R, A>, n: number): DataSource<R, A> {
   return new DataSource(`${self.identifier}.batchN(${n})`, (requests) => {
-    if (n < 1) {
-      return T.die("batchN: n must be at least 1") // TODO: Error class
+    if (n < 1 || !Number.isInteger(n)) {
+      return T.die(new InvalidBatchConfig(n))
     } else {
       return self.runAll(
-        A.reduce_(requests, A.empty as A.Array<A.Array<A>>, (x, y) =>
+        A.reduce_(requests, A.emptyOf<A.Array<A>>(), (x, y) =>
           A.concat_(x, A.chunksOf_(y, n))
         )
       )

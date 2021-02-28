@@ -218,12 +218,30 @@ export function merge<R>(
 ): A.Array<SQ.Sequential<R>> {
   if (A.isEmpty(sequential)) return [PL.sequential(parallel)]
   if (PL.isEmpty(parallel)) return sequential
-  // TODO: there is one missing case
-  /**
-   *  else if (sequential.head.keys.size == 1 && parallel.keys.size == 1 && sequential.head.keys == parallel.keys)
-   *  (sequential.head ++ parallel.sequential) :: sequential.tail
-   */
+
+  const seqHead = sequential[0]
+  const seqHeadKeys = A.from(SQ.keys(seqHead))
+  const parKeys = A.from(PL.keys(parallel))
+
+  if (
+    seqHeadKeys.length === 1 &&
+    parKeys.length === 1 &&
+    A.getEqual<DS.DataSource<R, unknown>>({ equals: DS.equals }).equals(
+      seqHeadKeys,
+      parKeys
+    )
+  ) {
+    return [SQ.add_(seqHead, PL.sequential(parallel)), ...sequential.slice(1)]
+  }
+
   return A.concat_([PL.sequential(parallel)], sequential)
+}
+
+class FlattenFrame<R> {
+  constructor(
+    readonly blockedRequests: A.Array<BlockedRequests<R>>,
+    readonly flattened: A.Array<SQ.Sequential<R>>
+  ) {}
 }
 
 /**
@@ -233,25 +251,36 @@ export function merge<R>(
 export function flatten<R>(
   blockedRequests: BlockedRequests<R>
 ): A.Array<SQ.Sequential<R>> {
-  // TODO: Stack safety
-  function loop(
-    blockedRequests: A.Array<BlockedRequests<R>>,
-    flattened: A.Array<SQ.Sequential<R>>
-  ): A.Array<SQ.Sequential<R>> {
+  let current = new FlattenFrame([blockedRequests], [])
+
+  // eslint-disable-next-line no-constant-condition
+  while (1) {
     const [parallel, sequential] = A.reduce_(
-      blockedRequests,
+      current.blockedRequests,
       tuple<[PL.Parallel<R>, A.Array<BlockedRequests<R>>]>(PL.empty, A.empty),
       ([parallel, sequential], blockedRequest) => {
         const [par, seq] = step(blockedRequest)
-        return tuple(PL.combine(parallel)(par), A.concat_(sequential, seq))
+        return tuple(PL.add(parallel)(par), A.concat_(sequential, seq))
       }
     )
-    const updated = merge(flattened, parallel)
+
+    const updated = merge(current.flattened, parallel)
+
     if (A.isEmpty(sequential)) return A.reverse(updated)
-    return loop(sequential, updated)
+
+    current = new FlattenFrame(sequential, updated)
   }
 
-  return loop([blockedRequests], [])
+  throw new Error("absurd")
+}
+
+class StepFrame<R> {
+  constructor(
+    readonly blockedRequests: BlockedRequests<R>,
+    readonly stack: A.Array<BlockedRequests<R>>,
+    readonly parallel: PL.Parallel<R>,
+    readonly sequential: A.Array<BlockedRequests<R>>
+  ) {}
 }
 
 /**
@@ -263,86 +292,104 @@ export function flatten<R>(
 export function step<R>(
   c: BlockedRequests<R>
 ): readonly [PL.Parallel<R>, A.Array<BlockedRequests<R>>] {
-  // TODO: Stack safety
-  function loop(
-    blockedRequests: BlockedRequests<R>,
-    stack: A.Array<BlockedRequests<R>>,
-    parallel: PL.Parallel<R>,
-    sequential: A.Array<BlockedRequests<R>>
-  ): readonly [PL.Parallel<R>, A.Array<BlockedRequests<R>>] {
-    switch (blockedRequests._tag) {
-      case "Empty":
-        return pipe(
-          A.head(stack),
-          O.map((head) => loop(head, scalaTail(stack), parallel, sequential)),
-          O.getOrElse(() => tuple(parallel, sequential))
+  let current = new StepFrame(c, A.empty, PL.empty, A.empty)
+
+  // eslint-disable-next-line no-constant-condition
+  while (1) {
+    switch (current.blockedRequests._tag) {
+      case "Empty": {
+        const head = A.head(current.stack)
+        if (O.isSome(head)) {
+          current = new StepFrame(
+            head.value,
+            scalaTail(current.stack),
+            current.parallel,
+            current.sequential
+          )
+        } else {
+          return tuple(current.parallel, current.sequential)
+        }
+        break
+      }
+      case "Both": {
+        current = new StepFrame(
+          current.blockedRequests.left,
+          A.concat_([current.blockedRequests.right], current.stack),
+          current.parallel,
+          current.sequential
         )
-      case "Both":
-        return loop(
-          blockedRequests.left,
-          A.concat_([blockedRequests.right], stack),
-          parallel,
-          sequential
-        )
-      case "Single":
-        return pipe(
-          A.head(stack),
-          O.map((head) =>
-            loop(
-              head,
-              scalaTail(stack),
-              PL.combine_(
-                parallel,
-                blockedRequests.f((_) => PL.apply(_.dataSource, _.blockedRequest))
-              ),
-              sequential
-            )
-          ),
-          O.getOrElse(() => {
-            return tuple(
-              PL.combine_(
-                parallel,
-                blockedRequests.f((_) => PL.apply(_.dataSource, _.blockedRequest))
-              ),
-              sequential
-            )
-          })
-        )
+        break
+      }
+      case "Single": {
+        const head = A.head(current.stack)
+        if (O.isSome(head)) {
+          current = new StepFrame(
+            head.value,
+            scalaTail(current.stack),
+            PL.add_(
+              current.parallel,
+              current.blockedRequests.f((_) => PL.apply(_.dataSource, _.blockedRequest))
+            ),
+            current.sequential
+          )
+        } else {
+          return tuple(
+            PL.add_(
+              current.parallel,
+              current.blockedRequests.f((_) => PL.apply(_.dataSource, _.blockedRequest))
+            ),
+            current.sequential
+          )
+        }
+        break
+      }
       case "Then": {
-        const { left, right } = blockedRequests
+        const { left, right } = current.blockedRequests
         switch (left._tag) {
-          case "Empty":
-            return loop(right, stack, parallel, sequential)
-          case "Then":
-            return loop(
-              then_(left.left, then_(left.right, blockedRequests.right)),
-              stack,
-              parallel,
-              sequential
+          case "Empty": {
+            current = new StepFrame(
+              right,
+              current.stack,
+              current.parallel,
+              current.sequential
             )
+            break
+          }
+          case "Then": {
+            current = new StepFrame(
+              then_(left.left, then_(left.right, current.blockedRequests.right)),
+              current.stack,
+              current.parallel,
+              current.sequential
+            )
+            break
+          }
           case "Both": {
             const l = left.left
             const r = left.right
-            return loop(
+            current = new StepFrame(
               both_(then_(l, right), then_(r, right)),
-              stack,
-              parallel,
-              sequential
+              current.stack,
+              current.parallel,
+              current.sequential
             )
+            break
           }
-          case "Single":
-            return loop(
+          case "Single": {
+            current = new StepFrame(
               left,
-              stack,
-              parallel,
-              A.concat_([blockedRequests.right], sequential)
+              current.stack,
+              current.parallel,
+              A.concat_([current.blockedRequests.right], current.sequential)
             )
+            break
+          }
         }
       }
     }
   }
 
-  return loop(c, A.empty, PL.empty, A.empty)
+  throw new Error("absurd")
 }
 
 /**
