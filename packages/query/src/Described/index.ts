@@ -1,3 +1,5 @@
+import "@effect-ts/system/Operator"
+
 /**
  * A `Described[A]` is a value of type `A` along with a string description of
  * that value. The description may be used to generate a hash associated with

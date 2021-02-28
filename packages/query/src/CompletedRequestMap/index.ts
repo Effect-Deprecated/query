@@ -1,3 +1,5 @@
+import "@effect-ts/system/Operator"
+
 // port of: https://github.com/zio/zio-query/blob/9dfe9ca0b1e3077fc56cf5c983082af3ca7a62e7/zio-query/shared/src/main/scala/zio/query/CompletedRequestMap.scala
 import * as E from "@effect-ts/core/Either"
 import * as M from "@effect-ts/core/HashMap"

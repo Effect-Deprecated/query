@@ -1,3 +1,5 @@
+import "@effect-ts/system/Operator"
+
 import * as H from "@effect-ts/core/Hash"
 import type { M } from "@effect-ts/morphic"
 import { equal } from "@effect-ts/morphic/Equal"

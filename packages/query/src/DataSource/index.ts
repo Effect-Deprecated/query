@@ -1,3 +1,5 @@
+import "@effect-ts/system/Operator"
+
 // port of: https://github.com/zio/zio-query/blob/3f9f4237ca2d879b629163f23fe79045eb29f0b0/zio-query/shared/src/main/scala/zio/query/DataSource.scala
 import * as A from "@effect-ts/core/Array"
 import * as T from "@effect-ts/core/Effect"

@@ -92,15 +92,13 @@ const getAllUserIds = Q.fromRequest(new GetAllIds())(UserRequestDataSource)
 const getUserNameById = (id: number) =>
   Q.fromRequest(new GetNameById(id))(UserRequestDataSource)
 
-const getAllUserNames = Q.chain_(getAllUserIds, (userIds) =>
-  Q.forEachPar_(userIds, getUserNameById)
-)
+const getAllUserNames = getAllUserIds["|>"](Q.chain(Q.forEachPar(getUserNameById)))
 
 const getAgeByName = (name: string) =>
   Q.fromRequest(new GetAgeByName(name))(UserRequestDataSource)
 
 const getAgeById = (id: number) =>
-  Q.chain_(getUserNameById(id), (name) => getAgeByName(name))
+  getUserNameById(id)["|>"](Q.chain((name) => getAgeByName(name)))
 
 describe("Query", () => {
   it("basic query", async () => {
