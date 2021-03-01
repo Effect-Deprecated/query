@@ -66,23 +66,26 @@ type UserRequest = GetAllIds | GetNameById | GetAgeByName
 
 const UserRequestDataSource = DS.makeBatched("UserRequestDataSource")(
   (requests: A.Array<UserRequest>) =>
-    T.andThen_(
-      putStrLn("Running request..."),
-      T.succeed(
-        A.reduce_(requests, CR.empty, (crm, _) => {
-          switch (_._tag) {
-            case "GetAllIds":
-              return CR.insert_(crm, _, E.right(userIds))
-            case "GetNameById":
-              return O.fold_(
-                MAP.lookup_(userNames, _.id),
-                () => crm,
-                (userName) => CR.insert_(crm, _, E.right(userName))
-              )
-            case "GetAgeByName":
-              return CR.insert_(crm, _, E.right(18 + _.name.length))
-          }
-        })
+    putStrLn("Running request...")["|>"](
+      T.andThen(
+        T.succeed(
+          requests["|>"](
+            A.reduce(CR.empty, (crm, _) => {
+              switch (_._tag) {
+                case "GetAllIds":
+                  return CR.insert_(crm, _, E.right(userIds))
+                case "GetNameById":
+                  return O.fold_(
+                    MAP.lookup_(userNames, _.id),
+                    () => crm,
+                    (userName) => CR.insert_(crm, _, E.right(userName))
+                  )
+                case "GetAgeByName":
+                  return CR.insert_(crm, _, E.right(18 + _.name.length))
+              }
+            })
+          )
+        )
       )
     )
 )["|>"](DS.batchN(100))
@@ -142,8 +145,13 @@ describe("Query", () => {
     expect(await T.runPromise(f)).toEqual(2)
   })
   it("mapError does not prevent batching", async () => {
-    const a = pipe(getUserNameById(1), Q.zip(getUserNameById(2)), Q.mapError(identity))
-    const b = pipe(getUserNameById(3), Q.zip(getUserNameById(4)), Q.mapError(identity))
+    const a = getUserNameById(1)
+      ["|>"](Q.zip(getUserNameById(2)))
+      ["|>"](Q.mapError(identity))
+
+    const b = getUserNameById(3)
+      ["|>"](Q.zip(getUserNameById(4)))
+      ["|>"](Q.mapError(identity))
 
     const f = pipe(
       Q.collectAllPar([a, b]),
@@ -164,8 +172,13 @@ describe("Query", () => {
     )
   })
   it("timed does not prevent batching", async () => {
-    const a = pipe(getUserNameById(1), Q.zip(getUserNameById(2)), Q.timed)
-    const b = pipe(getUserNameById(3), Q.zip(getUserNameById(4)), Q.timed)
+    const a = getUserNameById(1)
+      ["|>"](Q.zip(getUserNameById(2)))
+      ["|>"](Q.timed)
+
+    const b = getUserNameById(3)
+      ["|>"](Q.zip(getUserNameById(4)))
+      ["|>"](Q.timed)
 
     const f = pipe(
       Q.collectAllPar([a, b]),
