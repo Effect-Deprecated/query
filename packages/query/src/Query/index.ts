@@ -763,3 +763,201 @@ export function optional<R, E, A>(self: Query<R, E, A>): Query<R, E, O.Option<A>
     (_) => succeed(O.some(_))
   )
 }
+
+/**
+ * Lifts the error channel into a `Some` value for composition with other optional queries
+ *
+ * @see [[ZQuery.some]]
+ */
+export function asSomeError<R, E, A>(self: Query<R, E, A>): Query<R, O.Option<E>, A> {
+  return mapError_(self, O.some)
+}
+
+/**
+ * Recovers from all errors.
+ */
+export function catchAll_<R, E, A, R1, E1, B>(
+  self: Query<R, E, A>,
+  h: (e: E) => Query<R1, E1, B>
+): Query<R & R1, E1, A | B> {
+  return foldM_(self, h, succeed)
+}
+
+/**
+ * Recovers from all errors.
+ * @dataFirst catchAll_
+ */
+export function catchAll<R, E, A, R1, E1, B>(h: (e: E) => Query<R1, E1, B>) {
+  return (self: Query<R, E, A>): Query<R & R1, E1, A | B> => catchAll_(self, h)
+}
+
+/**
+ * Recovers from all errors with provided Cause.
+ *
+ * @see [[ZQuery.sandbox]] - other functions that can recover from defects
+ */
+export function catchAllCause_<R, E, A, R1, E1, A1>(
+  self: Query<R, E, A>,
+  h: (cause: C.Cause<E>) => Query<R1, E1, A1>
+): Query<R & R1, E1, A | A1> {
+  return foldCauseM_(self, h, succeed)
+}
+
+/**
+ * Recovers from all errors with provided Cause.
+ *
+ * @see [[ZQuery.sandbox]] - other functions that can recover from defects
+ * @dataFirst catchAllCause_
+ */
+export function catchAllCause<R, E, A, R1, E1, A1>(
+  h: (cause: C.Cause<E>) => Query<R1, E1, A1>
+) {
+  return (self: Query<R, E, A>): Query<R & R1, E1, A | A1> => catchAllCause_(self, h)
+}
+
+/**
+ * Returns a query that performs the outer query first, followed by the inner
+ * query, yielding the value of the inner query.
+ *
+ * This method can be used to "flatten" nested queries.
+ */
+export function flatten<R, E, R1, E1, A1>(
+  self: Query<R, E, Query<R1, E1, A1>>
+): Query<R & R1, E | E1, A1> {
+  return chain_(self, identity)
+}
+
+/**
+ * Returns a successful query if the value is `Left`, or fails with the error `None`.
+ */
+export function left<R, E, B, C>(
+  self: Query<R, E, E.Either<B, C>>
+): Query<R, O.Option<E>, B> {
+  return foldM_(
+    self,
+    (e) => fail(O.some(e)),
+    (a) => E.fold_(a, succeed, (_) => fail(O.none))
+  )
+}
+
+/**
+ * Returns a successful query if the value is `Left`, or fails with the error e.
+ */
+export function leftOrFail_<R, E, B, C, E1>(
+  self: Query<R, E, E.Either<B, C>>,
+  e: E1
+): Query<R, E | E1, B> {
+  return chain_(self, (_) => E.fold_(_, succeed, () => fail(e)))
+}
+
+/**
+ * Returns a successful query if the value is `Left`, or fails with the error e.
+ * @dataFirst leftOrFail_
+ */
+export function leftOrFail<R, E, B, C, E1>(e: E1) {
+  return (self: Query<R, E, E.Either<B, C>>): Query<R, E | E1, B> =>
+    leftOrFail_(self, e)
+}
+
+/**
+ * Returns a successful query if the value is `Left`, or fails with the given error function 'e'.
+ */
+export function leftOrFailWith_<R, E, B, C, E1>(
+  self: Query<R, E, E.Either<B, C>>,
+  e: (c: C) => E1
+): Query<R, E | E1, B> {
+  return chain_(self, (ei) => E.fold_(ei, succeed, (err) => fail(e(err))))
+}
+
+/**
+ * Returns a successful query if the value is `Left`, or fails with the given error function 'e'.
+ * @dataFirst leftOrFailWith_
+ */
+export function leftOrFailWith<R, E, B, C, E1>(e: (c: C) => E1) {
+  return (self: Query<R, E, E.Either<B, C>>): Query<R, E | E1, B> =>
+    leftOrFailWith_(self, e)
+}
+
+/**
+ * Returns a query with its full cause of failure mapped using the
+ * specified function. This can be used to transform errors while
+ * preserving the original structure of `Cause`.
+ *
+ * @see [[sandbox]], [[catchAllCause]] - other functions for dealing with defects
+ */
+export function mapErrorCause_<R, E, A, E2>(
+  self: Query<R, E, A>,
+  h: (cause: C.Cause<E>) => C.Cause<E2>
+): Query<R, E2, A> {
+  return foldCauseM_(self, (c) => halt(h(c)), succeed)
+}
+
+/**
+ * Returns a query with its full cause of failure mapped using the
+ * specified function. This can be used to transform errors while
+ * preserving the original structure of `Cause`.
+ *
+ * @see [[sandbox]], [[catchAllCause]] - other functions for dealing with defects
+ * @dataFirst mapErrorCause_
+ */
+export function mapErrorCause<R, E, A, E2>(h: (cause: C.Cause<E>) => C.Cause<E2>) {
+  return (self: Query<R, E, A>): Query<R, E2, A> => mapErrorCause_(self, h)
+}
+
+/**
+ * Converts this query to one that dies if a query failure occurs.
+ */
+export function orDie<R, E, A>(self: Query<R, E, A>): Query<R, never, A> {
+  return orDieWith_(self, identity)
+}
+
+/**
+ * Converts this query to one that dies if a query failure occurs, using the
+ * specified function to map the error to a `Throwable`.
+ */
+export function orDieWith_<R, E, A>(
+  self: Query<R, E, A>,
+  f: (e: E) => unknown
+): Query<R, never, A> {
+  return foldM_(
+    self,
+    (e) => die(f(e)) as Query<R, never, A>,
+    (a) => succeed(a)
+  )
+}
+
+/**
+ * Converts this query to one that dies if a query failure occurs, using the
+ * specified function to map the error to a `Throwable`.
+ * @dataFirst orDieWith_
+ */
+export function orDieWith<R, E, A>(f: (e: E) => unknown) {
+  return (self: Query<R, E, A>): Query<R, never, A> => orDieWith_(self, f)
+}
+
+/**
+ * Constructs a query that dies with the specified error.
+ */
+export function die(cause: unknown): Query<unknown, never, void> {
+  return new Query(T.die(cause))
+}
+
+/**
+ * Provides this query with its required environment.
+ */
+export function provide_<R, E, A>(
+  self: Query<R, E, A>,
+  description: string,
+  env: R
+): Query<unknown, E, A> {
+  return provideSome_(self, `_ => ${description}`, (_) => env)
+}
+
+/**
+ * Provides this query with its required environment.
+ * @dataFirst provide_
+ */
+export function provide<R, E, A>(description: string, env: R) {
+  return (self: Query<R, E, A>): Query<unknown, E, A> =>
+    provide_(self, description, env)
+}
