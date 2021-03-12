@@ -8,8 +8,11 @@ import * as E from "@effect-ts/core/Either"
 import { identity, pipe, tuple } from "@effect-ts/core/Function"
 import type { Has } from "@effect-ts/core/Has"
 import * as O from "@effect-ts/core/Option"
-import type { _A, _E, _R } from "@effect-ts/core/Utils"
-import { isEither, isOption } from "@effect-ts/core/Utils"
+import type { URI } from "@effect-ts/core/Prelude"
+import * as P from "@effect-ts/core/Prelude"
+import * as DSL from "@effect-ts/core/Prelude/DSL"
+import type { _A, _E } from "@effect-ts/core/Utils"
+import { _R, isEither, isOption } from "@effect-ts/core/Utils"
 import * as C from "@effect-ts/system/Cause"
 import * as CL from "@effect-ts/system/Clock"
 import { NoSuchElementException } from "@effect-ts/system/GlobalExceptions"
@@ -973,81 +976,103 @@ export function getOrFail<A>(
   return O.fold_(value, () => fail(new NoSuchElementException()), succeed)
 }
 
-/**
- * Generator syntax
- */
-export class GenQuery<R, E, A> {
-  readonly _R!: (_R: R) => void
-  readonly _E!: () => E
-  readonly _A!: () => A
+export const QueryURI = "@effect-ts/query/Query"
+export type QueryURI = typeof QueryURI
 
-  constructor(readonly query: Query<R, E, A>) {}
-
-  *[Symbol.iterator](): Generator<GenQuery<R, E, A>, A, any> {
-    return yield this
+declare module "@effect-ts/core/Prelude/HKT" {
+  interface URItoKind<FC, TC, K, Q, W, X, I, S, R, E, A> {
+    [QueryURI]: Query<R, E, A>
   }
 }
 
-function adapter(_: any, __?: any) {
+export type V = P.V<"R", "-"> & P.V<"E", "+">
+
+export const Any = P.instance<P.Any<[URI<QueryURI>], V>>({
+  any: () => succeed({})
+})
+
+export const AssociativeFlatten = P.instance<P.AssociativeFlatten<[URI<QueryURI>], V>>({
+  flatten
+})
+
+export const AssociativeBoth = P.instance<P.AssociativeBoth<[URI<QueryURI>], V>>({
+  both: zip
+})
+
+export const Covariant = P.instance<P.Covariant<[URI<QueryURI>], V>>({
+  map
+})
+
+export const IdentityFlatten = P.instance<P.IdentityFlatten<[URI<QueryURI>], V>>({
+  ...Any,
+  ...AssociativeFlatten
+})
+
+export const IdentityBoth = P.instance<P.IdentityBoth<[URI<QueryURI>], V>>({
+  ...Any,
+  ...AssociativeBoth
+})
+
+export const Monad = P.instance<P.Monad<[URI<QueryURI>], V>>({
+  ...IdentityFlatten,
+  ...Covariant
+})
+
+export const Applicative = P.instance<P.Applicative<[URI<QueryURI>], V>>({
+  ...Covariant,
+  ...IdentityBoth
+})
+
+export const Fail = P.instance<P.FX.Fail<[URI<QueryURI>], V>>({
+  fail
+})
+
+export const Run = P.instance<P.FX.Run<[URI<QueryURI>], V>>({
+  either
+})
+
+const adapter: {
+  <E, A>(_: O.Option<A>, onNone: () => E): DSL.GenHKT<Query<unknown, E, A>, A>
+  <A>(_: O.Option<A>): DSL.GenHKT<Query<unknown, NoSuchElementException, A>, A>
+  <E, A>(_: E.Either<E, A>): DSL.GenHKT<Query<unknown, E, A>, A>
+  <R, E, A>(_: Query<R, E, A>): DSL.GenHKT<Query<R, E, A>, A>
+} = (_: any, __?: any) => {
   if (isEither(_)) {
-    return new GenQuery(fromEither(_))
+    return new DSL.GenHKT(fromEither(_))
   }
   if (isOption(_)) {
     if (__) {
-      return new GenQuery(
+      return new DSL.GenHKT(
         __ ? (_._tag === "None" ? fail(__()) : succeed(_.value)) : getOrFail(_)
       )
     }
-    return new GenQuery(getOrFail(_))
+    return new DSL.GenHKT(getOrFail(_))
   }
-  return new GenQuery(_)
+  return new DSL.GenHKT(_)
 }
+export const gen = P.genF(Monad, { adapter })
 
-export interface Adapter {
-  <E, A>(_: O.Option<A>, onNone: () => E): GenQuery<unknown, E, A>
-  <A>(_: O.Option<A>): GenQuery<unknown, NoSuchElementException, A>
-  <E, A>(_: E.Either<E, A>): GenQuery<unknown, E, A>
-  <R, E, A>(_: Query<R, E, A>): GenQuery<R, E, A>
-}
+export const bind = P.bindF(Monad)
 
-export function gen<RBase, EBase, AEff>(): <Eff extends GenQuery<RBase, EBase, any>>(
-  f: (i: Adapter) => Generator<Eff, AEff, any>
-) => Query<_R<Eff>, _E<Eff>, AEff>
-export function gen<EBase, AEff>(): <Eff extends GenQuery<any, EBase, any>>(
-  f: (i: Adapter) => Generator<Eff, AEff, any>
-) => Query<_R<Eff>, _E<Eff>, AEff>
-export function gen<AEff>(): <Eff extends GenQuery<any, any, any>>(
-  f: (i: Adapter) => Generator<Eff, AEff, any>
-) => Query<_R<Eff>, _E<Eff>, AEff>
-export function gen<Eff extends GenQuery<any, any, any>, AEff>(
-  f: (i: Adapter) => Generator<Eff, AEff, any>
-): Query<_R<Eff>, _E<Eff>, AEff>
-export function gen(...args: any[]): any {
-  function gen_<Eff extends GenQuery<any, any, any>, AEff>(
-    f: (i: Adapter) => Generator<Eff, AEff, any>
-  ): Query<_R<Eff>, _E<Eff>, AEff> {
-    const iterator = f(adapter as any)
-    const state = iterator.next()
+const let_ = P.letF(Monad)
 
-    function run(
-      state: IteratorYieldResult<Eff> | IteratorReturnResult<AEff>
-    ): Query<any, any, AEff> {
-      if (state.done) {
-        return succeed(state.value)
-      }
-      const bind = (val: any) => {
-        const next = iterator.next(val)
-        return run(next)
-      }
+const do_ = P.doF(Monad)()
 
-      return chain_(state.value["query"] as Query<any, any, any>, bind)
-    }
+export { do_ as do, let_ as let }
 
-    return run(state)
-  }
+export { branch as if, branch_ as if_ }
 
-  if (args.length === 0) {
-    return (f: any) => gen_(f)
-  }
-  return gen_(args[0])
-}
+export const struct = P.structF({ ...Monad, ...Applicative })
+
+/**
+ * Matchers
+ */
+export const { match, matchIn, matchMorph, matchTag, matchTagIn } = P.matchers(
+  Covariant
+)
+
+/**
+ * Conditionals
+ */
+const branch = P.conditionalF(Covariant)
+const branch_ = P.conditionalF_(Covariant)
