@@ -8,9 +8,14 @@ import * as E from "@effect-ts/core/Either"
 import { identity, pipe, tuple } from "@effect-ts/core/Function"
 import type { Has } from "@effect-ts/core/Has"
 import * as O from "@effect-ts/core/Option"
-import type { _A, _E } from "@effect-ts/core/Utils"
+import type { URI } from "@effect-ts/core/Prelude"
+import * as P from "@effect-ts/core/Prelude"
+import * as DSL from "@effect-ts/core/Prelude/DSL"
+import type { _A, _E, _R } from "@effect-ts/core/Utils"
+import { isEither, isOption } from "@effect-ts/core/Utils"
 import * as C from "@effect-ts/system/Cause"
 import * as CL from "@effect-ts/system/Clock"
+import { NoSuchElementException } from "@effect-ts/system/GlobalExceptions"
 
 import * as CH from "../Cache"
 import type { DataSource } from "../DataSource"
@@ -961,3 +966,113 @@ export function provide<R, E, A>(description: string, env: R) {
   return (self: Query<R, E, A>): Query<unknown, E, A> =>
     provide_(self, description, env)
 }
+
+/**
+ * Extracts the optional value or fails with NoSuchElementException.
+ */
+export function getOrFail<A>(
+  value: O.Option<A>
+): Query<unknown, NoSuchElementException, A> {
+  return O.fold_(value, () => fail(new NoSuchElementException()), succeed)
+}
+
+export const QueryURI = "@effect-ts/query/Query"
+export type QueryURI = typeof QueryURI
+
+declare module "@effect-ts/core/Prelude/HKT" {
+  interface URItoKind<FC, TC, K, Q, W, X, I, S, R, E, A> {
+    [QueryURI]: Query<R, E, A>
+  }
+}
+
+export type V = P.V<"R", "-"> & P.V<"E", "+">
+
+export const Any = P.instance<P.Any<[URI<QueryURI>], V>>({
+  any: () => succeed({})
+})
+
+export const AssociativeFlatten = P.instance<P.AssociativeFlatten<[URI<QueryURI>], V>>({
+  flatten
+})
+
+export const AssociativeBoth = P.instance<P.AssociativeBoth<[URI<QueryURI>], V>>({
+  both: zip
+})
+
+export const Covariant = P.instance<P.Covariant<[URI<QueryURI>], V>>({
+  map
+})
+
+export const IdentityFlatten = P.instance<P.IdentityFlatten<[URI<QueryURI>], V>>({
+  ...Any,
+  ...AssociativeFlatten
+})
+
+export const IdentityBoth = P.instance<P.IdentityBoth<[URI<QueryURI>], V>>({
+  ...Any,
+  ...AssociativeBoth
+})
+
+export const Monad = P.instance<P.Monad<[URI<QueryURI>], V>>({
+  ...IdentityFlatten,
+  ...Covariant
+})
+
+export const Applicative = P.instance<P.Applicative<[URI<QueryURI>], V>>({
+  ...Covariant,
+  ...IdentityBoth
+})
+
+export const Fail = P.instance<P.FX.Fail<[URI<QueryURI>], V>>({
+  fail
+})
+
+export const Run = P.instance<P.FX.Run<[URI<QueryURI>], V>>({
+  either
+})
+
+const adapter: {
+  <E, A>(_: O.Option<A>, onNone: () => E): DSL.GenHKT<Query<unknown, E, A>, A>
+  <A>(_: O.Option<A>): DSL.GenHKT<Query<unknown, NoSuchElementException, A>, A>
+  <E, A>(_: E.Either<E, A>): DSL.GenHKT<Query<unknown, E, A>, A>
+  <R, E, A>(_: Query<R, E, A>): DSL.GenHKT<Query<R, E, A>, A>
+} = (_: any, __?: any) => {
+  if (isEither(_)) {
+    return new DSL.GenHKT(fromEither(_))
+  }
+  if (isOption(_)) {
+    if (__) {
+      return new DSL.GenHKT(
+        __ ? (_._tag === "None" ? fail(__()) : succeed(_.value)) : getOrFail(_)
+      )
+    }
+    return new DSL.GenHKT(getOrFail(_))
+  }
+  return new DSL.GenHKT(_)
+}
+export const gen = P.genF(Monad, { adapter })
+
+export const bind = P.bindF(Monad)
+
+const let_ = P.letF(Monad)
+
+const do_ = P.doF(Monad)()
+
+export { do_ as do, let_ as let }
+
+export { branch as if, branch_ as if_ }
+
+export const struct = P.structF({ ...Monad, ...Applicative })
+
+/**
+ * Matchers
+ */
+export const { match, matchIn, matchMorph, matchTag, matchTagIn } = P.matchers(
+  Covariant
+)
+
+/**
+ * Conditionals
+ */
+const branch = P.conditionalF(Covariant)
+const branch_ = P.conditionalF_(Covariant)
