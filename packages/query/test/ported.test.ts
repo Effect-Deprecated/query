@@ -8,6 +8,7 @@ import type { Has } from "@effect-ts/core/Has"
 import { tag } from "@effect-ts/core/Has"
 import * as MAP from "@effect-ts/core/Map"
 import * as O from "@effect-ts/core/Option"
+import { NoSuchElementException } from "@effect-ts/system/GlobalExceptions"
 
 import * as CR from "../src/CompletedRequestMap"
 import * as DS from "../src/DataSource"
@@ -197,5 +198,43 @@ describe("Query", () => {
       T.provideServiceM(TestConsole)(emptyTestConsole)
     )
     expect(await T.runPromise(f)).toEqual(O.none)
+  })
+  it("allows gen syntax", async () => {
+    const f = pipe(
+      Q.gen(function* ($) {
+        const name1 = yield* $(getUserNameById(1))
+        const name2 = yield* $(getUserNameById(2))
+        const name3 = yield* $(getUserNameById(3))
+
+        return name1 + name2 + name3
+      }),
+      Q.run,
+      T.provideServiceM(TestConsole)(emptyTestConsole)
+    )
+    expect(await T.runPromise(f)).toEqual("123")
+  })
+  it("allows gen syntax - NoSuchElementException", async () => {
+    const f = pipe(
+      Q.gen(function* ($) {
+        const name1 = yield* $(O.none)
+
+        return name1
+      }),
+      Q.run,
+      T.provideServiceM(TestConsole)(emptyTestConsole)
+    )
+    expect(await T.runPromiseExit(f)).toEqual(Ex.fail(new NoSuchElementException()))
+  })
+  it("allows gen syntax - either", async () => {
+    const f = pipe(
+      Q.gen(function* ($) {
+        const name1 = yield* $(E.left("error"))
+
+        return name1
+      }),
+      Q.run,
+      T.provideServiceM(TestConsole)(emptyTestConsole)
+    )
+    expect(await T.runPromiseExit(f)).toEqual(Ex.fail("error"))
   })
 })
