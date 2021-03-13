@@ -91,15 +91,15 @@ const UserRequestDataSource = DS.makeBatched("UserRequestDataSource")(
     )
 )["|>"](DS.batchN(100))
 
-const getAllUserIds = Q.fromRequest(new GetAllIds())(UserRequestDataSource)
+const getAllUserIds = Q.fromRequest(new GetAllIds(), UserRequestDataSource)
 
 const getUserNameById = (id: number) =>
-  Q.fromRequest(new GetNameById(id))(UserRequestDataSource)
+  Q.fromRequest(new GetNameById(id), UserRequestDataSource)
 
 const getAllUserNames = getAllUserIds["|>"](Q.chain(Q.forEachPar(getUserNameById)))
 
 const getAgeByName = (name: string) =>
-  Q.fromRequest(new GetAgeByName(name))(UserRequestDataSource)
+  Q.fromRequest(new GetAgeByName(name), UserRequestDataSource)
 
 const getAgeById = (id: number) =>
   getUserNameById(id)["|>"](Q.chain((name) => getAgeByName(name)))

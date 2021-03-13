@@ -623,32 +623,34 @@ export function collectAll<R, E, A>(
  * all requests received. Queries must be constructed with `fromRequest` or
  * one of its variants for optimizations to be applied.
  */
-export function fromRequest<A extends Request<any, any>>(request: A) {
-  return <R>(dataSource: DataSource<R, A>): Query<R, _E<A>, _A<A>> =>
-    new Query(
-      T.chain_(
-        T.accessM(([r, queryContext]: readonly [R, QueryContext]) =>
-          queryContext.cache.lookup(request)
-        ),
-        E.fold(
-          (leftRef) =>
-            T.succeed(
-              RES.blocked(
-                BRS.single(dataSource, BR.of(request, leftRef)),
-                CONT.apply(request, dataSource, leftRef)
-              )
-            ),
-          (rightRef) =>
-            T.map_(
-              REF.get(rightRef),
-              O.fold(
-                () => RES.blocked(BRS.empty, CONT.apply(request, dataSource, rightRef)),
-                (b) => RES.fromEither(b)
-              )
+export function fromRequest<R, A extends Request<any, any>>(
+  request: A,
+  dataSource: DataSource<R, A>
+) {
+  return new Query<R, _E<A>, _A<A>>(
+    T.chain_(
+      T.accessM(([_, queryContext]: readonly [R, QueryContext]) =>
+        queryContext.cache.lookup(request)
+      ),
+      E.fold(
+        (leftRef) =>
+          T.succeed(
+            RES.blocked(
+              BRS.single(dataSource, BR.of(request, leftRef)),
+              CONT.apply(request, dataSource, leftRef)
             )
-        )
+          ),
+        (rightRef) =>
+          T.map_(
+            REF.get(rightRef),
+            O.fold(
+              () => RES.blocked(BRS.empty, CONT.apply(request, dataSource, rightRef)),
+              (b) => RES.fromEither(b)
+            )
+          )
       )
     )
+  )
 }
 
 /**
