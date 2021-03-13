@@ -137,7 +137,7 @@ export function requests(fa: CompletedRequestMap): HS.HashSet<Request<any, any>>
  */
 export const empty = new CompletedRequestMap(
   M.make({
-    equals: (x, y) => y._tag === x._tag && x[eqSymbol](y),
+    equals: (x, y) => x[eqSymbol](y),
     hash: (x) => x[hashSymbol]()
   })
 )

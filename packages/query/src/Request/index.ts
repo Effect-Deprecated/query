@@ -3,7 +3,9 @@ import "@effect-ts/system/Operator"
 import * as H from "@effect-ts/core/Hash"
 import type { M } from "@effect-ts/morphic"
 import { equal } from "@effect-ts/morphic/Equal"
+import { guard } from "@effect-ts/morphic/Guard"
 import type { Equal } from "@effect-ts/system/Equal"
+import type { Refinement } from "@effect-ts/system/Function"
 import { circularDeepEqual } from "fast-equals"
 
 import * as J from "../Internal/Json"
@@ -16,15 +18,17 @@ export abstract class Request<E, A> {
   readonly _A!: () => A
 
   abstract readonly _tag: string
-  abstract [eqSymbol](that: this): boolean
+  abstract [eqSymbol](that: Request<unknown, unknown>): boolean
   abstract [hashSymbol](): number
 }
 
 export abstract class StandardRequest<E, A> extends Request<E, A> {
   #hash: number | undefined;
 
-  [eqSymbol](that: this): boolean {
-    return circularDeepEqual(this, that)
+  [eqSymbol](that: Request<unknown, unknown>): boolean {
+    return (
+      this === that || (this._tag === that["_tag"] && circularDeepEqual(this, that))
+    )
   }
 
   [hashSymbol](): number {
@@ -48,13 +52,20 @@ export class MorphicRequest<K extends string, EI, AI, EE, AE, EO, AO> extends Re
     readonly payloadCodec: M<{}, EI, AI>,
     readonly responseCodec: M<{}, EO, AO>,
     readonly payload: AI,
-    readonly eq: Equal<AI>
+    readonly eq: Equal<AI>,
+    readonly guard: Refinement<unknown, AI>
   ) {
     super()
   }
 
-  [eqSymbol](that: this): boolean {
-    return this.eq.equals(this.payload, that.payload)
+  [eqSymbol](that: Request<unknown, unknown>): boolean {
+    return (
+      this === that ||
+      (this._tag === that._tag &&
+        that instanceof MorphicRequest &&
+        this.guard(that.payload) &&
+        this.eq.equals(this.payload, that.payload))
+    )
   }
   [hashSymbol](): number {
     if (this.#hash) {
@@ -72,7 +83,9 @@ export function morphicRequest<K extends string, EI, AI, EE, AE, EO, AO>(
   output: M<{}, EO, AO>
 ) {
   const eq = equal(input)
-  return (payload: AI) => new MorphicRequest(tag, error, input, output, payload, eq)
+  const is = guard(input)
+  return (payload: AI) =>
+    new MorphicRequest(tag, error, input, output, payload, eq, is.is)
 }
 
 export function morphicOpaqueRequest<
