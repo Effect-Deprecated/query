@@ -12,7 +12,6 @@ import type { Cache } from "../../Cache"
 import * as CRM from "../../CompletedRequestMap"
 import * as DS from "../../DataSource"
 import type { DataSourceAspect } from "../../DataSourceAspect"
-import type { Request } from "../../Request"
 import type { BlockedRequest } from "../BlockedRequest"
 import * as PL from "../Parallel"
 import * as SQ from "../Sequential"
@@ -409,15 +408,10 @@ export function run(cache: Cache) {
           ),
           T.bind("blockedRequests", () => T.succeed(A.flatten(sequential))),
           T.bind("leftovers", (_) => {
-            let a: any = undefined
             const arg1 = CRM.requests(_.completedRequests)
             const arg2 = A.map_(_.blockedRequests, (a) => a((g) => g.request))
-            try {
-              a = HS.difference_(arg1, arg2)
-            } catch (e) {
-              console.log(e, "exception")
-            }
-            return T.succeed(a as HS.HashSet<Request<unknown, unknown>>)
+            const a = HS.difference_(arg1, arg2)
+            return T.succeed(a)
           }),
           T.tap((_) =>
             T.forEach_(_.blockedRequests, (blockedRequest) =>
