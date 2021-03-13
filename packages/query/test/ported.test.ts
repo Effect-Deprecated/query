@@ -237,4 +237,17 @@ describe("Query", () => {
     )
     expect(await T.runPromiseExit(f)).toEqual(Ex.fail("error"))
   })
+  it("allows gen syntax - effect", async () => {
+    const f = pipe(
+      Q.gen(function* ($) {
+        const a = yield* $(T.succeed("a"))
+        const b = yield* $(T.succeed("b"))
+
+        return `${a}-${b}`
+      }),
+      Q.run,
+      T.provideServiceM(TestConsole)(emptyTestConsole)
+    )
+    expect(await T.runPromiseExit(f)).toEqual(Ex.succeed("a-b"))
+  })
 })
