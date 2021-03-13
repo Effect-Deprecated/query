@@ -356,9 +356,9 @@
   integrity sha512-9FNdPIRVRwcWs5bY/OUU9QZDX6bFsW4ahWbyc2z5EOl9SLExMZ/sgOM36sNbvsOincuqif2WOM7NxYoOsC1VGQ==
 
 "@effect-ts/system@^0.23.0", "@effect-ts/system@^0.23.1":
-  version "0.23.3"
-  resolved "https://registry.yarnpkg.com/@effect-ts/system/-/system-0.23.3.tgz#dc93d5cbb6565b93938a0ba4bd43db645f601c8d"
-  integrity sha512-5enhoCW/wXdFGlL5fT75flyJuE70nOUX6M4AUExV0KlmzMPAwjJrgOEgO869ZKGsLLBtWZgpU+n6y1CsTTMZTw==
+  version "0.23.4"
+  resolved "https://registry.yarnpkg.com/@effect-ts/system/-/system-0.23.4.tgz#9574ab679a86f2de70cb060a5e7b9100749684bf"
+  integrity sha512-X8VGpb4EYUOiZc8QKWCszxqFrNNJG4AR3NyqW750h+h0k6F77Ot0jggbO+fZWOgFFk0QhAqHHdm/aJMOMpBuyA==
   dependencies:
     "@effect-ts/tracing-utils" "^0.4.3"
 
