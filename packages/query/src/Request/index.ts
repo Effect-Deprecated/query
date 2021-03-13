@@ -5,24 +5,13 @@ import type { M } from "@effect-ts/morphic"
 import { equal } from "@effect-ts/morphic/Equal"
 import type { Equal } from "@effect-ts/system/Equal"
 import { circularDeepEqual } from "fast-equals"
-import J from "fast-safe-stringify"
+
+import * as J from "../Internal/Json"
 
 export const eqSymbol = Symbol()
 export const hashSymbol = Symbol()
 
-export interface Equatable {
-  [eqSymbol](that: this): boolean
-}
-
-export function isEquatable(u: unknown): u is Equatable {
-  return typeof u === "object" && u != null && eqSymbol in u
-}
-
-export interface Hashable {
-  [hashSymbol](): number
-}
-
-export abstract class Request<E, A> implements Equatable {
+export abstract class Request<E, A> {
   readonly _E!: () => E
   readonly _A!: () => A
 
@@ -42,7 +31,7 @@ export abstract class StandardRequest<E, A> extends Request<E, A> {
     if (this.#hash) {
       return this.#hash
     }
-    this.#hash = H.string(J.stableStringify(this))
+    this.#hash = H.string(J.stringify(this))
     return this.#hash
   }
 }
@@ -71,7 +60,7 @@ export class MorphicRequest<K extends string, EI, AI, EE, AE, EO, AO> extends Re
     if (this.#hash) {
       return this.#hash
     }
-    this.#hash = H.string(J.stableStringify(this.payload))
+    this.#hash = H.string(J.stringify({ _tag: this._tag, payload: this.payload }))
     return this.#hash
   }
 }
