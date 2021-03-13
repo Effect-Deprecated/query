@@ -1035,8 +1035,9 @@ const adapter: {
   <E, A>(_: O.Option<A>, onNone: () => E): DSL.GenHKT<Query<unknown, E, A>, A>
   <A>(_: O.Option<A>): DSL.GenHKT<Query<unknown, NoSuchElementException, A>, A>
   <E, A>(_: E.Either<E, A>): DSL.GenHKT<Query<unknown, E, A>, A>
+  <R, E, A>(_: T.Effect<R, E, A>): DSL.GenHKT<Query<R, E, A>, A>
   <R, E, A>(_: Query<R, E, A>): DSL.GenHKT<Query<R, E, A>, A>
-} = (_: any, __?: any) => {
+} = (_: any, __?: any): any => {
   if (isEither(_)) {
     return new DSL.GenHKT(fromEither(_))
   }
@@ -1048,8 +1049,12 @@ const adapter: {
     }
     return new DSL.GenHKT(getOrFail(_))
   }
-  return new DSL.GenHKT(_)
+  if (_ instanceof Query) {
+    return new DSL.GenHKT(_)
+  }
+  return new DSL.GenHKT(fromEffect(_))
 }
+
 export const gen = P.genF(Monad, { adapter })
 
 export const bind = P.bindF(Monad)
