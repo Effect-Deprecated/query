@@ -346,9 +346,9 @@
   integrity sha512-7R5tbC+QBTcFIwq7129bcjzogaHByAnKmMVmWrNpF0B2z4JWAl9Zb6XyTw7wCTMZaavD2oERF8zYLOVMg2dPnQ==
 
 "@effect-ts/morphic@^0.24.0":
-  version "0.24.0"
-  resolved "https://registry.yarnpkg.com/@effect-ts/morphic/-/morphic-0.24.0.tgz#e5859735326f0aaea1e0b2414202c5becbd82bb5"
-  integrity sha512-M+gDcEc8Jr2oGcZFFUT08K7PpISVXGHcQI4+RYcedlf5vh4xae2ptqeDYyvWSqvSz7nkT5MmyaJktSoiH3wOXQ==
+  version "0.24.1"
+  resolved "https://registry.yarnpkg.com/@effect-ts/morphic/-/morphic-0.24.1.tgz#ef3bb6b8945cc5bcf59c6f7f1554fa1ba2f5f396"
+  integrity sha512-wrLLRiobZ7QvQi2aAYEUXxceN9P7ma26q+EHvzTwe2L0CiYpQ3J/SgES0FLafpWxXsOe5h66ZHvGiGU9rTmsRg==
 
 "@effect-ts/node@^0.15.0":
   version "0.15.0"
