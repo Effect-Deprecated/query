@@ -1,16 +1,15 @@
+// port of: https://github.com/zio/zio-query/blob/b55364683726cc6611bec80876048ec5290cbcf5/zio-query/shared/src/main/scala/zio/query/Cache.scala
 import "@effect-ts/system/Operator"
 
-// port of: https://github.com/zio/zio-query/blob/b55364683726cc6611bec80876048ec5290cbcf5/zio-query/shared/src/main/scala/zio/query/Cache.scala
 import * as T from "@effect-ts/core/Effect"
 import * as E from "@effect-ts/core/Either"
 import { pipe } from "@effect-ts/core/Function"
 import * as HM from "@effect-ts/core/HashMap"
 import * as O from "@effect-ts/core/Option"
-import { _A, _E } from "@effect-ts/core/Utils"
-import { equalsSym, hashSym } from "@effect-ts/system/Case"
 import * as REF from "@effect-ts/system/Ref"
 
 import type { Request } from "../Request"
+import { eqRequest, hashRequest } from "../Request"
 
 /**
  * A `Cache` maintains an internal state with a mapping from requests to `Ref`s
@@ -52,8 +51,8 @@ export interface Cache {
 export const empty = pipe(
   REF.makeRef(
     HM.make<Request<any, any>, any>({
-      equals: (x, y) => x[equalsSym](y),
-      hash: (x) => x[hashSym]()
+      equals: eqRequest,
+      hash: hashRequest
     })
   ),
   T.map(makeDefaultCache)
