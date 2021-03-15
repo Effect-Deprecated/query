@@ -5,9 +5,9 @@ import * as E from "@effect-ts/core/Either"
 import * as M from "@effect-ts/core/HashMap"
 import type * as HS from "@effect-ts/core/HashSet"
 import * as O from "@effect-ts/core/Option"
+import { equalsSym, hashSym } from "@effect-ts/system/Case"
 
 import type { Request } from "../Request"
-import { eqSymbol, hashSymbol } from "../Request"
 
 /**
  * A `CompletedRequestMap` is a universally quantified mapping from requests
@@ -137,7 +137,7 @@ export function requests(fa: CompletedRequestMap): HS.HashSet<Request<any, any>>
  */
 export const empty = new CompletedRequestMap(
   M.make({
-    equals: (x, y) => x[eqSymbol](y),
-    hash: (x) => x[hashSymbol]()
+    equals: (x, y) => x[equalsSym](y),
+    hash: (x) => x[hashSym]()
   })
 )

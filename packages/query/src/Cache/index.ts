@@ -7,10 +7,10 @@ import { pipe } from "@effect-ts/core/Function"
 import * as HM from "@effect-ts/core/HashMap"
 import * as O from "@effect-ts/core/Option"
 import { _A, _E } from "@effect-ts/core/Utils"
+import { equalsSym, hashSym } from "@effect-ts/system/Case"
 import * as REF from "@effect-ts/system/Ref"
 
 import type { Request } from "../Request"
-import { eqSymbol, hashSymbol } from "../Request"
 
 /**
  * A `Cache` maintains an internal state with a mapping from requests to `Ref`s
@@ -52,8 +52,8 @@ export interface Cache {
 export const empty = pipe(
   REF.makeRef(
     HM.make<Request<any, any>, any>({
-      equals: (x, y) => x[eqSymbol](y),
-      hash: (x) => x[hashSymbol]()
+      equals: (x, y) => x[equalsSym](y),
+      hash: (x) => x[hashSym]()
     })
   ),
   T.map(makeDefaultCache)

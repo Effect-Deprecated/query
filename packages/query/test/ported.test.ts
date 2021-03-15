@@ -45,22 +45,20 @@ const userNames: MAP.Map<number, string> = MAP.make(
   )
 )
 
-class GetAllIds extends StandardRequest<never, A.Array<number>> {
+class GetAllIds extends StandardRequest<GetAllIds, never, A.Array<number>> {
   readonly _tag = "GetAllIds"
 }
 
-class GetNameById extends StandardRequest<never, string> {
+class GetNameById extends StandardRequest<GetNameById, never, string> {
   readonly _tag = "GetNameById"
-  constructor(public readonly id: number) {
-    super()
-  }
+
+  readonly id!: number
 }
 
-class GetAgeByName extends StandardRequest<never, number> {
+class GetAgeByName extends StandardRequest<GetAgeByName, never, number> {
   readonly _tag = "GetAgeByName"
-  constructor(public readonly name: string) {
-    super()
-  }
+
+  readonly name!: string
 }
 
 type UserRequest = GetAllIds | GetNameById | GetAgeByName
@@ -94,12 +92,12 @@ const UserRequestDataSource = DS.makeBatched("UserRequestDataSource")(
 const getAllUserIds = Q.fromRequest(new GetAllIds(), UserRequestDataSource)
 
 const getUserNameById = (id: number) =>
-  Q.fromRequest(new GetNameById(id), UserRequestDataSource)
+  Q.fromRequest(new GetNameById({ id }), UserRequestDataSource)
 
 const getAllUserNames = getAllUserIds["|>"](Q.chain(Q.forEachPar(getUserNameById)))
 
 const getAgeByName = (name: string) =>
-  Q.fromRequest(new GetAgeByName(name), UserRequestDataSource)
+  Q.fromRequest(new GetAgeByName({ name }), UserRequestDataSource)
 
 const getAgeById = (id: number) =>
   getUserNameById(id)["|>"](Q.chain((name) => getAgeByName(name)))
@@ -169,7 +167,7 @@ describe("Query", () => {
       T.provideServiceM(TestConsole)(emptyTestConsole)
     )
     expect(await T.runPromiseExit(T.untraced(f))).toEqual(
-      Ex.die(new QueryFailure(UserRequestDataSource, new GetNameById(27)))
+      Ex.die(new QueryFailure(UserRequestDataSource, new GetNameById({ id: 27 })))
     )
   })
   it("timed does not prevent batching", async () => {
