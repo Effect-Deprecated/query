@@ -340,20 +340,10 @@
     "@effect-ts/system" "^0.23.9"
     "@effect-ts/tracing-utils" "^0.4.3"
 
-"@effect-ts/monocle@^0.23.0":
-  version "0.23.0"
-  resolved "https://registry.yarnpkg.com/@effect-ts/monocle/-/monocle-0.23.0.tgz#16e838760782d8e35af659e17284eb822582f751"
-  integrity sha512-7R5tbC+QBTcFIwq7129bcjzogaHByAnKmMVmWrNpF0B2z4JWAl9Zb6XyTw7wCTMZaavD2oERF8zYLOVMg2dPnQ==
-
-"@effect-ts/morphic@^0.24.0":
-  version "0.24.1"
-  resolved "https://registry.yarnpkg.com/@effect-ts/morphic/-/morphic-0.24.1.tgz#ef3bb6b8945cc5bcf59c6f7f1554fa1ba2f5f396"
-  integrity sha512-wrLLRiobZ7QvQi2aAYEUXxceN9P7ma26q+EHvzTwe2L0CiYpQ3J/SgES0FLafpWxXsOe5h66ZHvGiGU9rTmsRg==
-
-"@effect-ts/node@^0.15.0":
-  version "0.15.0"
-  resolved "https://registry.yarnpkg.com/@effect-ts/node/-/node-0.15.0.tgz#31e4202060789d1fb55d86fd003cdb48a1cdd88b"
-  integrity sha512-9FNdPIRVRwcWs5bY/OUU9QZDX6bFsW4ahWbyc2z5EOl9SLExMZ/sgOM36sNbvsOincuqif2WOM7NxYoOsC1VGQ==
+"@effect-ts/jest@^0.17.3":
+  version "0.17.3"
+  resolved "https://registry.yarnpkg.com/@effect-ts/jest/-/jest-0.17.3.tgz#488acd0839e5599ff7887b8b48fa21bdcb088b9e"
+  integrity sha512-L1AgxLTwscjPOUOD7MiA8CRtW+Q984PGpAYoQcu+aS1C1VOA71bRsnaOcgZb2o2Y+8s6i2J8+Bl/Md0Tipzx+w==
 
 "@effect-ts/system@^0.23.9":
   version "0.23.9"
@@ -3512,13 +3502,6 @@ extsprintf@^1.2.0:
   resolved "https://registry.yarnpkg.com/extsprintf/-/extsprintf-1.4.0.tgz#e2689f8f356fad62cca65a3a91c5df5f9551692f"
   integrity sha1-4mifjzVvrWLMplo6kcXfX5VRaS8=
 
-fast-check@^2.13.0:
-  version "2.13.0"
-  resolved "https://registry.yarnpkg.com/fast-check/-/fast-check-2.13.0.tgz#92a50a6a39b58760d4b0b52b12f98f28a9f020f6"
-  integrity sha512-IOfzKm/SCA+jpUEgAfqAuxHYPmgtmpnnwljQmYPRGrqYczcTKApXKHza/SNxFxYkecWfZilYa0DJdBvqz1bcSw==
-  dependencies:
-    pure-rand "^4.1.1"
-
 fast-deep-equal@^3.1.1:
   version "3.1.3"
   resolved "https://registry.yarnpkg.com/fast-deep-equal/-/fast-deep-equal-3.1.3.tgz#3a7d56b559d6cbc3eb512325244e619a65c6c525"
@@ -3528,11 +3511,6 @@ fast-diff@^1.1.2:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/fast-diff/-/fast-diff-1.2.0.tgz#73ee11982d86caaf7959828d519cfe927fac5f03"
   integrity sha512-xJuoT5+L99XlZ8twedaRf6Ax2TgQVxvgZOYoPKqZufmJib0tL2tegPBOZb1pVNgIhlqDlA0eO0c3wBvQcmzx4w==
-
-fast-equals@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/fast-equals/-/fast-equals-2.0.0.tgz#bef2c423af3939f2c54310df54c57e64cd2adefc"
-  integrity sha512-u6RBd8cSiLLxAiC04wVsLV6GBFDOXcTCgWkd3wEoFXgidPSoAJENqC9m7Jb2vewSvjBIfXV6icKeh3GTKfIaXA==
 
 fast-glob@^3.1.1, fast-glob@^3.2.5:
   version "3.2.5"
@@ -6632,11 +6610,6 @@ punycode@^2.1.0, punycode@^2.1.1:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/punycode/-/punycode-2.1.1.tgz#b58b010ac40c22c5657616c8d2c2c02c7bf479ec"
   integrity sha512-XRsRjdf+j5ml+y/6GKHPZbrF/8p2Yga0JPtdqTIY2Xe5ohJPD9saDJJLPvp9+NSBprVvevdXZybnj2cv8OEd0A==
-
-pure-rand@^4.1.1:
-  version "4.1.1"
-  resolved "https://registry.yarnpkg.com/pure-rand/-/pure-rand-4.1.1.tgz#9fca2d4af5c4e870bac337ed860977426ed17bf6"
-  integrity sha512-cZw4AL/KI6aDTdqHEbJPe2ZoHM3kSdpJRLJetv8c3tfq9o+PvQDXrHNEpB0AWukAGFx4fmeOerAGwkA4rtUgdA==
 
 q@^1.5.1:
   version "1.5.1"

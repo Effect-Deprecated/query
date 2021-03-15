@@ -1,3 +1,7 @@
+/* eslint-disable no-undef */
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { defaultMapper } = require("@effect-ts/jest/Modules")
+
 // eslint-disable-next-line
 module.exports = {
   preset: "ts-jest",
@@ -15,6 +19,7 @@ module.exports = {
   ],
   verbose: true,
   moduleNameMapper: {
+    ...defaultMapper,
     "@effect-ts/query/(.*)$": "<rootDir>/packages/query/build/_traced/$1",
     "@effect-ts/query$": "<rootDir>/packages/query/build/_traced"
   },
