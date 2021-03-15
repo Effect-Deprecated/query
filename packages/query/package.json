@@ -47,7 +47,7 @@
     ]
   },
   "peerDependencies": {
-    "@effect-ts/core": "^0.26.0",
+    "@effect-ts/core": "^0.26.11",
     "@effect-ts/monocle": "^0.23.0",
     "@effect-ts/morphic": "^0.24.0",
     "@effect-ts/node": "^0.15.0",
