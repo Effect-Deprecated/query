@@ -36,7 +36,6 @@
       "Internal/BlockedRequest",
       "Internal/BlockedRequests",
       "Internal/Continue",
-      "Internal/Json",
       "Internal/Parallel",
       "Internal/QueryContext",
       "Internal/Result",
