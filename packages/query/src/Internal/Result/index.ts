@@ -1,3 +1,5 @@
+// tracing: off
+
 import * as E from "@effect-ts/core/Either"
 import { pipe } from "@effect-ts/core/Function"
 import * as C from "@effect-ts/system/Cause"

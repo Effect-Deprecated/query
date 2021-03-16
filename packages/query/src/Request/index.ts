@@ -1,3 +1,5 @@
+// tracing: off
+
 import "@effect-ts/system/Operator"
 
 import { Case, equalsSym, hashSym } from "@effect-ts/system/Case"

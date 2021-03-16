@@ -1,3 +1,5 @@
+// tracing: off
+
 // port of: https://github.com/zio/zio-query/blob/9dfe9ca0b1e3077fc56cf5c983082af3ca7a62e7/zio-query/shared/src/main/scala/zio/query/CompletedRequestMap.scala
 import "@effect-ts/system/Operator"
 

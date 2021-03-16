@@ -1,3 +1,5 @@
+// tracing: off
+
 import "@effect-ts/system/Operator"
 
 import type { DataSource } from "../DataSource"
