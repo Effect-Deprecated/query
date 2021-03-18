@@ -10,6 +10,7 @@ import * as MAP from "@effect-ts/core/Map"
 import * as O from "@effect-ts/core/Option"
 import { NoSuchElementException } from "@effect-ts/system/GlobalExceptions"
 
+import * as CH from "../src/Cache"
 import * as CR from "../src/CompletedRequestMap"
 import * as DS from "../src/DataSource"
 import * as Q from "../src/Query"
@@ -247,5 +248,21 @@ describe("Query", () => {
       T.provideServiceM(TestConsole)(emptyTestConsole)
     )
     expect(await T.runPromiseExit(f)).toEqual(Ex.succeed("a-b"))
+  })
+  it("requests can be removed from the cache", async () => {
+    const f = pipe(
+      CH.empty,
+      T.chain((cache) =>
+        pipe(
+          getUserNameById(1),
+          Q.chain(() => Q.fromEffect(cache.remove(new GetNameById({ id: 1 })))),
+          Q.chain(() => getUserNameById(1)),
+          Q.runCache(cache)
+        )
+      ),
+      T.chain(() => getLogSize),
+      T.provideServiceM(TestConsole)(emptyTestConsole)
+    )
+    expect(await T.runPromise(f)).toEqual(2)
   })
 })

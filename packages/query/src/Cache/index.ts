@@ -1,6 +1,6 @@
 // tracing: off
 
-// port of: https://github.com/zio/zio-query/blob/b55364683726cc6611bec80876048ec5290cbcf5/zio-query/shared/src/main/scala/zio/query/Cache.scala
+// port of: https://github.com/zio/zio-query/blob/86f51ef90e41db8a616087095d16df8da6751ed4/zio-query/shared/src/main/scala/zio/query/Cache.scala
 import "@effect-ts/system/Operator"
 
 import * as T from "@effect-ts/core/Effect"
@@ -48,6 +48,11 @@ export interface Cache {
     request: Request<E, A>,
     result: REF.Ref<O.Option<E.Either<E, A>>>
   ): T.UIO<void>
+
+  /**
+   * Removes a request from the cache.
+   */
+  remove<E, A>(request: Request<E, A>): T.UIO<void>
 }
 
 export const empty = pipe(
@@ -99,5 +104,9 @@ function makeDefaultCache(state: REF.Ref<HM.HashMap<Request<any, any>, any>>): C
     return pipe(state, REF.update(HM.set(request, result)))
   }
 
-  return { get, lookup, put }
+  function remove<E, A>(request: Request<E, A>): T.UIO<void> {
+    return pipe(state, REF.update(HM.remove(request)))
+  }
+
+  return { get, lookup, put, remove }
 }
