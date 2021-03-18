@@ -1038,7 +1038,7 @@ export const Run = P.instance<P.FX.Run<[URI<QueryURI>], V>>({
 const adapter: {
   <E, A>(_: O.Option<A>, onNone: () => E): DSL.GenHKT<Query<unknown, E, A>, A>
   <A>(_: O.Option<A>): DSL.GenHKT<Query<unknown, NoSuchElementException, A>, A>
-  <A>(_: Tag<A>): DSL.GenHKT<Query<unknown, never, A>, A>
+  <A>(_: Tag<A>): DSL.GenHKT<Query<Has<A>, never, A>, A>
   <E, A>(_: E.Either<E, A>): DSL.GenHKT<Query<unknown, E, A>, A>
   <R, E, A>(_: T.Effect<R, E, A>): DSL.GenHKT<Query<R, E, A>, A>
   <R, E, A>(_: Query<R, E, A>): DSL.GenHKT<Query<R, E, A>, A>
