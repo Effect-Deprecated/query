@@ -1,5 +1,6 @@
 import * as A from "@effect-ts/core/Array"
 import * as T from "@effect-ts/core/Effect"
+import { pretty } from "@effect-ts/core/Effect/Cause"
 import * as Ex from "@effect-ts/core/Effect/Exit"
 import * as REF from "@effect-ts/core/Effect/Ref"
 import * as E from "@effect-ts/core/Either"
@@ -257,12 +258,16 @@ describe("Query", () => {
           getUserNameById(1),
           Q.chain(() => Q.fromEffect(cache.remove(new GetNameById({ id: 1 })))),
           Q.chain(() => getUserNameById(1)),
-          Q.runCache(cache)
+          Q.run
         )
       ),
       T.chain(() => getLogSize),
       T.provideServiceM(TestConsole)(emptyTestConsole)
     )
-    expect(await T.runPromise(f)).toEqual(2)
+    const result = await T.runPromiseExit(f)
+    if (result._tag === "Failure") {
+      console.log(pretty(result.cause))
+    }
+    expect(result).toEqual(Ex.succeed(2))
   })
 })

@@ -1,4 +1,4 @@
-// tracing: off
+// tracing: on
 
 // port of: https://github.com/zio/zio-query/blob/86f51ef90e41db8a616087095d16df8da6751ed4/zio-query/shared/src/main/scala/zio/query/Cache.scala
 import "@effect-ts/system/Operator"

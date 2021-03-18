@@ -1,4 +1,4 @@
-// tracing: off
+// tracing: on
 
 import "@effect-ts/system/Operator"
 

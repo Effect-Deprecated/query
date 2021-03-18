@@ -1,4 +1,4 @@
-// tracing: off
+// tracing: on
 
 // port of: https://github.com/zio/zio-query/blob/3f9f4237ca2d879b629163f23fe79045eb29f0b0/zio-query/shared/src/main/scala/zio/query/internal/BlockedRequest.scala
 import type { Either } from "@effect-ts/core/Either"
