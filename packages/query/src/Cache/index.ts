@@ -84,12 +84,12 @@ function makeDefaultCache(state: REF.Ref<HM.HashMap<Request<any, any>, any>>): C
     return pipe(
       REF.makeRef(O.emptyOf<E.Either<E, A>>()),
       T.chain((ref) =>
-        REF.modify_(state, (cache) =>
+        REF.modify_(state, (map) =>
           pipe(
-            HM.get_(cache, request),
+            HM.get_(map, request),
             O.fold(
-              () => [E.left(ref) as RET, HM.set_(cache, request, ref)],
-              () => [E.right(ref), cache]
+              () => [E.left(ref) as RET, HM.set_(map, request, ref)],
+              (r) => [E.right(r), map]
             )
           )
         )

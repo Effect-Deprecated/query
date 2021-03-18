@@ -1,6 +1,5 @@
 import * as A from "@effect-ts/core/Array"
 import * as T from "@effect-ts/core/Effect"
-import { pretty } from "@effect-ts/core/Effect/Cause"
 import * as Ex from "@effect-ts/core/Effect/Exit"
 import * as REF from "@effect-ts/core/Effect/Ref"
 import * as E from "@effect-ts/core/Either"
@@ -258,16 +257,25 @@ describe("Query", () => {
           getUserNameById(1),
           Q.chain(() => Q.fromEffect(cache.remove(new GetNameById({ id: 1 })))),
           Q.chain(() => getUserNameById(1)),
-          Q.run
+          Q.runCache(cache)
         )
       ),
       T.chain(() => getLogSize),
       T.provideServiceM(TestConsole)(emptyTestConsole)
     )
     const result = await T.runPromiseExit(f)
-    if (result._tag === "Failure") {
-      console.log(pretty(result.cause))
-    }
     expect(result).toEqual(Ex.succeed(2))
+  })
+  it("should hit cache without failing", async () => {
+    const f = pipe(
+      getUserNameById(1),
+      Q.chain(() => getUserNameById(1)),
+      Q.run,
+      T.chain(() => getLogSize),
+      T.provideServiceM(TestConsole)(emptyTestConsole)
+    )
+
+    const result = await T.runPromiseExit(f)
+    expect(result).toEqual(Ex.succeed(1))
   })
 })
