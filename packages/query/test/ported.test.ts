@@ -249,6 +249,17 @@ describe("Query", () => {
     )
     expect(await T.runPromiseExit(f)).toEqual(Ex.succeed("a-b"))
   })
+  it("allows gen syntax - tag", async () => {
+    const t = tag<number>()
+    const f = pipe(
+      Q.gen(function* ($) {
+        return yield* $(t)
+      }),
+      Q.run,
+      T.provideService(t)(42)
+    )
+    expect(await T.runPromiseExit(f)).toEqual(Ex.succeed(42))
+  })
   it("requests can be removed from the cache", async () => {
     const f = pipe(
       CH.empty,
