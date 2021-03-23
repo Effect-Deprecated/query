@@ -333,9 +333,9 @@
     minimist "^1.2.0"
 
 "@effect-ts/core@^0.27.4":
-  version "0.27.4"
-  resolved "https://registry.yarnpkg.com/@effect-ts/core/-/core-0.27.4.tgz#a5fdd3b8811f2f7c6968dc511bd51a6af56b818c"
-  integrity sha512-SCxcUJRkXDa/M8saPQeNWERxkJFtFPchtnuH0YjFtk+DktQ/gj1u2iLjZcoe6ssIuwZUs8xuQbzMT1zksQDp+A==
+  version "0.27.5"
+  resolved "https://registry.yarnpkg.com/@effect-ts/core/-/core-0.27.5.tgz#7dfa5458601ba2eac3ba97742d04474896d7859d"
+  integrity sha512-z2Pjp/MKy+nMJMRFrDX6DgCbiHMY5BzpfDKbVjGmV3aq6ySA6afAvbt3uDjX8MDYE1nDVQPKHcFB24OsDuzKrw==
   dependencies:
     "@effect-ts/system" "^0.24.4"
     "@effect-ts/tracing-utils" "^0.5.0"
