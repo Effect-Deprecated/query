@@ -341,9 +341,9 @@
     "@effect-ts/tracing-utils" "^0.5.0"
 
 "@effect-ts/jest@^0.18.0":
-  version "0.18.0"
-  resolved "https://registry.yarnpkg.com/@effect-ts/jest/-/jest-0.18.0.tgz#f3f6f9a83d270fdaebfae2a06a9d66bd883fc4dd"
-  integrity sha512-aIIFGL5RfZe9vdUpL+jrbearhoM9pUXCzLnQwz3NCjCG2LH4cr+KLfcUuijNZZ83rnSMTvQZSeYWGyeSVfJbjw==
+  version "0.18.1"
+  resolved "https://registry.yarnpkg.com/@effect-ts/jest/-/jest-0.18.1.tgz#41d53b50fb47965651f8a7c3b993a8100e37f1b1"
+  integrity sha512-OxLwWHTzqk5JB2hI6QpxLxovDhmeDoYoljP5u1Gn680YmLb2Q3R1ZUOZZHiJyIYV90QxT4EcY7JZ8us0o6Zqxg==
 
 "@effect-ts/system@^0.24.4":
   version "0.24.4"
