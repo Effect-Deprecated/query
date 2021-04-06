@@ -3,6 +3,6 @@
   "files": [],
   "compilerOptions": {
     "baseUrl": ".",
-    "target": "ES2017"
+    "target": "ES2018"
   }
 }

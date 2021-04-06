@@ -14,10 +14,6 @@ module.exports = {
     "<rootDir>/_tmp"
   ],
   verbose: true,
-  moduleNameMapper: {
-    "@effect-ts/query/(.*)$": "<rootDir>/packages/query/build/$1",
-    "@effect-ts/query$": "<rootDir>/packages/query/build"
-  },
   globals: {
     "ts-jest": {
       tsconfig: "<rootDir>/tsconfig.jest.json",

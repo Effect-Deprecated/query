@@ -1,1 +1,1 @@
-import "@effect-ts/tracing-utils/Enable"
+import "@effect-ts/core/Tracing/Enable"

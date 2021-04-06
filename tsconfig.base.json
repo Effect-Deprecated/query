@@ -29,11 +29,7 @@
     "noImplicitThis": true,
     "strictNullChecks": true,
     "baseUrl": ".",
-    "paths": {
-      "@effect-ts/query/*": ["packages/query/build/*"],
-      "@effect-ts/query": ["packages/query/build"]
-    },
-    "target": "ES2017"
+    "target": "ES2018"
   },
   "exclude": ["node_modules", "build", "lib"]
 }
