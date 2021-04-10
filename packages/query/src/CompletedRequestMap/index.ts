@@ -3,9 +3,9 @@
 // port of: https://github.com/zio/zio-query/blob/9dfe9ca0b1e3077fc56cf5c983082af3ca7a62e7/zio-query/shared/src/main/scala/zio/query/CompletedRequestMap.scala
 import "@effect-ts/system/Operator"
 
+import * as M from "@effect-ts/core/Collections/Immutable/HashMap"
+import type * as HS from "@effect-ts/core/Collections/Immutable/HashSet"
 import * as E from "@effect-ts/core/Either"
-import * as M from "@effect-ts/core/HashMap"
-import type * as HS from "@effect-ts/core/HashSet"
 import * as O from "@effect-ts/core/Option"
 
 import type { Request } from "../Request"
@@ -137,9 +137,4 @@ export function requests(fa: CompletedRequestMap): HS.HashSet<Request<any, any>>
 /**
  * An empty completed requests map.
  */
-export const empty = new CompletedRequestMap(
-  M.make({
-    equals: eqRequest,
-    hash: hashRequest
-  })
-)
+export const empty = new CompletedRequestMap(M.make(eqRequest, hashRequest))

@@ -1,7 +1,7 @@
 // tracing: off
 
-import * as A from "@effect-ts/core/Array"
-import * as HM from "@effect-ts/core/HashMap"
+import * as A from "@effect-ts/core/Collections/Immutable/Array"
+import * as HM from "@effect-ts/core/Collections/Immutable/HashMap"
 import * as O from "@effect-ts/core/Option"
 
 import type { DataSource } from "../../DataSource"

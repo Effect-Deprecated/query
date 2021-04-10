@@ -2,7 +2,9 @@
 
 import "@effect-ts/system/Operator"
 
-import { Case, equalsSym, hashSym } from "@effect-ts/system/Case"
+import { Case, equalsSym, hashSym } from "@effect-ts/core/Case"
+import * as EQ from "@effect-ts/core/Equal"
+import * as H from "@effect-ts/core/Hash"
 
 export interface Request<E, A> {
   readonly _E: () => E
@@ -23,10 +25,10 @@ export abstract class StandardRequest<X, E, A>
   abstract readonly _tag: string
 }
 
-export function hashRequest(x: Request<any, any>): number {
+export const hashRequest = H.makeHash((x: Request<any, any>) => {
   return x[hashSym]()
-}
+})
 
-export function eqRequest(x: Request<any, any>, y: Request<any, any>): boolean {
+export const eqRequest = EQ.makeEqual((x: Request<any, any>, y: Request<any, any>) => {
   return x === y || (x._tag === y._tag && x[equalsSym](y))
-}
+})

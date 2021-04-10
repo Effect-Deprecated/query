@@ -1,7 +1,9 @@
 // tracing: off
 
-import * as A from "@effect-ts/core/Array"
-import * as HM from "@effect-ts/core/HashMap"
+import * as A from "@effect-ts/core/Collections/Immutable/Array"
+import * as HM from "@effect-ts/core/Collections/Immutable/HashMap"
+import * as EQ from "@effect-ts/core/Equal"
+import * as H from "@effect-ts/core/Hash"
 import * as O from "@effect-ts/core/Option"
 
 import * as DS from "../../DataSource"
@@ -85,12 +87,13 @@ export function toIterable<R>(
   return self.map as any
 }
 
+const datasourceEquals = EQ.makeEqual<DS.DataSource<any, any>>(DS.equals)
+const datasourceHash = H.makeHash<DS.DataSource<any, any>>(DS.hash)
+
 /**
  * The empty collection of requests.
  */
-export const empty = new Parallel<unknown>(
-  HM.make({ hash: DS.hash, equals: DS.equals })
-)
+export const empty = new Parallel<unknown>(HM.make(datasourceEquals, datasourceHash))
 
 /**
  * Constructs a new collection of requests containing a mapping from the
@@ -102,13 +105,6 @@ export function apply<R, A>(
 ): Parallel<R> {
   return new Parallel(
     // @ts-expect-error
-    HM.set_(
-      HM.make({
-        hash: DS.hash,
-        equals: DS.equals
-      }),
-      dataSource,
-      [blockedRequest]
-    )
+    HM.set_(HM.make(datasourceEquals, datasourceHash), dataSource, [blockedRequest])
   )
 }

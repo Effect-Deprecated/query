@@ -1,12 +1,12 @@
 // tracing: off
 
 // port of: https://github.com/zio/zio-query/blob/3f9f4237ca2d879b629163f23fe79045eb29f0b0/zio-query/shared/src/main/scala/zio/query/internal/BlockedRequests.scala
-import * as A from "@effect-ts/core/Array"
+import * as A from "@effect-ts/core/Collections/Immutable/Array"
+import * as HS from "@effect-ts/core/Collections/Immutable/HashSet"
 import * as T from "@effect-ts/core/Effect"
 import * as REF from "@effect-ts/core/Effect/Ref"
 import type * as E from "@effect-ts/core/Either"
 import { pipe, tuple } from "@effect-ts/core/Function"
-import * as HS from "@effect-ts/core/HashSet"
 import * as O from "@effect-ts/core/Option"
 import * as S from "@effect-ts/core/Sync"
 
