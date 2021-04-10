@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.12.0](https://github.com/Effect-TS/query/compare/@effect-ts/query@0.11.1...@effect-ts/query@0.12.0) (2021-04-10)
+
+
+### Bug Fixes
+
+* **query:** port to effect-ts 0.29.0 ([2362b77](https://github.com/Effect-TS/query/commit/2362b77c3ff22d1ef779f0c70d8a550506fb2373))
+
+
+
+
+
 ## [0.11.1](https://github.com/Effect-TS/query/compare/@effect-ts/query@0.11.0...@effect-ts/query@0.11.1) (2021-04-06)
 
 
