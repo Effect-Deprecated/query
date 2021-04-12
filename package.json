@@ -28,7 +28,7 @@
     "@babel/core": "^7.13.14",
     "@effect-ts/build-utils": "^0.9.0",
     "@effect-ts/core": "^0.29.0",
-    "@effect-ts/jest": "^0.19.2",
+    "@effect-ts/jest": "^0.20.0",
     "@effect-ts/tracing-plugin": "^0.9.0",
     "@types/cpx": "^1.5.1",
     "@types/glob": "^7.1.3",

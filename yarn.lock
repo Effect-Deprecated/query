@@ -341,10 +341,10 @@
   dependencies:
     "@effect-ts/system" "^0.26.0"
 
-"@effect-ts/jest@^0.19.2":
-  version "0.19.2"
-  resolved "https://registry.yarnpkg.com/@effect-ts/jest/-/jest-0.19.2.tgz#5db360d12bf4be39d0f29dd59fd5d902ffb779b0"
-  integrity sha512-B3QNuRJqVpv/CwQNndKXoft2hHIhEdN4SnK/z3Ujm64aIJJaUi1Uubt7Ci4Jmnbd4w9wTRmRny5tckwcj3JQig==
+"@effect-ts/jest@^0.20.0":
+  version "0.20.0"
+  resolved "https://registry.yarnpkg.com/@effect-ts/jest/-/jest-0.20.0.tgz#bae0c8def8e29ceda33cb99c9f41be77370a8fe1"
+  integrity sha512-RtdCKgAzMiM3lALFfkoLNwGQzAU06JkMWvvzHKiF9lc6c/Tfte27WQj7/QbhEMYSK8JxBj+XRBcdBB+YlJ+q1A==
 
 "@effect-ts/system@^0.26.0":
   version "0.26.0"
