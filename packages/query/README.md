@@ -1,6 +1,6 @@
 ### Effect-TS Query
 
-This package is a work in progress port of `zio-query`
+This package is a port of `zio-query`
 
 ## Install
 
