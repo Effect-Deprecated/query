@@ -7,8 +7,8 @@ import * as A from "@effect-ts/core/Collections/Immutable/Array"
 import * as T from "@effect-ts/core/Effect"
 import * as E from "@effect-ts/core/Either"
 import { tuple } from "@effect-ts/core/Function"
-import * as H from "@effect-ts/core/Hash"
 import type * as O from "@effect-ts/core/Option"
+import * as St from "@effect-ts/core/Structural"
 import type { _A, _E } from "@effect-ts/core/Utils"
 
 import * as CR from "../CompletedRequestMap"
@@ -59,7 +59,7 @@ export function equals<R, A>(a: DataSource<R, A>, b: DataSource<R, A>): boolean 
 }
 
 export function hash(a: DataSource<any, any>): number {
-  return H.string(a.identifier)
+  return St.hashString(a.identifier)
 }
 
 export class InvalidBatchConfig {
