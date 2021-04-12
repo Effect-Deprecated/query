@@ -7,5 +7,5 @@ This package is a work in progress port of `zio-query`
 We recommend the usage of `yarn` and if you hf `yarn workspaces` that handles by default hoisting of dependencies:
 
 ```sh
-yarn add @effect-ts/core @effect-ts/monocle @effect-ts/morphic @effect-ts/query fast-equals fast-check
+yarn add @effect-ts/core @effect-ts/query
 ```
