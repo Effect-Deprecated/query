@@ -365,9 +365,9 @@
     chalk "^4.0.0"
 
 "@effect-ts/build-utils@^0.10.1":
-  version "0.10.1"
-  resolved "https://registry.yarnpkg.com/@effect-ts/build-utils/-/build-utils-0.10.1.tgz#1028c52c750f22e15cd50bccea0437b382c5da4c"
-  integrity sha512-XXF+OMCNDh2olQ+8vqDmYLW30OvP0GijoDm+LSBlSYO/IHPrXMHSFMY8ddlc9LP/EwC4iuqtHUwaOBpm4ZDteg==
+  version "0.10.3"
+  resolved "https://registry.yarnpkg.com/@effect-ts/build-utils/-/build-utils-0.10.3.tgz#ce828f2df7de14179f7e0b6f7d709f610cd82381"
+  integrity sha512-dRI9MSNq6KNDc6hVNtJs7qtvSDGqy71RtUQxYrmJ+YzI523JKDr33IT6RmfXWilX1IvNZhgHHbfOsQ2lyoNcsQ==
 
 "@effect-ts/core@^0.30.1":
   version "0.30.1"
