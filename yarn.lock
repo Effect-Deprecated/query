@@ -377,9 +377,9 @@
     "@effect-ts/system" "^0.27.1"
 
 "@effect-ts/jest@^0.21.0":
-  version "0.21.0"
-  resolved "https://registry.yarnpkg.com/@effect-ts/jest/-/jest-0.21.0.tgz#28a84a0170938a60b0f86ede7b7e86f6210996d4"
-  integrity sha512-++vXlkMxXsWYTQoPxaxki4NabADXJAK8thED8TjhJBTi/F9u9Jmda17J3TvJ7vR+lqzFYhNZ8TArNkxNOUFEcg==
+  version "0.21.1"
+  resolved "https://registry.yarnpkg.com/@effect-ts/jest/-/jest-0.21.1.tgz#8b20e050ac81a6cfc9a93a17262ca9b0e29fc19b"
+  integrity sha512-4sLWISiiD2gkwDUlkeo/Kdkxm9G0c1gNyKh0CdyZ+VJL9BkIkJkojuo8nLoSvJ+MwT5hjrJNlUgUzJ++RG9BBQ==
 
 "@effect-ts/system@^0.27.1":
   version "0.27.1"
