@@ -67,7 +67,7 @@ type UserRequest = GetAllIds | GetNameById | GetAgeByName
 const UserRequestDataSource = DS.makeBatched("UserRequestDataSource")(
   (requests: A.Array<UserRequest>) =>
     putStrLn("Running request...")["|>"](
-      T.andThen(
+      T.zipRight(
         T.succeed(
           requests["|>"](
             A.reduce(CR.empty, (crm, _) => {

@@ -666,7 +666,7 @@ export function runCache(cache: CH.Cache) {
       (_) => {
         switch (_._tag) {
           case "Blocked":
-            return T.andThen_(
+            return T.zipRight_(
               BRS.run(cache)(_.blockedRequests),
               CONT.runCache(cache)(_.cont)
             )
