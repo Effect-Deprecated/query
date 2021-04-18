@@ -9,7 +9,6 @@ import * as E from "@effect-ts/core/Either"
 import * as O from "@effect-ts/core/Option"
 
 import type { Request } from "../Request"
-import { eqRequest, hashRequest } from "../Request"
 
 /**
  * A `CompletedRequestMap` is a universally quantified mapping from requests
@@ -137,4 +136,4 @@ export function requests(fa: CompletedRequestMap): HS.HashSet<Request<any, any>>
 /**
  * An empty completed requests map.
  */
-export const empty = new CompletedRequestMap(M.make(eqRequest, hashRequest))
+export const empty = new CompletedRequestMap(M.make())

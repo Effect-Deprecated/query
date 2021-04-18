@@ -11,7 +11,6 @@ import * as O from "@effect-ts/core/Option"
 import * as REF from "@effect-ts/system/Ref"
 
 import type { Request } from "../Request"
-import { eqRequest, hashRequest } from "../Request"
 
 /**
  * A `Cache` maintains an internal state with a mapping from requests to `Ref`s
@@ -56,7 +55,7 @@ export interface Cache {
 }
 
 export const empty = pipe(
-  REF.makeRef(HM.make<Request<any, any>, any>(eqRequest, hashRequest)),
+  REF.makeRef(HM.make<Request<any, any>, any>()),
   T.map(makeDefaultCache)
 )
 
