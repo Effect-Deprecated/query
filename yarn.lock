@@ -376,11 +376,6 @@
   dependencies:
     "@effect-ts/system" "^0.29.0"
 
-"@effect-ts/jest@^0.22.0":
-  version "0.22.0"
-  resolved "https://registry.yarnpkg.com/@effect-ts/jest/-/jest-0.22.0.tgz#c51d5fae81edad8f7855dfe6ff06df586aef8d68"
-  integrity sha512-UlPCDhgkKTrqBRl/uQg4LMQQxz3KCn6cxbl+npLRfoHfdQMJ0+4K/WiZ/RlfHmPiYIp9w0vgBj496m2+tyYaJw==
-
 "@effect-ts/system@^0.29.0":
   version "0.29.0"
   resolved "https://registry.yarnpkg.com/@effect-ts/system/-/system-0.29.0.tgz#a620e9e347c507f34e2ee01408dc0abb8863c3a8"
