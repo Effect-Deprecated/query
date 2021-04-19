@@ -4,6 +4,7 @@
 import * as A from "@effect-ts/core/Collections/Immutable/Array"
 import * as HS from "@effect-ts/core/Collections/Immutable/HashSet"
 import * as T from "@effect-ts/core/Effect"
+import { _R } from "@effect-ts/core/Effect"
 import * as REF from "@effect-ts/core/Effect/Ref"
 import type * as E from "@effect-ts/core/Either"
 import { pipe, tuple } from "@effect-ts/core/Function"
@@ -23,8 +24,8 @@ function scalaTail<A>(a: A.Array<A>): A.Array<A> {
 }
 
 class Both<R> {
-  readonly _tag = "Both"
-  readonly _R!: (r: R) => void
+  readonly _tag = "Both";
+  readonly [_R]!: (r: R) => void
 
   constructor(
     public readonly left: BlockedRequests<R>,
@@ -49,8 +50,8 @@ class Single<R> {
 }
 
 class Then<R> {
-  readonly _tag = "Then"
-  readonly _R!: (r: R) => void
+  readonly _tag = "Then";
+  readonly [_R]!: (r: R) => void
   constructor(
     public readonly left: BlockedRequests<R>,
     public readonly right: BlockedRequests<R>

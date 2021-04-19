@@ -3,10 +3,11 @@
 // port of: https://github.com/zio/zio-query/blob/5746d54dfbed8e3c35415355b09c8e6a54c49889/zio-query/shared/src/main/scala/zio/query/internal/Continue.scala
 import type { IO } from "@effect-ts/core/Effect"
 import * as T from "@effect-ts/core/Effect"
+import { _A, _E, _R } from "@effect-ts/core/Effect"
 import type * as E from "@effect-ts/core/Either"
 import { pipe } from "@effect-ts/core/Function"
 import * as O from "@effect-ts/core/Option"
-import type { _A, _E } from "@effect-ts/core/Utils"
+import type { _A as _GetA, _E as _GetE } from "@effect-ts/core/Utils"
 import type * as C from "@effect-ts/system/Cause"
 import * as REF from "@effect-ts/system/Ref"
 
@@ -18,18 +19,18 @@ import { QueryFailure } from "../../QueryFailure"
 import type { Request } from "../../Request"
 
 class Effect<R, E, A> {
-  readonly _tag = "Effect"
-  readonly _R!: (r: R) => never
-  readonly _E!: () => E
-  readonly _A!: () => A
+  readonly _tag = "Effect";
+  readonly [_R]!: (r: R) => never;
+  readonly [_E]!: () => E;
+  readonly [_A]!: () => A
 
   constructor(public readonly query: Q.Query<R, E, A>) {}
 }
 
 class Get<E, A> {
-  readonly _tag = "Get"
-  readonly _E!: () => E
-  readonly _A!: () => A
+  readonly _tag = "Get";
+  readonly [_E]!: () => E;
+  readonly [_A]!: () => A
 
   constructor(public readonly io: IO<E, A>) {}
 }
@@ -52,8 +53,8 @@ export type Continue<R, E, A> = Effect<R, E, A> | Get<E, A>
 export function apply<R, A extends Request<any, any>>(
   request: A,
   dataSource: DataSource<R, A>,
-  ref: REF.Ref<O.Option<E.Either<_E<A>, _A<A>>>>
-): Continue<R, _E<A>, _A<A>> {
+  ref: REF.Ref<O.Option<E.Either<_GetE<A>, _GetA<A>>>>
+): Continue<R, _GetE<A>, _GetA<A>> {
   return pipe(
     REF.get(ref),
     T.chain((v) =>

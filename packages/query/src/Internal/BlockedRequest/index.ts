@@ -1,9 +1,10 @@
 // tracing: off
 
 // port of: https://github.com/zio/zio-query/blob/3f9f4237ca2d879b629163f23fe79045eb29f0b0/zio-query/shared/src/main/scala/zio/query/internal/BlockedRequest.scala
+import { _A } from "@effect-ts/core/Effect"
 import type { Either } from "@effect-ts/core/Either"
 import type { Option } from "@effect-ts/core/Option"
-import type { _A, _E } from "@effect-ts/core/Utils"
+import type { _A as _GetA, _E as _GetE } from "@effect-ts/core/Utils"
 import type { Ref } from "@effect-ts/system/Ref"
 
 import type { Request } from "../../Request"
@@ -21,14 +22,14 @@ export interface BlockedRequest<A> {
 }
 
 interface BlockedRequestFull<A, E, B> {
-  _A: () => A
+  [_A]: () => A
   request: Request<E, B>
   result: Ref<Option<Either<E, B>>>
 }
 
 export function of<A extends Request<any, any>>(
   request: A,
-  result: Ref<Option<Either<_E<A>, _A<A>>>>
+  result: Ref<Option<Either<_GetE<A>, _GetA<A>>>>
 ): BlockedRequest<A> {
-  return (_) => _({ request, result, _A: undefined as any })
+  return (_) => _({ request, result, [_A]: undefined as any })
 }

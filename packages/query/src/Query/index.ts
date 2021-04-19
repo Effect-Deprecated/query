@@ -5,6 +5,7 @@ import "@effect-ts/system/Operator"
 // port of: https://github.com/zio/zio-query/blob/5746d54dfbed8e3c35415355b09c8e6a54c49889/zio-query/shared/src/main/scala/zio/query/ZQuery.scala
 import * as A from "@effect-ts/core/Collections/Immutable/Array"
 import * as T from "@effect-ts/core/Effect"
+import { _A, _E, _R } from "@effect-ts/core/Effect"
 import * as REF from "@effect-ts/core/Effect/Ref"
 import * as E from "@effect-ts/core/Either"
 import { identity, pipe, tuple } from "@effect-ts/core/Function"
@@ -13,8 +14,8 @@ import * as O from "@effect-ts/core/Option"
 import type { URI } from "@effect-ts/core/Prelude"
 import * as P from "@effect-ts/core/Prelude"
 import * as DSL from "@effect-ts/core/Prelude/DSL"
-import type { _A, _E } from "@effect-ts/core/Utils"
-import { _R, isEither, isOption, isTag } from "@effect-ts/core/Utils"
+import type { _A as _GetA, _E as _GetE } from "@effect-ts/core/Utils"
+import { _R as _GetR, isEither, isOption, isTag } from "@effect-ts/core/Utils"
 import * as C from "@effect-ts/system/Cause"
 import * as CL from "@effect-ts/system/Clock"
 import { NoSuchElementException } from "@effect-ts/system/GlobalExceptions"
@@ -66,10 +67,10 @@ import type { Request } from "../Request"
  * Purdy. [[http://simonmar.github.io/bib/papers/haxl-icfp14.pdf]]
  */
 export class Query<R, E, A> {
-  readonly _tag = "Query"
-  readonly _R!: (r: R) => void
-  readonly _E!: () => E
-  readonly _A!: () => A
+  readonly _tag = "Query";
+  readonly [_R]!: (r: R) => void;
+  readonly [_E]!: () => E;
+  readonly [_A]!: () => A
 
   constructor(
     public readonly step: T.Effect<readonly [R, QueryContext], E, RES.Result<R, E, A>>
@@ -629,7 +630,7 @@ export function fromRequest<R, A extends Request<any, any>>(
   request: A,
   dataSource: DataSource<R, A>
 ) {
-  return new Query<R, _E<A>, _A<A>>(
+  return new Query<R, _GetE<A>, _GetA<A>>(
     T.chain_(
       T.accessM(([_, queryContext]: readonly [R, QueryContext]) =>
         queryContext.cache.lookup(request)

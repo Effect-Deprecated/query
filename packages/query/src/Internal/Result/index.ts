@@ -1,5 +1,6 @@
 // tracing: off
 
+import { _A, _E, _R } from "@effect-ts/core/Effect"
 import * as E from "@effect-ts/core/Either"
 import { pipe } from "@effect-ts/core/Function"
 import * as C from "@effect-ts/system/Cause"
@@ -10,10 +11,10 @@ import type { Continue } from "../Continue"
 import * as CONT from "../Continue"
 
 class Blocked<R, E, A> {
-  readonly _tag = "Blocked"
-  readonly _R!: (r: R) => never
-  readonly _E!: () => E
-  readonly _A!: () => A
+  readonly _tag = "Blocked";
+  readonly [_R]!: (r: R) => never;
+  readonly [_E]!: () => E;
+  readonly [_A]!: () => A
   constructor(
     public readonly blockedRequests: BRS.BlockedRequests<R>,
     public readonly cont: Continue<R, E, A>
@@ -21,14 +22,14 @@ class Blocked<R, E, A> {
 }
 
 class Done<A> {
-  readonly _tag = "Done"
-  readonly _A!: () => A
+  readonly _tag = "Done";
+  readonly [_A]!: () => A
   constructor(public readonly value: A) {}
 }
 
 class Fail<E> {
-  readonly _tag = "Fail"
-  readonly _E!: () => E
+  readonly _tag = "Fail";
+  readonly [_E]!: () => E
   constructor(public readonly cause: C.Cause<E>) {}
 }
 

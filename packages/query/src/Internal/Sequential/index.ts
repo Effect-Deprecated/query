@@ -2,6 +2,7 @@
 
 import * as A from "@effect-ts/core/Collections/Immutable/Array"
 import * as HM from "@effect-ts/core/Collections/Immutable/HashMap"
+import { _R } from "@effect-ts/core/Effect"
 import * as O from "@effect-ts/core/Option"
 
 import type { DataSource } from "../../DataSource"
@@ -12,7 +13,7 @@ import type { BlockedRequest } from "../BlockedRequest"
  * requests from those data sources that must be executed sequentially.
  */
 export class Sequential<R> {
-  readonly _R!: (r: R) => void
+  readonly [_R]!: (r: R) => void
   constructor(
     public readonly map: HM.HashMap<
       DataSource<unknown, unknown>,
