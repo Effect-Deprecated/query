@@ -2,6 +2,7 @@
 
 import * as A from "@effect-ts/core/Collections/Immutable/Array"
 import * as HM from "@effect-ts/core/Collections/Immutable/HashMap"
+import { _R } from "@effect-ts/core/Effect"
 import * as O from "@effect-ts/core/Option"
 
 import type * as DS from "../../DataSource"
@@ -14,7 +15,7 @@ import { Sequential } from "../Sequential"
  * those data sources that can be executed in parallel.
  */
 export class Parallel<R> {
-  readonly _R!: (r: R) => void
+  readonly [_R]!: (r: R) => void
   constructor(
     public readonly map: HM.HashMap<
       DS.DataSource<unknown, unknown>,
