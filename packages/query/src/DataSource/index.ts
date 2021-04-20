@@ -139,7 +139,7 @@ export function contramapM_<R, A, B, R1>(
 ): DataSource<R & R1, B> {
   return new DataSource(`${self.identifier}.contramapM(${description})`, (requests) =>
     T.chain_(
-      C.mapM_(requests, (_) => C.mapMPar_(_, f)),
+      T.forEach_(requests, (_) => T.forEachPar_(_, f)),
       self.runAll
     )
   )
