@@ -3,7 +3,7 @@
 // port of: https://github.com/zio/zio-query/blob/3f9f4237ca2d879b629163f23fe79045eb29f0b0/zio-query/shared/src/main/scala/zio/query/DataSource.scala
 import "@effect-ts/system/Operator"
 
-import * as A from "@effect-ts/core/Collections/Immutable/Array"
+import * as C from "@effect-ts/core/Collections/Immutable/Chunk"
 import * as T from "@effect-ts/core/Effect"
 import * as E from "@effect-ts/core/Either"
 import { tuple } from "@effect-ts/core/Function"
@@ -49,7 +49,7 @@ export class DataSource<R, A> {
      * represents a batch of requests that can be performed in parallel.
      */
     public readonly runAll: (
-      requests: A.Array<A.Array<A>>
+      requests: C.Chunk<C.Chunk<A>>
     ) => T.Effect<R, never, CR.CompletedRequestMap>
   ) {}
 
@@ -85,8 +85,8 @@ export function batchN_<R, A>(self: DataSource<R, A>, n: number): DataSource<R, 
       return T.die(new InvalidBatchConfig(n))
     } else {
       return self.runAll(
-        A.reduce_(requests, A.emptyOf<A.Array<A>>(), (x, y) =>
-          A.concat_(x, A.chunksOf_(y, n))
+        C.reduce_(requests, C.empty<C.Chunk<A>>(), (x, y) =>
+          C.concat_(x, C.grouped_(y, n))
         )
       )
     }
@@ -112,7 +112,7 @@ export function contramap_<R, A, B>(
   f: (a: B) => A
 ): DataSource<R, B> {
   return new DataSource(`${self.identifier}.contramap(${description})`, (requests) =>
-    self.runAll(A.map_(requests, (_) => A.map_(_, f)))
+    self.runAll(C.map_(requests, (_) => C.map_(_, f)))
   )
 }
 
@@ -139,7 +139,7 @@ export function contramapM_<R, A, B, R1>(
 ): DataSource<R & R1, B> {
   return new DataSource(`${self.identifier}.contramapM(${description})`, (requests) =>
     T.chain_(
-      T.forEach_(requests, (_) => T.forEachPar_(_, f)),
+      C.mapM_(requests, (_) => C.mapMPar_(_, f)),
       self.runAll
     )
   )
@@ -175,10 +175,14 @@ export function eitherWith_<R, A, R1, B, C>(
     (requests) =>
       T.map_(
         T.forEach_(requests, (requests) => {
-          const { left: as, right: bs } = A.partitionMap_(requests, f)
-          return T.zipWithPar_(self.runAll([as]), that.runAll([bs as any]), CR.concat)
+          const { left: as, right: bs } = C.partitionMap_(requests, f)
+          return T.zipWithPar_(
+            self.runAll(C.single(as)),
+            that.runAll(C.single(bs)),
+            CR.concat
+          )
         }),
-        (_) => A.reduce_(_, CR.empty, CR.concat)
+        (_) => C.reduce_(_, CR.empty, CR.concat)
       )
   )
 }
@@ -270,12 +274,12 @@ export function race<R1, A1>(that: DataSource<R1, A1>) {
  */
 export function makeBatched(identifier: string) {
   return <R, A>(
-    run: (requests: A.Array<A>) => T.Effect<R, never, CR.CompletedRequestMap>
+    run: (requests: C.Chunk<A>) => T.Effect<R, never, CR.CompletedRequestMap>
   ): DataSource<R, A> =>
     new DataSource(identifier, (requests) =>
       T.reduce_(requests, CR.empty, (crm, requests) => {
-        const newRequests = A.filter_(requests, (e) => !CR.contains_(crm, e))
-        return A.isEmpty(newRequests)
+        const newRequests = C.filter_(requests, (e) => !CR.contains_(crm, e))
+        return C.isEmpty(newRequests)
           ? T.succeed(crm)
           : T.map_(run(newRequests), (_) => CR.concat(crm, _))
       })
@@ -289,7 +293,7 @@ export function fromFunction(identifier: string) {
   return <A extends Request<never, any>>(f: (a: A) => _A<A>): DataSource<unknown, A> =>
     makeBatched(identifier)((requests) =>
       T.succeed(
-        A.reduce_(requests, CR.empty, (crm, k) => CR.insert_(crm, k, E.right(f(k))))
+        C.reduce_(requests, CR.empty, (crm, k) => CR.insert_(crm, k, E.right(f(k))))
       )
     )
 }
@@ -302,7 +306,7 @@ export function fromFunction(identifier: string) {
  */
 export function fromFunctionBatched(identifier: string) {
   return <A extends Request<any, any>>(
-    f: (a: A.Array<A>) => A.Array<_A<A>>
+    f: (a: C.Chunk<A>) => C.Chunk<_A<A>>
   ): DataSource<unknown, A> =>
     fromFunctionBatchedM(identifier)((as) => T.succeed(f(as)))
 }
@@ -314,24 +318,24 @@ export function fromFunctionBatched(identifier: string) {
  */
 export function fromFunctionBatchedM(identifier: string) {
   return <R, A extends Request<any, any>>(
-    f: (a: A.Array<A>) => T.Effect<R, _E<A>, A.Array<_A<A>>>
+    f: (a: C.Chunk<A>) => T.Effect<R, _E<A>, C.Chunk<_A<A>>>
   ): DataSource<R, A> =>
     makeBatched(identifier)((requests) => {
       const a: T.Effect<
         R,
         never,
-        A.Array<readonly [A, E.Either<_E<A>, _A<A>>]>
+        C.Chunk<readonly [A, E.Either<_E<A>, _A<A>>]>
       > = T.fold_(
         f(requests),
-        (e) => A.map_(requests, (_) => tuple(_, E.left(e))),
+        (e) => C.map_(requests, (_) => tuple(_, E.left(e))),
         (bs) =>
-          A.zip_(
+          C.zip_(
             requests,
-            A.map_(bs, (_) => E.right(_))
+            C.map_(bs, (_) => E.right(_))
           )
       )
       return T.map_(a, (_) =>
-        A.reduce_(_, CR.empty, (crm, [k, v]) => CR.insert_(crm, k, v))
+        C.reduce_(_, CR.empty, (crm, [k, v]) => CR.insert_(crm, k, v))
       )
     })
 }
@@ -344,7 +348,7 @@ export function fromFunctionBatchedM(identifier: string) {
  */
 export function fromFunctionBatchedOption(identifier: string) {
   return <A extends Request<never, any>>(
-    f: (a: A.Array<A>) => A.Array<O.Option<_A<A>>>
+    f: (a: C.Chunk<A>) => C.Chunk<O.Option<_A<A>>>
   ): DataSource<unknown, A> =>
     fromFunctionBatchedOptionM(identifier)((as) => T.succeed(f(as)))
 }
@@ -357,24 +361,24 @@ export function fromFunctionBatchedOption(identifier: string) {
  */
 export function fromFunctionBatchedOptionM(identifier: string) {
   return <A extends Request<any, any>, E, R>(
-    f: (a: A.Array<A>) => T.Effect<R, E, A.Array<O.Option<_A<A>>>>
+    f: (a: C.Chunk<A>) => T.Effect<R, E, C.Chunk<O.Option<_A<A>>>>
   ): DataSource<R, A> =>
     makeBatched(identifier)((requests) => {
       const a: T.Effect<
         R,
         never,
-        A.Array<readonly [A, E.Either<E, O.Option<_A<A>>>]>
+        C.Chunk<readonly [A, E.Either<E, O.Option<_A<A>>>]>
       > = T.fold_(
         f(requests),
-        (e) => A.map_(requests, (_) => tuple(_, E.left(e))),
+        (e) => C.map_(requests, (_) => tuple(_, E.left(e))),
         (bs) =>
-          A.zip_(
+          C.zip_(
             requests,
-            A.map_(bs, (_) => E.right(_))
+            C.map_(bs, (_) => E.right(_))
           )
       )
       return T.map_(a, (_) =>
-        A.reduce_(_, CR.empty, (crm, [k, v]) => CR.insertOption_(crm, k, v))
+        C.reduce_(_, CR.empty, (crm, [k, v]) => CR.insertOption_(crm, k, v))
       )
     })
 }

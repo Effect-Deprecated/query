@@ -1,14 +1,16 @@
 // tracing: off
 
 // port of: https://github.com/zio/zio-query/blob/3f9f4237ca2d879b629163f23fe79045eb29f0b0/zio-query/shared/src/main/scala/zio/query/internal/BlockedRequests.scala
-import * as A from "@effect-ts/core/Collections/Immutable/Array"
+import * as A from "@effect-ts/core/Collections/Immutable/Chunk"
 import * as HS from "@effect-ts/core/Collections/Immutable/HashSet"
+import * as L from "@effect-ts/core/Collections/Immutable/List"
 import * as T from "@effect-ts/core/Effect"
 import { _R } from "@effect-ts/core/Effect"
 import * as REF from "@effect-ts/core/Effect/Ref"
 import type * as E from "@effect-ts/core/Either"
 import { pipe, tuple } from "@effect-ts/core/Function"
 import * as O from "@effect-ts/core/Option"
+import * as St from "@effect-ts/core/Structural"
 import * as S from "@effect-ts/core/Sync"
 
 import type { Cache } from "../../Cache"
@@ -19,33 +21,28 @@ import type { BlockedRequest } from "../BlockedRequest"
 import * as PL from "../Parallel"
 import * as SQ from "../Sequential"
 
-function scalaTail<A>(a: A.Array<A>): A.Array<A> {
-  return a.length === 0 ? [] : a.slice(1)
+function scalaTail<A>(a: L.List<A>): L.List<A> {
+  return L.size(a) === 0 ? L.empty() : L.tail(a)
 }
 
 class Both<R> {
   readonly _tag = "Both";
   readonly [_R]!: (r: R) => void
 
-  constructor(
-    public readonly left: BlockedRequests<R>,
-    public readonly right: BlockedRequests<R>
-  ) {}
+  constructor(readonly left: BlockedRequests<R>, readonly right: BlockedRequests<R>) {}
 }
 
-class Empty {
-  readonly _tag = "Empty"
+class Empty<R> {
+  readonly _tag = "Empty";
+  readonly [_R]!: (r: R) => void
 }
 
 class Single<R> {
-  readonly _tag = "Single"
+  readonly _tag = "Single";
+  readonly [_R]!: (r: R) => void
   constructor(
-    public readonly f: <X>(
-      go: <A>(_: {
-        dataSource: DS.DataSource<R, A>
-        blockedRequest: BlockedRequest<A>
-      }) => X
-    ) => X
+    readonly dataSource: DS.DataSource<R, unknown>,
+    readonly blockedRequest: BlockedRequest<unknown>
   ) {}
 }
 
@@ -65,7 +62,7 @@ class Then<R> {
  * parallel, allowing for maximum possible batching and pipelining while
  * preserving ordering guarantees.
  */
-export type BlockedRequests<R> = Both<R> | Empty | Single<R> | Then<R>
+export type BlockedRequests<R> = Both<R> | Empty<R> | Single<R> | Then<R>
 
 /**
  * Combines this collection of blocked requests with the specified collection
@@ -136,14 +133,9 @@ function mapDataSourcesSafe<R1, R>(
           yield* _(mapDataSourcesSafe(fa.left, f)),
           yield* _(mapDataSourcesSafe(fa.right, f))
         )
-      case "Single":
-        return fa.f((_) => {
-          const req = {
-            dataSource: f(_.dataSource),
-            blockedRequest: _.blockedRequest
-          }
-          return new Single(($) => $(req))
-        })
+      case "Single": {
+        return new Single(f(fa.dataSource), fa.blockedRequest)
+      }
     }
   })
 }
@@ -180,14 +172,12 @@ export function provideSomeSafe<R, R0>(
             yield* _(provideSomeSafe(description, f)(fa.left)),
             yield* _(provideSomeSafe(description, f)(fa.right))
           )
-        case "Single":
-          return fa.f((_) => {
-            const req = {
-              dataSource: DS.provideSome(description, f)(_.dataSource),
-              blockedRequest: _.blockedRequest
-            }
-            return new Single(($) => $(req))
-          })
+        case "Single": {
+          return new Single(
+            DS.provideSome(description, f)(fa.dataSource),
+            fa.blockedRequest
+          )
+        }
       }
     })
 }
@@ -204,8 +194,7 @@ export function single<R, K>(
   dataSource: DS.DataSource<R, K>,
   blockedRequest: BlockedRequest<K>
 ): BlockedRequests<R> {
-  const req = { dataSource, blockedRequest }
-  return new Single((_) => _(req))
+  return new Single(dataSource as DS.DataSource<R, unknown>, blockedRequest)
 }
 
 /**
@@ -215,35 +204,26 @@ export function single<R, K>(
  * can be pipelined while preserving ordering guarantees.
  */
 export function merge<R>(
-  sequential: A.Array<SQ.Sequential<R>>,
+  sequential: L.List<SQ.Sequential<R>>,
   parallel: PL.Parallel<R>
-): A.Array<SQ.Sequential<R>> {
-  if (A.isEmpty(sequential)) return [PL.sequential(parallel)]
+): L.List<SQ.Sequential<R>> {
+  if (L.isEmpty(sequential)) return L.of(PL.sequential(parallel))
   if (PL.isEmpty(parallel)) return sequential
 
-  const seqHead = sequential[0]
-  const seqHeadKeys = A.from(SQ.keys(seqHead))
-  const parKeys = A.from(PL.keys(parallel))
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const seqHead = L.unsafeFirst(sequential)!
+  const seqHeadKeys = L.from(SQ.keys(seqHead))
+  const parKeys = L.from(PL.keys(parallel))
 
   if (
-    seqHeadKeys.length === 1 &&
-    parKeys.length === 1 &&
-    A.getEqual<DS.DataSource<R, unknown>>({ equals: DS.equals }).equals(
-      seqHeadKeys,
-      parKeys
-    )
+    L.size(seqHeadKeys) === 1 &&
+    L.size(parKeys) === 1 &&
+    St.equals(seqHeadKeys, parKeys)
   ) {
-    return [SQ.add_(seqHead, PL.sequential(parallel)), ...scalaTail(sequential)]
+    return L.prepend_(scalaTail(sequential), SQ.add_(seqHead, PL.sequential(parallel)))
   }
 
-  return A.concat_([PL.sequential(parallel)], sequential)
-}
-
-class FlattenFrame<R> {
-  constructor(
-    readonly blockedRequests: A.Array<BlockedRequests<R>>,
-    readonly flattened: A.Array<SQ.Sequential<R>>
-  ) {}
+  return L.concat_(L.of(PL.sequential(parallel)), sequential)
 }
 
 /**
@@ -252,25 +232,26 @@ class FlattenFrame<R> {
  */
 export function flatten<R>(
   blockedRequests: BlockedRequests<R>
-): A.Array<SQ.Sequential<R>> {
-  let current = new FlattenFrame([blockedRequests], [])
+): L.List<SQ.Sequential<R>> {
+  let current = L.of(blockedRequests)
+  let flattened = L.empty<SQ.Sequential<R>>()
 
   // eslint-disable-next-line no-constant-condition
   while (1) {
-    const [parallel, sequential] = A.reduce_(
-      current.blockedRequests,
-      tuple<[PL.Parallel<R>, A.Array<BlockedRequests<R>>]>(PL.empty, A.empty),
+    const [parallel, sequential] = L.reduce_(
+      current,
+      tuple<[PL.Parallel<R>, L.List<BlockedRequests<R>>]>(PL.empty, L.empty()),
       ([parallel, sequential], blockedRequest) => {
         const [par, seq] = step(blockedRequest)
-        return tuple(PL.add(parallel)(par), A.concat_(sequential, seq))
+        return tuple(PL.add(parallel)(par), L.concat_(sequential, seq))
       }
     )
 
-    const updated = merge(current.flattened, parallel)
+    flattened = merge(flattened, parallel)
 
-    if (A.isEmpty(sequential)) return A.reverse(updated)
+    if (L.isEmpty(sequential)) return L.reverse(flattened)
 
-    current = new FlattenFrame(sequential, updated)
+    current = sequential
   }
 
   throw new Error("absurd")
@@ -279,9 +260,9 @@ export function flatten<R>(
 class StepFrame<R> {
   constructor(
     readonly blockedRequests: BlockedRequests<R>,
-    readonly stack: A.Array<BlockedRequests<R>>,
+    readonly stack: L.List<BlockedRequests<R>>,
     readonly parallel: PL.Parallel<R>,
-    readonly sequential: A.Array<BlockedRequests<R>>
+    readonly sequential: L.List<BlockedRequests<R>>
   ) {}
 }
 
@@ -293,14 +274,14 @@ class StepFrame<R> {
  */
 export function step<R>(
   c: BlockedRequests<R>
-): readonly [PL.Parallel<R>, A.Array<BlockedRequests<R>>] {
-  let current = new StepFrame(c, A.empty, PL.empty, A.empty)
+): readonly [PL.Parallel<R>, L.List<BlockedRequests<R>>] {
+  let current = new StepFrame(c, L.empty(), PL.empty, L.empty())
 
   // eslint-disable-next-line no-constant-condition
   while (1) {
     switch (current.blockedRequests._tag) {
       case "Empty": {
-        const head = A.head(current.stack)
+        const head = L.first(current.stack)
         if (O.isSome(head)) {
           current = new StepFrame(
             head.value,
@@ -316,21 +297,24 @@ export function step<R>(
       case "Both": {
         current = new StepFrame(
           current.blockedRequests.left,
-          A.concat_([current.blockedRequests.right], current.stack),
+          L.prepend_(current.stack, current.blockedRequests.right),
           current.parallel,
           current.sequential
         )
         break
       }
       case "Single": {
-        const head = A.head(current.stack)
+        const head = L.first(current.stack)
         if (O.isSome(head)) {
           current = new StepFrame(
             head.value,
             scalaTail(current.stack),
             PL.add_(
               current.parallel,
-              current.blockedRequests.f((_) => PL.apply(_.dataSource, _.blockedRequest))
+              PL.apply(
+                current.blockedRequests.dataSource,
+                current.blockedRequests.blockedRequest
+              )
             ),
             current.sequential
           )
@@ -338,7 +322,10 @@ export function step<R>(
           return tuple(
             PL.add_(
               current.parallel,
-              current.blockedRequests.f((_) => PL.apply(_.dataSource, _.blockedRequest))
+              PL.apply(
+                current.blockedRequests.dataSource,
+                current.blockedRequests.blockedRequest
+              )
             ),
             current.sequential
           )
@@ -382,7 +369,7 @@ export function step<R>(
               left,
               current.stack,
               current.parallel,
-              A.concat_([current.blockedRequests.right], current.sequential)
+              L.prepend_(current.sequential, current.blockedRequests.right)
             )
             break
           }
@@ -406,26 +393,21 @@ export function run(cache: Cache) {
           T.do,
           T.bind("completedRequests", () =>
             dataSource.runAll(
-              A.map_(sequential, (_) => A.map_(_, (br) => br((d) => d.request)))
+              A.map_(A.from(sequential), (_) => A.map_(_, (br) => br.request))
             )
           ),
           T.bind("blockedRequests", () => T.succeed(A.flatten(sequential))),
           T.bind("leftovers", (_) => {
             const arg1 = CRM.requests(_.completedRequests)
-            const arg2 = A.map_(_.blockedRequests, (a) => a((g) => g.request))
+            const arg2 = A.map_(_.blockedRequests, (a) => a.request)
             const a = HS.difference_(arg1, arg2)
             return T.succeed(a)
           }),
           T.tap((_) =>
             T.forEach_(_.blockedRequests, (blockedRequest) =>
               REF.set_(
-                blockedRequest(
-                  (g) => g.result as REF.Ref<O.Option<E.Either<any, any>>>
-                ),
-                CRM.lookup_(
-                  _.completedRequests,
-                  blockedRequest((g) => g.request)
-                )
+                blockedRequest.result as REF.Ref<O.Option<E.Either<any, any>>>,
+                CRM.lookup_(_.completedRequests, blockedRequest.request)
               )
             )
           ),

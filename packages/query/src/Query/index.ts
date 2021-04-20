@@ -2,8 +2,7 @@
 
 import "@effect-ts/system/Operator"
 
-// port of: https://github.com/zio/zio-query/blob/5746d54dfbed8e3c35415355b09c8e6a54c49889/zio-query/shared/src/main/scala/zio/query/ZQuery.scala
-import * as A from "@effect-ts/core/Collections/Immutable/Array"
+import * as Chunk from "@effect-ts/core/Collections/Immutable/Chunk"
 import * as T from "@effect-ts/core/Effect"
 import { _A, _E, _R } from "@effect-ts/core/Effect"
 import * as REF from "@effect-ts/core/Effect/Ref"
@@ -15,7 +14,7 @@ import type { URI } from "@effect-ts/core/Prelude"
 import * as P from "@effect-ts/core/Prelude"
 import * as DSL from "@effect-ts/core/Prelude/DSL"
 import type { _A as _GetA, _E as _GetE } from "@effect-ts/core/Utils"
-import { _R as _GetR, isEither, isOption, isTag } from "@effect-ts/core/Utils"
+import { isEither, isOption, isTag } from "@effect-ts/core/Utils"
 import * as C from "@effect-ts/system/Cause"
 import * as CL from "@effect-ts/system/Clock"
 import { NoSuchElementException } from "@effect-ts/system/GlobalExceptions"
@@ -570,14 +569,15 @@ export function absolve<R, E, A>(query: Query<R, E, E.Either<E, A>>): Query<R, E
 export function forEach_<R, E, A, B>(
   as: Iterable<A>,
   f: (a: A) => Query<R, E, B>
-): Query<R, E, A.Array<B>> {
-  const arr = A.from(as)
-  return arr.length === 0
-    ? fromEffect(T.succeed([]))
-    : A.reduce_(
-        arr.slice(1),
-        map_(f(as[0]), (_) => A.from([_])),
-        (builder, a) => zipWith_(builder, f(a), (arr, item) => A.concat_(arr, [item]))
+): Query<R, E, Chunk.Chunk<B>> {
+  const arr = Chunk.from(as)
+  return Chunk.size(arr) === 0
+    ? fromEffect(T.succeed(Chunk.empty()))
+    : Chunk.reduce_(
+        Chunk.drop_(arr, 1),
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        map_(f(Chunk.unsafeGet_(arr, 0)!), (_) => Chunk.single(_)),
+        (builder, a) => zipWith_(builder, f(a), (arr, item) => Chunk.append_(arr, item))
       )
 }
 
@@ -588,7 +588,7 @@ export function forEach_<R, E, A, B>(
  */
 export function forEach<R, E, A, B>(
   f: (a: A) => Query<R, E, B>
-): (as: Iterable<A>) => Query<R, E, A.Array<B>> {
+): (as: Iterable<A>) => Query<R, E, Chunk.Chunk<B>> {
   return (as) => forEach_(as, f)
 }
 
@@ -616,7 +616,7 @@ export function fromOption<A>(option: O.Option<A>): Query<unknown, O.Option<neve
  */
 export function collectAll<R, E, A>(
   as: Iterable<Query<R, E, A>>
-): Query<R, E, A.Array<A>> {
+): Query<R, E, Chunk.Chunk<A>> {
   return forEach_(as, identity)
 }
 
@@ -707,14 +707,16 @@ export function runLog<R, E, A>(
 export function forEachPar_<R, E, A, B>(
   as: Iterable<A>,
   f: (a: A) => Query<R, E, B>
-): Query<R, E, A.Array<B>> {
-  const arr = A.from(as)
-  return arr.length === 0
-    ? fromEffect(T.succeed([]))
-    : A.reduce_(
-        arr.slice(1),
-        map_(f(arr[0]), (a) => A.from([a])),
-        (q, a) => zipWithPar_(q, f(a), (a, b) => A.concat_(a, [b]))
+): Query<R, E, Chunk.Chunk<B>> {
+  const arr = Chunk.from(as)
+  return Chunk.size(arr) === 0
+    ? fromEffect(T.succeed(Chunk.empty()))
+    : Chunk.reduce_(
+        Chunk.drop_(arr, 1),
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        map_(f(Chunk.unsafeGet_(arr, 0)!), (_) => Chunk.single(_)),
+        (builder, a) =>
+          zipWithPar_(builder, f(a), (arr, item) => Chunk.append_(arr, item))
       )
 }
 
@@ -727,7 +729,7 @@ export function forEachPar_<R, E, A, B>(
  */
 export function forEachPar<R, E, A, B>(
   f: (a: A) => Query<R, E, B>
-): (as: Iterable<A>) => Query<R, E, A.Array<B>> {
+): (as: Iterable<A>) => Query<R, E, Chunk.Chunk<B>> {
   return (as) => forEachPar_(as, f)
 }
 
@@ -737,7 +739,7 @@ export function forEachPar<R, E, A, B>(
  */
 export function collectAllPar<R, E, A>(
   as: Iterable<Query<R, E, A>>
-): Query<R, E, A.Array<A>> {
+): Query<R, E, Chunk.Chunk<A>> {
   return forEachPar_(as, identity)
 }
 
@@ -1073,7 +1075,6 @@ const let_ = P.letF(Monad)
 const do_ = P.doF(Monad)
 
 export { do_ as do, let_ as let }
-
 export { branch as if, branch_ as if_ }
 
 export const struct = P.structF({ ...Monad, ...Applicative })

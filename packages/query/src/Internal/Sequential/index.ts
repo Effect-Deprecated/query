@@ -1,6 +1,6 @@
 // tracing: off
 
-import * as A from "@effect-ts/core/Collections/Immutable/Array"
+import * as A from "@effect-ts/core/Collections/Immutable/Chunk"
 import * as HM from "@effect-ts/core/Collections/Immutable/HashMap"
 import { _R } from "@effect-ts/core/Effect"
 import * as O from "@effect-ts/core/Option"
@@ -17,7 +17,7 @@ export class Sequential<R> {
   constructor(
     public readonly map: HM.HashMap<
       DataSource<unknown, unknown>,
-      A.Array<A.Array<BlockedRequest<unknown>>>
+      A.Chunk<A.Chunk<BlockedRequest<unknown>>>
     >
   ) {}
 }
@@ -49,7 +49,7 @@ export function add_<R, R1>(
         k,
         O.fold_(
           HM.get_(map, k),
-          () => A.empty,
+          () => A.empty(),
           (_) => A.concat_(_, v)
         )
       )
@@ -79,6 +79,6 @@ export function keys<R>(self: Sequential<R>): Iterable<DataSource<R, unknown>> {
  */
 export function toIterable<R>(
   self: Sequential<R>
-): Iterable<readonly [DataSource<R, unknown>, A.Array<A.Array<BlockedRequest<R>>>]> {
+): Iterable<readonly [DataSource<R, unknown>, A.Chunk<A.Chunk<BlockedRequest<R>>>]> {
   return self.map as any
 }

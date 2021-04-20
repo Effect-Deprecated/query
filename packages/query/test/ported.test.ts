@@ -1,4 +1,5 @@
 import * as A from "@effect-ts/core/Collections/Immutable/Array"
+import * as C from "@effect-ts/core/Collections/Immutable/Chunk"
 import * as MAP from "@effect-ts/core/Collections/Immutable/Map"
 import * as T from "@effect-ts/core/Effect"
 import * as Ex from "@effect-ts/core/Effect/Exit"
@@ -65,12 +66,12 @@ class GetAgeByName extends StandardRequest<GetAgeByName, never, number> {
 type UserRequest = GetAllIds | GetNameById | GetAgeByName
 
 const UserRequestDataSource = DS.makeBatched("UserRequestDataSource")(
-  (requests: A.Array<UserRequest>) =>
+  (requests: C.Chunk<UserRequest>) =>
     putStrLn("Running request...")["|>"](
       T.zipRight(
         T.succeed(
           requests["|>"](
-            A.reduce(CR.empty, (crm, _) => {
+            C.reduce(CR.empty, (crm, _) => {
               switch (_._tag) {
                 case "GetAllIds":
                   return CR.insert_(crm, _, E.right(userIds))

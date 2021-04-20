@@ -9,6 +9,9 @@ import type { Ref } from "@effect-ts/system/Ref"
 
 import type { Request } from "../../Request"
 
+export const BlockedRequestSym = Symbol.for("@effect-ts/query/Internal/BlockedRequest")
+export type BlockedRequestSym = typeof BlockedRequestSym
+
 /**
  * A `BlockedRequest[A]` keeps track of a request of type `A` along with a
  * `Ref` containing the result of the request, existentially hiding the result
@@ -16,20 +19,18 @@ import type { Request } from "../../Request"
  * return different result types for different requests while guaranteeing that
  * results will be of the type requested.
  */
-
-export interface BlockedRequest<A> {
-  <R>(go: <E, B>(full: BlockedRequestFull<A, E, B>) => R): R
-}
-
-interface BlockedRequestFull<A, E, B> {
-  [_A]: () => A
-  request: Request<E, B>
-  result: Ref<Option<Either<E, B>>>
+export class BlockedRequest<A> {
+  readonly [_A]!: () => A;
+  readonly [BlockedRequestSym]: BlockedRequestSym = BlockedRequestSym
+  constructor(
+    readonly request: Request<_GetE<A>, _GetA<A>>,
+    readonly result: Ref<Option<Either<_GetE<A>, _GetA<A>>>>
+  ) {}
 }
 
 export function of<A extends Request<any, any>>(
   request: A,
   result: Ref<Option<Either<_GetE<A>, _GetA<A>>>>
 ): BlockedRequest<A> {
-  return (_) => _({ request, result, [_A]: undefined as any })
+  return new BlockedRequest(request, result)
 }

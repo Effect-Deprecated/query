@@ -1,6 +1,6 @@
 // tracing: off
 
-import * as A from "@effect-ts/core/Collections/Immutable/Array"
+import * as A from "@effect-ts/core/Collections/Immutable/Chunk"
 import * as HM from "@effect-ts/core/Collections/Immutable/HashMap"
 import { _R } from "@effect-ts/core/Effect"
 import * as O from "@effect-ts/core/Option"
@@ -19,7 +19,7 @@ export class Parallel<R> {
   constructor(
     public readonly map: HM.HashMap<
       DS.DataSource<unknown, unknown>,
-      A.Array<BlockedRequest<unknown>>
+      A.Chunk<BlockedRequest<unknown>>
     >
   ) {}
 }
@@ -70,7 +70,7 @@ export function keys<R>(self: Parallel<R>): Iterable<DS.DataSource<R, unknown>> 
  * sequentially.
  */
 export function sequential<R>(self: Parallel<R>): Sequential<R> {
-  return new Sequential(HM.mapWithIndex_(self.map, (_, v) => [v]))
+  return new Sequential(HM.mapWithIndex_(self.map, (_, v) => A.single(v)))
 }
 
 /**
@@ -81,7 +81,7 @@ export function sequential<R>(self: Parallel<R>): Sequential<R> {
 export function toIterable<R>(
   self: Parallel<R>
 ): Iterable<
-  readonly [DS.DataSource<R, unknown>, A.Array<A.Array<BlockedRequests<unknown>>>]
+  readonly [DS.DataSource<R, unknown>, A.Chunk<A.Chunk<BlockedRequests<unknown>>>]
 > {
   return self.map as any
 }
@@ -100,7 +100,10 @@ export function apply<R, A>(
   blockedRequest: BlockedRequest<A>
 ): Parallel<R> {
   return new Parallel(
-    // @ts-expect-error
-    HM.set_(HM.make(), dataSource, [blockedRequest])
+    HM.set_(
+      HM.make(),
+      dataSource as DS.DataSource<unknown, unknown>,
+      A.single(blockedRequest)
+    )
   )
 }
