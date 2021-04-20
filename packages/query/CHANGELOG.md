@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.16.0](https://github.com/Effect-TS/query/compare/@effect-ts/query@0.15.0...@effect-ts/query@0.16.0) (2021-04-20)
+
+
+### Bug Fixes
+
+* **query:** use effect type symbols _R, _E and _A ([efb4532](https://github.com/Effect-TS/query/commit/efb4532c619eec5778ac0c01bef5dd8b19fd004b))
+
+
+### Features
+
+* **query:** use chunks, update dependencies ([bbcc6f0](https://github.com/Effect-TS/query/commit/bbcc6f0a0fe7d9f786ae50927dc3791fa15d4746))
+
+
+
+
+
 # [0.15.0](https://github.com/Effect-TS/query/compare/@effect-ts/query@0.14.0...@effect-ts/query@0.15.0) (2021-04-18)
 
 **Note:** Version bump only for package @effect-ts/query
