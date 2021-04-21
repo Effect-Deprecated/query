@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.17.1](https://github.com/Effect-TS/query/compare/@effect-ts/query@0.17.0...@effect-ts/query@0.17.1) (2021-04-21)
+
+
+### Features
+
+* **query:** add StaticRequest with lazy hash ([6e0e692](https://github.com/Effect-TS/query/commit/6e0e69203d529f11ac02d395992fbab2821d0583))
+
+
+
+
+
 # [0.17.0](https://github.com/Effect-TS/query/compare/@effect-ts/query@0.16.0...@effect-ts/query@0.17.0) (2021-04-21)
 
 
