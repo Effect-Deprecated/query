@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.17.0](https://github.com/Effect-TS/query/compare/@effect-ts/query@0.16.0...@effect-ts/query@0.17.0) (2021-04-21)
+
+
+### Features
+
+* **query:** lazy getter for data-source hash ([8e34d15](https://github.com/Effect-TS/query/commit/8e34d1537a27b06b2079f81b476424092437a49d))
+* **query:** use tuples and update dependencies ([e0c4712](https://github.com/Effect-TS/query/commit/e0c4712520fd618faf56f11caefb67346d5f3595))
+
+
+
+
+
 # [0.16.0](https://github.com/Effect-TS/query/compare/@effect-ts/query@0.15.0...@effect-ts/query@0.16.0) (2021-04-20)
 
 
