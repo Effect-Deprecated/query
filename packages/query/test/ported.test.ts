@@ -16,7 +16,7 @@ import * as CR from "../src/CompletedRequestMap"
 import * as DS from "../src/DataSource"
 import * as Q from "../src/Query"
 import { QueryFailure } from "../src/QueryFailure"
-import { StandardRequest } from "../src/Request"
+import { StaticRequest } from "../src/Request"
 
 interface TestConsole {
   lines: REF.Ref<A.Array<string>>
@@ -47,17 +47,17 @@ const userNames: MAP.Map<number, string> = MAP.make(
   )
 )
 
-class GetAllIds extends StandardRequest<GetAllIds, never, A.Array<number>> {
+class GetAllIds extends StaticRequest<GetAllIds, never, A.Array<number>> {
   readonly _tag = "GetAllIds"
 }
 
-class GetNameById extends StandardRequest<GetNameById, never, string> {
+class GetNameById extends StaticRequest<GetNameById, never, string> {
   readonly _tag = "GetNameById"
 
   readonly id!: number
 }
 
-class GetAgeByName extends StandardRequest<GetAgeByName, never, number> {
+class GetAgeByName extends StaticRequest<GetAgeByName, never, number> {
   readonly _tag = "GetAgeByName"
 
   readonly name!: string
