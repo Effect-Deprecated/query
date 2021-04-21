@@ -35,7 +35,7 @@ export abstract class StaticRequest<X, E, A, D extends PropertyKey = "_tag" | "_
   @LazyGetter()
   get [St.hashSym](): number {
     let h = h0
-    for (const k of Object.keys(this).sort()) {
+    for (const k of this[Case.CaseBrand]) {
       h = St.combineHash(h, St.hash(this[k]))
     }
     return h
