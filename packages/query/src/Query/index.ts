@@ -3,6 +3,7 @@
 import "@effect-ts/system/Operator"
 
 import * as Chunk from "@effect-ts/core/Collections/Immutable/Chunk"
+import * as Tp from "@effect-ts/core/Collections/Immutable/Tuple"
 import * as T from "@effect-ts/core/Effect"
 import { _A, _E, _R } from "@effect-ts/core/Effect"
 import * as REF from "@effect-ts/core/Effect/Ref"
@@ -322,8 +323,8 @@ export function provideSome<R, R0>(description: string, f: (r: R0) => R) {
 export function zip_<R, R1, E, E1, A, B>(
   self: Query<R, E, A>,
   that: Query<R1, E1, B>
-): Query<R & R1, E | E1, readonly [A, B]> {
-  return zipWith_(self, that, (a, b) => tuple(a, b))
+): Query<R & R1, E | E1, Tp.Tuple<[A, B]>> {
+  return zipWith_(self, that, (a, b) => Tp.tuple(a, b))
 }
 
 /**
@@ -332,7 +333,7 @@ export function zip_<R, R1, E, E1, A, B>(
  * @dataFirst zip_
  */
 export function zip<R1, E1, B>(that: Query<R1, E1, B>) {
-  return <R, E, A>(self: Query<R, E, A>): Query<R & R1, E | E1, readonly [A, B]> =>
+  return <R, E, A>(self: Query<R, E, A>): Query<R & R1, E | E1, Tp.Tuple<[A, B]>> =>
     zip_(self, that)
 }
 

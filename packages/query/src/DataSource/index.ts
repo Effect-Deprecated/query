@@ -4,9 +4,9 @@
 import "@effect-ts/system/Operator"
 
 import * as C from "@effect-ts/core/Collections/Immutable/Chunk"
+import * as Tp from "@effect-ts/core/Collections/Immutable/Tuple"
 import * as T from "@effect-ts/core/Effect"
 import * as E from "@effect-ts/core/Either"
-import { tuple } from "@effect-ts/core/Function"
 import type * as O from "@effect-ts/core/Option"
 import * as St from "@effect-ts/core/Structural"
 import type { _A, _E } from "@effect-ts/core/Utils"
@@ -324,10 +324,10 @@ export function fromFunctionBatchedM(identifier: string) {
       const a: T.Effect<
         R,
         never,
-        C.Chunk<readonly [A, E.Either<_E<A>, _A<A>>]>
+        C.Chunk<Tp.Tuple<[A, E.Either<_E<A>, _A<A>>]>>
       > = T.fold_(
         f(requests),
-        (e) => C.map_(requests, (_) => tuple(_, E.left(e))),
+        (e) => C.map_(requests, (_) => Tp.tuple(_, E.left(e))),
         (bs) =>
           C.zip_(
             requests,
@@ -335,7 +335,7 @@ export function fromFunctionBatchedM(identifier: string) {
           )
       )
       return T.map_(a, (_) =>
-        C.reduce_(_, CR.empty, (crm, [k, v]) => CR.insert_(crm, k, v))
+        C.reduce_(_, CR.empty, (crm, { tuple: [k, v] }) => CR.insert_(crm, k, v))
       )
     })
 }
@@ -367,10 +367,10 @@ export function fromFunctionBatchedOptionM(identifier: string) {
       const a: T.Effect<
         R,
         never,
-        C.Chunk<readonly [A, E.Either<E, O.Option<_A<A>>>]>
+        C.Chunk<Tp.Tuple<[A, E.Either<E, O.Option<_A<A>>>]>>
       > = T.fold_(
         f(requests),
-        (e) => C.map_(requests, (_) => tuple(_, E.left(e))),
+        (e) => C.map_(requests, (_) => Tp.tuple(_, E.left(e))),
         (bs) =>
           C.zip_(
             requests,
@@ -378,7 +378,7 @@ export function fromFunctionBatchedOptionM(identifier: string) {
           )
       )
       return T.map_(a, (_) =>
-        C.reduce_(_, CR.empty, (crm, [k, v]) => CR.insertOption_(crm, k, v))
+        C.reduce_(_, CR.empty, (crm, { tuple: [k, v] }) => CR.insertOption_(crm, k, v))
       )
     })
 }

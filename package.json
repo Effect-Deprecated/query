@@ -30,10 +30,10 @@
     }
   },
   "devDependencies": {
-    "@babel/cli": "^7.13.14",
-    "@babel/core": "^7.13.14",
-    "@effect-ts/build-utils": "^0.14.0",
-    "@effect-ts/core": "^0.34.0",
+    "@babel/cli": "^7.13.16",
+    "@babel/core": "^7.13.16",
+    "@effect-ts/build-utils": "^0.15.6",
+    "@effect-ts/core": "^0.35.6",
     "@effect-ts/tracing-plugin": "^0.10.1",
     "@types/cpx": "^1.5.1",
     "@types/glob": "^7.1.3",
@@ -42,7 +42,7 @@
     "@typescript-eslint/eslint-plugin": "^4.22.0",
     "@typescript-eslint/parser": "^4.22.0",
     "babel-plugin-annotate-pure-calls": "^0.4.0",
-    "chalk": "^4.1.0",
+    "chalk": "^4.1.1",
     "cpx": "^1.5.0",
     "cz-conventional-changelog": "^3.3.0",
     "dtslint": "github:gcanti/dtslint",

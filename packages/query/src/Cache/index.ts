@@ -4,6 +4,7 @@
 import "@effect-ts/system/Operator"
 
 import * as HM from "@effect-ts/core/Collections/Immutable/HashMap"
+import * as Tp from "@effect-ts/core/Collections/Immutable/Tuple"
 import * as T from "@effect-ts/core/Effect"
 import * as E from "@effect-ts/core/Either"
 import { pipe } from "@effect-ts/core/Function"
@@ -82,8 +83,8 @@ function makeDefaultCache(state: REF.Ref<HM.HashMap<Request<any, any>, any>>): C
           pipe(
             HM.get_(map, request),
             O.fold(
-              () => [E.left(ref) as RET, HM.set_(map, request, ref)],
-              (r) => [E.right(r), map]
+              () => Tp.tuple(E.left(ref) as RET, HM.set_(map, request, ref)),
+              (r) => Tp.tuple(E.right(r), map)
             )
           )
         )
