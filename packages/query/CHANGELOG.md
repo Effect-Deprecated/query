@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.17.2](https://github.com/Effect-TS/query/compare/@effect-ts/query@0.17.1...@effect-ts/query@0.17.2) (2021-04-21)
+
+
+### Performance Improvements
+
+* **case:** access sorted keys ([fc38db6](https://github.com/Effect-TS/query/commit/fc38db638450321b482c2bfabc97391b11ba2785))
+
+
+
+
+
 ## [0.17.1](https://github.com/Effect-TS/query/compare/@effect-ts/query@0.17.0...@effect-ts/query@0.17.1) (2021-04-21)
 
 
