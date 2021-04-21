@@ -5,7 +5,7 @@ import * as T from "@effect-ts/core/Effect"
 import * as Ex from "@effect-ts/core/Effect/Exit"
 import * as REF from "@effect-ts/core/Effect/Ref"
 import * as E from "@effect-ts/core/Either"
-import { identity, pipe, tuple } from "@effect-ts/core/Function"
+import { identity, pipe } from "@effect-ts/core/Function"
 import type { Has } from "@effect-ts/core/Has"
 import { tag } from "@effect-ts/core/Has"
 import * as O from "@effect-ts/core/Option"
@@ -41,10 +41,9 @@ const getLogSize = T.accessServiceM(TestConsole)((c) =>
 const userIds: A.Array<number> = A.range(1, 26)
 
 const userNames: MAP.Map<number, string> = MAP.make(
-  A.zipWith_(
+  A.zip_(
     userIds,
-    A.map_(A.range(1, 26), (_) => _.toString(36)),
-    tuple
+    A.map_(A.range(1, 26), (_) => _.toString(36))
   )
 )
 
