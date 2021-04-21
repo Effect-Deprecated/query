@@ -10,6 +10,7 @@ import * as E from "@effect-ts/core/Either"
 import type * as O from "@effect-ts/core/Option"
 import * as St from "@effect-ts/core/Structural"
 import type { _A, _E } from "@effect-ts/core/Utils"
+import { LazyGetter } from "@effect-ts/core/Utils"
 
 import * as CR from "../CompletedRequestMap"
 import type { Request } from "../Request"
@@ -57,17 +58,14 @@ export class DataSource<R, A> {
     return that instanceof DataSource && this.identifier === that.identifier
   }
 
-  [St.hashSym](): number {
+  @LazyGetter()
+  get [St.hashSym](): number {
     return St.hashString(this.identifier)
   }
 }
 
 export function equals<R, A>(a: DataSource<R, A>, b: DataSource<R, A>): boolean {
   return a.identifier === b.identifier
-}
-
-export function hash(a: DataSource<any, any>): number {
-  return St.hashString(a.identifier)
 }
 
 export class InvalidBatchConfig {

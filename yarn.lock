@@ -362,22 +362,22 @@
   dependencies:
     chalk "^4.0.0"
 
-"@effect-ts/build-utils@^0.15.6":
-  version "0.15.6"
-  resolved "https://registry.yarnpkg.com/@effect-ts/build-utils/-/build-utils-0.15.6.tgz#fc0deff3353d4c13252cb22bcb69bba8ab81c196"
-  integrity sha512-/ytqJUW0vGUROp6gm/jAAvMvibE0FmYBlu6hT1kbIlT+1WZPDb7W8j2R8UbVBTlpvP+c6yUD6WzrEcRZ5FQwZA==
+"@effect-ts/build-utils@^0.16.0":
+  version "0.16.0"
+  resolved "https://registry.yarnpkg.com/@effect-ts/build-utils/-/build-utils-0.16.0.tgz#39a685b18c8c0199006bd4472ee7f48e7e2d1a96"
+  integrity sha512-M2EV5gijE1vNKjEO1zJn1ChDs6X2uQO8lQAzyo0Fw1vKeAhEIZLgwJOgHSiNdsB3X4JOl2N9KtWKODQnq0vbww==
 
-"@effect-ts/core@^0.35.6":
-  version "0.35.6"
-  resolved "https://registry.yarnpkg.com/@effect-ts/core/-/core-0.35.6.tgz#4c2a56761a0a28223d78cf985e51d971640a6f35"
-  integrity sha512-XYHBVD3HuPST3WZJ7bU98df+R2+z+a1M/dFyMu3CDrI6MfgWSe2YVIXk4ueVUaQryURp52gWtxUM4oPqFcnzeQ==
+"@effect-ts/core@^0.36.0":
+  version "0.36.0"
+  resolved "https://registry.yarnpkg.com/@effect-ts/core/-/core-0.36.0.tgz#419eb0a7e6c7bfeb55077246462fe8281bf54515"
+  integrity sha512-huHIqQXgZJeB3lfau7dNdMzcPyiIhF0+lGC5V7obSE42Lpne0QXG9U5Yqez8gZmqT4AhjLZqAdYs2I/etzdfjA==
   dependencies:
-    "@effect-ts/system" "^0.32.6"
+    "@effect-ts/system" "^0.33.0"
 
-"@effect-ts/system@^0.32.6":
-  version "0.32.6"
-  resolved "https://registry.yarnpkg.com/@effect-ts/system/-/system-0.32.6.tgz#1a28818800838f3d51eb1c52f681ad7a4bf37484"
-  integrity sha512-h9C+VVl5xK+zdQuAQtY5CAkxrsPlKsZGq4djP3xrcyABVGWH0utwXWHHfaRoMoWT2QpBC797AuPAOPE8a5NIng==
+"@effect-ts/system@^0.33.0":
+  version "0.33.0"
+  resolved "https://registry.yarnpkg.com/@effect-ts/system/-/system-0.33.0.tgz#e1ae5febbe6fee2f2ece61cba2de8eb352dd8187"
+  integrity sha512-5Hv4vv8qjcOE/88d6LRUx/l/whyy43m5Fh6VdQv7eq9tAZnJdyIJJAzNrmWOBAOUwCfpJPMmGDyxW1kmlwZWiQ==
 
 "@effect-ts/tracing-plugin@^0.10.1":
   version "0.10.1"
