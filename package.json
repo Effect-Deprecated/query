@@ -32,8 +32,8 @@
   "devDependencies": {
     "@babel/cli": "^7.13.16",
     "@babel/core": "^7.13.16",
-    "@effect-ts/build-utils": "^0.16.5",
-    "@effect-ts/core": "^0.36.5",
+    "@effect-ts/build-utils": "^0.17.3",
+    "@effect-ts/core": "^0.37.3",
     "@effect-ts/tracing-plugin": "^0.10.1",
     "@types/cpx": "^1.5.1",
     "@types/glob": "^7.1.3",

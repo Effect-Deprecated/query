@@ -44,6 +44,6 @@
     ]
   },
   "peerDependencies": {
-    "@effect-ts/core": "^0.36.5"
+    "@effect-ts/core": "^0.37.3"
   }
 }

@@ -12,13 +12,9 @@ export interface Request<E, A> {
   readonly [_A]: () => A
 }
 
-export abstract class StandardRequest<
-    X,
-    E,
-    A,
-    D extends PropertyKey = "_tag" | "_typeId"
-  >
-  extends Case.Case<X, typeof _E | typeof _A | D>
+// @ts-expect-error
+export abstract class StandardRequest<X extends object, E, A>
+  extends Case.Case<X>
   implements Request<E, A> {
   readonly [_E]!: () => E;
   readonly [_A]!: () => A
@@ -26,8 +22,9 @@ export abstract class StandardRequest<
 
 const h0 = St.hashString("@effect-ts/system/Case")
 
-export abstract class StaticRequest<X, E, A, D extends PropertyKey = "_tag" | "_typeId">
-  extends Case.Case<X, typeof _E | typeof _A | D>
+// @ts-expect-error
+export abstract class Static<X extends object, E, A>
+  extends Case.Case<X>
   implements Request<E, A> {
   readonly [_E]!: () => E;
   readonly [_A]!: () => A
