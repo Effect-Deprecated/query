@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.18.1](https://github.com/Effect-TS/query/compare/@effect-ts/query@0.18.0...@effect-ts/query@0.18.1) (2021-04-30)
+
+
+### Bug Fixes
+
+* **query:** fix forEachPar dataFirst comment ([71309f9](https://github.com/Effect-TS/query/commit/71309f914df6736a0cd2048eaa7c089bf64fa302))
+
+
+
+
+
 # [0.18.0](https://github.com/Effect-TS/query/compare/@effect-ts/query@0.17.3...@effect-ts/query@0.18.0) (2021-04-29)
 
 **Note:** Version bump only for package @effect-ts/query
