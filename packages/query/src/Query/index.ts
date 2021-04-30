@@ -586,6 +586,8 @@ export function forEach_<R, E, A, B>(
  * Performs a query for each element in a collection, collecting the results
  * into a query returning a collection of their results. Requests will be
  * executed sequentially and will be pipelined.
+ *
+ * @dataFirst forEach_
  */
 export function forEach<R, E, A, B>(
   f: (a: A) => Query<R, E, B>
