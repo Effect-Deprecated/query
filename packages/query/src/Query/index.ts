@@ -726,7 +726,7 @@ export function forEachPar_<R, E, A, B>(
  * into a query returning a collection of their results. Requests will be
  * executed parallely and will be pipelined.
  *
- * @dataFirst forEachPar
+ * @dataFirst forEachPar_
  */
 export function forEachPar<R, E, A, B>(
   f: (a: A) => Query<R, E, B>
