@@ -1,6 +1,6 @@
 {
   "name": "@effect-ts/query",
-  "version": "0.18.2",
+  "version": "0.18.3",
   "license": "MIT",
   "repository": "https://github.com/Effect-TS/query.git",
   "homepage": "https://www.matechs.com",
@@ -44,6 +44,6 @@
     ]
   },
   "peerDependencies": {
-    "@effect-ts/core": "^0.37.3"
+    "@effect-ts/core": "^0.37.7"
   }
 }
