@@ -319,19 +319,16 @@ export function fromFunctionBatchedM(identifier: string) {
     f: (a: C.Chunk<A>) => T.Effect<R, _E<A>, C.Chunk<_A<A>>>
   ): DataSource<R, A> =>
     makeBatched(identifier)((requests) => {
-      const a: T.Effect<
-        R,
-        never,
-        C.Chunk<Tp.Tuple<[A, E.Either<_E<A>, _A<A>>]>>
-      > = T.fold_(
-        f(requests),
-        (e) => C.map_(requests, (_) => Tp.tuple(_, E.left(e))),
-        (bs) =>
-          C.zip_(
-            requests,
-            C.map_(bs, (_) => E.right(_))
-          )
-      )
+      const a: T.Effect<R, never, C.Chunk<Tp.Tuple<[A, E.Either<_E<A>, _A<A>>]>>> =
+        T.fold_(
+          f(requests),
+          (e) => C.map_(requests, (_) => Tp.tuple(_, E.left(e))),
+          (bs) =>
+            C.zip_(
+              requests,
+              C.map_(bs, (_) => E.right(_))
+            )
+        )
       return T.map_(a, (_) =>
         C.reduce_(_, CR.empty, (crm, { tuple: [k, v] }) => CR.insert_(crm, k, v))
       )

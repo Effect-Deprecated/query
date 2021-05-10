@@ -362,27 +362,27 @@
   dependencies:
     chalk "^4.0.0"
 
-"@effect-ts/build-utils@^0.17.7":
-  version "0.17.7"
-  resolved "https://registry.yarnpkg.com/@effect-ts/build-utils/-/build-utils-0.17.7.tgz#60d7296a7fefd600ff0d5ffc04bbb4078f6b3fd5"
-  integrity sha512-5AN/tYHhzEVhZLRW20eV5HX0C3IpSvaubkTp9nVbJzIuc18uwzI+nSa1jLwfsOMPIXTFv6lKAjgOv8yTzBJefA==
+"@effect-ts/build-utils@^0.17.8":
+  version "0.17.8"
+  resolved "https://registry.yarnpkg.com/@effect-ts/build-utils/-/build-utils-0.17.8.tgz#60bbd53b6c36d7b3242199cafb141495563966a5"
+  integrity sha512-1ii8vvfWkUcnPy++A9pSSDeqy+FcIC4LoJmDSCgTAQ/DIaGs2MMZx8+oF0T5rV2PqI1V5QyxgDOrmgJNQh/O7g==
 
-"@effect-ts/core@^0.37.7":
-  version "0.37.7"
-  resolved "https://registry.yarnpkg.com/@effect-ts/core/-/core-0.37.7.tgz#ffbdff5f230ab4dd9baf83b523ba7c375317cb05"
-  integrity sha512-pu3AmoKywdpui6wjTsWdfzQkKwupoKPWxqVxj/oj5evKbTMFcm7AHj/VmzNqmgawRo1vv6h4Cj2S6LQUKvzjZA==
+"@effect-ts/core@^0.37.8":
+  version "0.37.8"
+  resolved "https://registry.yarnpkg.com/@effect-ts/core/-/core-0.37.8.tgz#ed726bbedd6c0a56870de305efc2637a8d2bd4f0"
+  integrity sha512-FQfuz3uOTFAuYDd91uV57025SCXpaAnKir5PZWS/1V7f4pNZoe7pXu3rAI4GHEA+jLPrARSZEybCErlXVS+QRg==
   dependencies:
-    "@effect-ts/system" "^0.34.7"
+    "@effect-ts/system" "^0.34.8"
 
-"@effect-ts/system@^0.34.7":
-  version "0.34.7"
-  resolved "https://registry.yarnpkg.com/@effect-ts/system/-/system-0.34.7.tgz#07cf1bb076f13315f9b292ffcb52e79d0feb3479"
-  integrity sha512-4cAX/YlT10RY7+ho4rb2H5Jsd7lffFpjvqC/av/1rpFaxdjfxXY5o6KmImm57LocJDwp0gsoNnVyeyJJdOQong==
+"@effect-ts/system@^0.34.8":
+  version "0.34.8"
+  resolved "https://registry.yarnpkg.com/@effect-ts/system/-/system-0.34.8.tgz#e57cdd37fa1cce08a688fb04e2de6397f0058b57"
+  integrity sha512-qAsGumy28ACPmMozRpEXlygwOzuqF+HmiOOldIuACf6dSInDTZFULD+Sfs5ANFcOaXmRvlXeDY1ElrSSrpsa4Q==
 
-"@effect-ts/tracing-plugin@^0.10.1":
-  version "0.10.1"
-  resolved "https://registry.yarnpkg.com/@effect-ts/tracing-plugin/-/tracing-plugin-0.10.1.tgz#ff7b8d5103cccece801450e2a2cdcd9c435732d0"
-  integrity sha512-MsF3ntjydjeNEfEo0uG+HU7kB7htXL/4EJ5O53m53ENAnQVkpJ7xAIownWXF4jpUy90SUWjqE2nLwDWQ1Jx6fQ==
+"@effect-ts/tracing-plugin@^0.10.2":
+  version "0.10.2"
+  resolved "https://registry.yarnpkg.com/@effect-ts/tracing-plugin/-/tracing-plugin-0.10.2.tgz#83092069e3218a0320c7ebeed71988acbcbfb705"
+  integrity sha512-nH8Td8pI4M/ATp3QKuQeZ4DFJIoHGlHYbvQwx6qQZkPOtcwr1Dzv04CjeKzwKDAvo0yh5B0mG0ny6WnBnxMnbw==
 
 "@eslint/eslintrc@^0.4.1":
   version "0.4.1"
@@ -4581,9 +4581,9 @@ is-ci@^2.0.0:
     ci-info "^2.0.0"
 
 is-core-module@^2.2.0:
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/is-core-module/-/is-core-module-2.3.0.tgz#d341652e3408bca69c4671b79a0954a3d349f887"
-  integrity sha512-xSphU2KG9867tsYdLD4RWQ1VqdFl4HTO9Thf3I/3dLEfr0dbPTWKsuCKrgqMljg4nPE+Gq0VCnzT3gr0CyBmsw==
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/is-core-module/-/is-core-module-2.4.0.tgz#8e9fc8e15027b011418026e98f0e6f4d86305cc1"
+  integrity sha512-6A2fkfq1rfeQZjxrZJGerpLCTHRNEBiSgnu0+obeJpEPZRUooHgsizvzv0ZjJwOz3iWIHdJtVWJ/tmPr3D21/A==
   dependencies:
     has "^1.0.3"
 
@@ -6810,10 +6810,10 @@ prettier-linter-helpers@^1.0.0:
   dependencies:
     fast-diff "^1.1.2"
 
-prettier@^2.1.2:
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.2.1.tgz#795a1a78dd52f073da0cd42b21f9c91381923ff5"
-  integrity sha512-PqyhM2yCjg/oKkFPtTGUojv7gnZAoG80ttl45O6x2Ug/rMJw4wcc9k6aaf2hibP7BGVCCM33gZoGjyvt9mm16Q==
+prettier@^2.3.0:
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.3.0.tgz#b6a5bf1284026ae640f17f7ff5658a7567fc0d18"
+  integrity sha512-kXtO4s0Lz/DW/IJ9QdWhAf7/NmPWQXkFr/r/WkR3vyI+0v8amTDxiaQSLzs8NBlytfLWX/7uQUMIW677yLKl4w==
 
 pretty-format@^26.0.0, pretty-format@^26.6.2:
   version "26.6.2"
@@ -8318,9 +8318,9 @@ typescript@^4.2.2:
   integrity sha512-V+evlYHZnQkaz8TRBuxTA92yZBPotr5H+WhQ7bD3hZUndx5tGOa1fuCgeSjxAzM1RiN5IzvadIXTVefuuwZCRg==
 
 typescript@next:
-  version "4.3.0-dev.20210508"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.3.0-dev.20210508.tgz#62532cabfaf444441c2b9776dbf80852319cf354"
-  integrity sha512-nUNce9KTE/qnaadNe8j+qvmnyVWrMggucMxOpG2Tu12SRfrhkxkPMAUkjNzIaJR0t11aJnnTsxggk5ENakYFsQ==
+  version "4.3.0-dev.20210510"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.3.0-dev.20210510.tgz#a50dd4f9a6e616f82cb33148c7f5ee80cc07857b"
+  integrity sha512-HR21ZkELulLWOHfHIA57/6rD1rkadgjyMp1TVeXQ5v82/rn0V3ROkAnd1elt+Mrjc2pTXcIwom7E/N5RCUUxMg==
 
 uglify-js@^3.1.4:
   version "3.13.3"

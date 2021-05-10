@@ -1085,9 +1085,8 @@ export const struct = P.structF({ ...Monad, ...Applicative })
 /**
  * Matchers
  */
-export const { match, matchIn, matchMorph, matchTag, matchTagIn } = P.matchers(
-  Covariant
-)
+export const { match, matchIn, matchMorph, matchTag, matchTagIn } =
+  P.matchers(Covariant)
 
 /**
  * Conditionals
