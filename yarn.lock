@@ -362,10 +362,10 @@
   dependencies:
     chalk "^4.0.0"
 
-"@effect-ts/build-utils@^0.18.1":
-  version "0.18.1"
-  resolved "https://registry.yarnpkg.com/@effect-ts/build-utils/-/build-utils-0.18.1.tgz#10c9d4e0f8da74b951c689436ecd418e8a22cf78"
-  integrity sha512-ijp3dsXJZpeMnC/CLT4od6/xtCHDkXdXvWy0CfzGchTxv6SvKr4zoXnCJy2zuUBV+/mGJP3EmFccJiHXG0yuqw==
+"@effect-ts/build-utils@^0.19.3":
+  version "0.19.3"
+  resolved "https://registry.yarnpkg.com/@effect-ts/build-utils/-/build-utils-0.19.3.tgz#cb15541c565bbc782a3c5dc8b0edd4514ae72984"
+  integrity sha512-TOOJX6D/tWOZxXJVafbzFoYuvgfnZCzsEGfRsRHyjx9SDfMbKdHuq8v+oojBH5eqMgr8Vq+zsGt96wCzdFCMTw==
 
 "@effect-ts/core@^0.38.1":
   version "0.38.1"
