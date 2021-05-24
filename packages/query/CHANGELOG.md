@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.20.0](https://github.com/Effect-TS/query/compare/@effect-ts/query@0.19.0...@effect-ts/query@0.20.0) (2021-05-24)
+
+**Note:** Version bump only for package @effect-ts/query
+
+
+
+
+
 # [0.19.0](https://github.com/Effect-TS/query/compare/@effect-ts/query@0.18.5...@effect-ts/query@0.19.0) (2021-05-11)
 
 **Note:** Version bump only for package @effect-ts/query
