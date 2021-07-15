@@ -9,6 +9,7 @@ import { identity, pipe } from "@effect-ts/core/Function"
 import type { Has } from "@effect-ts/core/Has"
 import { tag } from "@effect-ts/core/Has"
 import * as O from "@effect-ts/core/Option"
+import * as TE from "@effect-ts/jest/Runtime"
 import { NoSuchElementException } from "@effect-ts/system/GlobalExceptions"
 
 import * as CH from "../src/Cache"
@@ -101,6 +102,7 @@ const getAgeById = (id: number) =>
   getUserNameById(id)["|>"](Q.chain((name) => getAgeByName(name)))
 
 describe("Query", () => {
+  const r = TE.runtime()
   it("basic query", async () => {
     const f = pipe(
       Q.run(getAllUserIds),
@@ -285,5 +287,16 @@ describe("Query", () => {
 
     const result = await T.runPromiseExit(f)
     expect(result).toEqual(Ex.succeed(1))
+  })
+  r.it("times out a query that does not complete", () => {
+    return pipe(
+      Q.never,
+      Q.timeout(1000),
+      Q.run,
+      T.fork,
+      T.tap(() => TE.adjust(1000)),
+      T.chain((fiber) => F.join(fiber)),
+      T.zipRight(T.succeedWith(() => expect(true).toBe(true)))
+    )
   })
 })
