@@ -6,6 +6,8 @@ import * as Chunk from "@effect-ts/core/Collections/Immutable/Chunk"
 import * as Tp from "@effect-ts/core/Collections/Immutable/Tuple"
 import * as T from "@effect-ts/core/Effect"
 import { _A, _E, _R } from "@effect-ts/core/Effect"
+import * as Ex from "@effect-ts/core/Effect/Exit"
+import * as F from "@effect-ts/core/Effect/Fiber"
 import * as REF from "@effect-ts/core/Effect/Ref"
 import * as E from "@effect-ts/core/Either"
 import { identity, pipe, tuple } from "@effect-ts/core/Function"
@@ -511,6 +513,137 @@ export function summarized<A, R1, E1, B, C>(
   f: (a: B, b: B) => B
 ) {
   return <R, E>(self: Query<R, E, A>) => summarized_(self, summary, f)
+}
+
+/**
+ * Returns an effect that will timeout this query, returning `None` if the
+ * timeout elapses before the query was completed.
+ * @dataFirst timeout_
+ */
+export function timeout(duration: number) {
+  return <R, E, A>(self: Query<R, E, A>) => timeout_(self, duration)
+}
+
+/**
+ * Returns an effect that will timeout this query, returning `None` if the
+ * timeout elapses before the query was completed.
+ */
+export function timeout_<R, E, A>(self: Query<R, E, A>, duration: number) {
+  return timeoutTo_(self, O.none, O.some, duration)
+}
+
+/**
+ * The same as [[timeout]], but instead of producing a `None` in the event
+ * of timeout, it will produce the specified error.
+ */
+export function timeoutFail_<R, E, A, E1>(
+  self: Query<R, E, A>,
+  error: E1,
+  duration: number
+) {
+  return flatten(
+    timeoutTo_(self, fail(error), (a) => succeed(a) as Query<R, E | E1, A>, duration)
+  )
+}
+
+/**
+ * The same as [[timeout]], but instead of producing a `None` in the event
+ * of timeout, it will produce the specified failure.
+ * @dataFirst timeoutFail_
+ */
+export function timeoutFail<E1>(error: E1, duration: number) {
+  return <R, E, A>(self: Query<R, E, A>) => timeoutFail_(self, error, duration)
+}
+
+/**
+ * The same as [[timeout]], but instead of producing a `None` in the event
+ * of timeout, it will produce the specified failure.
+ */
+export function timeoutHalt_<R, E, A, E1>(
+  self: Query<R, E, A>,
+  error: C.Cause<E1>,
+  duration: number
+) {
+  return flatten(
+    timeoutTo_(self, halt(error), (a) => succeed(a) as Query<R, E | E1, A>, duration)
+  )
+}
+
+/**
+ * The same as [[timeout]], but instead of producing a `None` in the event
+ * of timeout, it will produce the specified error.
+ * @dataFirst timeoutHalt_
+ */
+export function timeoutHalt<E1>(error: C.Cause<E1>, duration: number) {
+  return <R, E, A>(self: Query<R, E, A>) => timeoutHalt_(self, error, duration)
+}
+
+export function timeoutTo_<R, E, A, B>(
+  self: Query<R, E, A>,
+  b: B,
+  f: (a: A) => B,
+  duration: number
+) {
+  function race<B1>(
+    query: Query<R, E, B1>,
+    fiber: F.FiberContext<never, B1>
+  ): Query<R, E, B1> {
+    return new Query(
+      pipe(
+        query.step,
+        T.raceWith(
+          F.join(fiber),
+          (leftExit, rightFiber) =>
+            Ex.foldM_(
+              leftExit,
+              (cause) =>
+                T.zipRight_(F.interrupt(rightFiber), T.succeed(RES.fail(cause))),
+              (result) => {
+                switch (result._tag) {
+                  case "Blocked":
+                    switch (result.cont._tag) {
+                      case "Effect":
+                        return T.succeed(
+                          RES.blocked(
+                            result.blockedRequests,
+                            CONT.effect(race(result.cont.query, fiber))
+                          )
+                        )
+                      case "Get":
+                        return T.succeed(
+                          RES.blocked(
+                            result.blockedRequests,
+                            CONT.effect(race(fromEffect(result.cont.io), fiber))
+                          )
+                        )
+                    }
+                    break
+                  case "Done":
+                    return T.zipRight_(
+                      F.interrupt(rightFiber),
+                      T.succeed(RES.done(result.value))
+                    )
+                  case "Fail":
+                    return T.zipRight_(
+                      F.interrupt(rightFiber),
+                      T.succeed(RES.fail(result.cause))
+                    )
+                }
+              }
+            ),
+          (rightExit, leftFiber) =>
+            pipe(
+              F.interrupt(leftFiber),
+              T.chain((ex) => T.succeed(RES.fromExit(rightExit)))
+            )
+        )
+      )
+    )
+  }
+  return pipe(
+    fromEffect(pipe(CL.sleep(duration), T.interruptible, T.as(b), T.fork)),
+    chain((fiber) => race(map_(self, f), fiber))
+  )
 }
 
 /**

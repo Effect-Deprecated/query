@@ -3,12 +3,14 @@ import * as C from "@effect-ts/core/Collections/Immutable/Chunk"
 import * as MAP from "@effect-ts/core/Collections/Immutable/Map"
 import * as T from "@effect-ts/core/Effect"
 import * as Ex from "@effect-ts/core/Effect/Exit"
+import * as F from "@effect-ts/core/Effect/Fiber"
 import * as REF from "@effect-ts/core/Effect/Ref"
 import * as E from "@effect-ts/core/Either"
 import { identity, pipe } from "@effect-ts/core/Function"
 import type { Has } from "@effect-ts/core/Has"
 import { tag } from "@effect-ts/core/Has"
 import * as O from "@effect-ts/core/Option"
+import * as TE from "@effect-ts/jest/Test"
 import { NoSuchElementException } from "@effect-ts/system/GlobalExceptions"
 
 import * as CH from "../src/Cache"
@@ -101,6 +103,7 @@ const getAgeById = (id: number) =>
   getUserNameById(id)["|>"](Q.chain((name) => getAgeByName(name)))
 
 describe("Query", () => {
+  const r = TE.runtime()
   it("basic query", async () => {
     const f = pipe(
       Q.run(getAllUserIds),
@@ -286,4 +289,29 @@ describe("Query", () => {
     const result = await T.runPromiseExit(f)
     expect(result).toEqual(Ex.succeed(1))
   })
+  r.it("times out a query that does not complete", () =>
+    pipe(
+      Q.never,
+      Q.timeout(1000),
+      Q.run,
+      T.fork,
+      T.tap(() => TE.adjust(1000)),
+      T.chain((fiber) => F.join(fiber)),
+      T.zipRight(T.succeedWith(() => expect(true).toBe(true)))
+    )
+  )
+  r.it("prevents subsequent requests to data sources from being executed", () =>
+    pipe(
+      pipe(
+        Q.fromEffect(T.sleep(2000)),
+        Q.chain(() => Q.never),
+        Q.timeout(2000),
+        Q.run,
+        T.fork
+      ),
+      T.tap(() => TE.adjust(2000)),
+      T.chain((fiber) => F.join(fiber)),
+      T.zipRight(T.succeedWith(() => expect(true).toBe(true)))
+    )
+  )
 })
