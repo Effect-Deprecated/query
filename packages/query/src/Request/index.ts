@@ -15,7 +15,8 @@ export interface Request<E, A> {
 // @ts-expect-error
 export abstract class StandardRequest<X extends object, E, A>
   extends Case.Case<X>
-  implements Request<E, A> {
+  implements Request<E, A>
+{
   readonly [_E]!: () => E;
   readonly [_A]!: () => A
 }
@@ -25,7 +26,8 @@ const h0 = St.hashString("@effect-ts/system/Case")
 // @ts-expect-error
 export abstract class Static<X extends object, E, A>
   extends Case.Case<X>
-  implements Request<E, A> {
+  implements Request<E, A>
+{
   readonly [_E]!: () => E;
   readonly [_A]!: () => A
 
