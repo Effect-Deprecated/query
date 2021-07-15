@@ -1,6 +1,7 @@
 // tracing: off
 
 import { _A, _E, _R } from "@effect-ts/core/Effect"
+import * as Ex from "@effect-ts/core/Effect/Exit"
 import * as E from "@effect-ts/core/Either"
 import { pipe } from "@effect-ts/core/Function"
 import * as C from "@effect-ts/system/Cause"
@@ -143,6 +144,17 @@ export function fromEither<E, A>(either: E.Either<E, A>): Result<unknown, E, A> 
   return E.fold_(
     either,
     (e) => fail(C.fail(e)),
+    (a) => done(a)
+  )
+}
+
+/**
+ * Lifts an `Exit` into a result.
+ */
+export function fromExit<E, A>(exit: Ex.Exit<E, A>): Result<unknown, E, A> {
+  return Ex.fold_<E, A, Result<unknown, E, A>>(
+    exit,
+    (e) => fail(e),
     (a) => done(a)
   )
 }

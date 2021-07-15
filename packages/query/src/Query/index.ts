@@ -527,10 +527,55 @@ export function timeout(duration: number) {
 /**
  * Returns an effect that will timeout this query, returning `None` if the
  * timeout elapses before the query was completed.
- * @dataFirst timeout_
  */
 export function timeout_<R, E, A>(self: Query<R, E, A>, duration: number) {
   return timeoutTo_(self, O.none, O.some, duration)
+}
+
+/**
+ * The same as [[timeout]], but instead of producing a `None` in the event
+ * of timeout, it will produce the specified error.
+ */
+export function timeoutFail_<R, E, A, E1>(
+  self: Query<R, E, A>,
+  error: E1,
+  duration: number
+) {
+  return flatten(
+    timeoutTo_(self, fail(error), (a) => succeed(a) as Query<R, E | E1, A>, duration)
+  )
+}
+
+/**
+ * The same as [[timeout]], but instead of producing a `None` in the event
+ * of timeout, it will produce the specified failure.
+ * @dataFirst timeoutFail_
+ */
+export function timeoutFail<E1>(error: E1, duration: number) {
+  return <R, E, A>(self: Query<R, E, A>) => timeoutFail_(self, error, duration)
+}
+
+/**
+ * The same as [[timeout]], but instead of producing a `None` in the event
+ * of timeout, it will produce the specified failure.
+ */
+export function timeoutHalt_<R, E, A, E1>(
+  self: Query<R, E, A>,
+  error: C.Cause<E1>,
+  duration: number
+) {
+  return flatten(
+    timeoutTo_(self, halt(error), (a) => succeed(a) as Query<R, E | E1, A>, duration)
+  )
+}
+
+/**
+ * The same as [[timeout]], but instead of producing a `None` in the event
+ * of timeout, it will produce the specified error.
+ * @dataFirst timeoutHalt_
+ */
+export function timeoutHalt<E1>(error: C.Cause<E1>, duration: number) {
+  return <R, E, A>(self: Query<R, E, A>) => timeoutHalt_(self, error, duration)
 }
 
 export function timeoutTo_<R, E, A, B>(
