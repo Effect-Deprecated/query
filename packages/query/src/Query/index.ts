@@ -8,6 +8,7 @@ import * as T from "@effect-ts/core/Effect"
 import { _A, _E, _R } from "@effect-ts/core/Effect"
 import * as Ex from "@effect-ts/core/Effect/Exit"
 import * as F from "@effect-ts/core/Effect/Fiber"
+import * as FREF from "@effect-ts/core/Effect/FiberRef"
 import * as REF from "@effect-ts/core/Effect/Ref"
 import * as E from "@effect-ts/core/Either"
 import { identity, pipe, tuple } from "@effect-ts/core/Function"
@@ -302,8 +303,13 @@ export function cached<R, E, A>(self: Query<R, E, A>): Query<R, E, A> {
   return pipe(
     queryContext,
     chain((ctx) =>
-      chain_(fromEffect(REF.getAndSet_(ctx.cachingEnabled, true)), (cachingEnabled) =>
-        ensuring_(self, fromEffect(REF.set_(ctx.cachingEnabled, cachingEnabled)))
+      chain_(
+        fromEffect(pipe(ctx.cachingEnabled, FREF.getAndSet(true))),
+        (cachingEnabled) =>
+          ensuring_(
+            self,
+            fromEffect(pipe(ctx.cachingEnabled, FREF.set(cachingEnabled)))
+          )
       )
     )
   )
@@ -354,8 +360,13 @@ export function uncached<R, E, A>(self: Query<R, E, A>): Query<R, E, A> {
   return pipe(
     queryContext,
     chain((ctx) =>
-      chain_(fromEffect(REF.getAndSet_(ctx.cachingEnabled, false)), (cachingEnabled) =>
-        ensuring_(self, fromEffect(REF.set_(ctx.cachingEnabled, cachingEnabled)))
+      chain_(
+        fromEffect(pipe(ctx.cachingEnabled, FREF.getAndSet(false))),
+        (cachingEnabled) =>
+          ensuring_(
+            self,
+            fromEffect(pipe(ctx.cachingEnabled, FREF.set(cachingEnabled)))
+          )
       )
     )
   )
@@ -879,7 +890,7 @@ export function fromRequest<R, A extends Request<any, any>>(
       T.environment<readonly [R, QueryContext]>(),
       T.chain(([_, ctx]) =>
         pipe(
-          REF.get(ctx.cachingEnabled),
+          FREF.get(ctx.cachingEnabled),
           T.chain((cachingEnabled) =>
             cachingEnabled ? whenCachingEnabled : whenCachingDisabled
           )
@@ -930,7 +941,7 @@ export function runContext(queryContext: QueryContext) {
  */
 export function runCache(cache: CH.Cache) {
   return <R, E, A>(self: Query<R, E, A>) =>
-    T.chain_(REF.makeRef(true), (cachingEnabled) =>
+    T.chain_(FREF.make(true), (cachingEnabled) =>
       runContext({ cache, cachingEnabled })(self)
     )
 }
