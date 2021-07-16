@@ -314,4 +314,30 @@ describe("Query", () => {
       T.zipRight(T.succeedWith(() => expect(true).toBe(true)))
     )
   )
+  r.it("regional caching should work with parallelism", () => {
+    const a = pipe(
+      getUserNameById(1), // should be un-cached (first call) (1st hit)
+      Q.chain(() => Q.fromEffect(T.sleep(1000))),
+      Q.chain(() => getUserNameById(1)), // should be un-cached (3rd hit)
+      Q.uncached
+    )
+    const b = pipe(
+      getUserNameById(2), // should be un-cached (different arg) (2nd hit)
+      Q.chain(() => Q.fromEffect(T.sleep(500))),
+      Q.cached
+    )
+    return pipe(
+      pipe(
+        Q.zipWithPar_(a, b, (a, b) => a + "-" + b),
+        Q.run,
+        T.fork
+      ),
+      T.tap(() => TE.adjust(500)),
+      T.tap(() => TE.adjust(1500)),
+      T.chain((fiber) => F.join(fiber)),
+      T.chain(() => getLogSize),
+      T.provideServiceM(TestConsole)(emptyTestConsole),
+      T.map((n) => expect(n).toBe(3))
+    )
+  })
 })
