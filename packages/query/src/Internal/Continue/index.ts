@@ -11,12 +11,12 @@ import type { _A as _GetA, _E as _GetE } from "@effect-ts/core/Utils"
 import type * as C from "@effect-ts/system/Cause"
 import * as REF from "@effect-ts/system/Ref"
 
-import type { Cache } from "../../Cache"
 import type { DataSource } from "../../DataSource"
 import type { DataSourceAspect } from "../../DataSourceAspect"
 import * as Q from "../../Query"
 import { QueryFailure } from "../../QueryFailure"
 import type { Request } from "../../Request"
+import type { QueryContext } from "../QueryContext"
 
 class Effect<R, E, A> {
   readonly _tag = "Effect";
@@ -285,13 +285,13 @@ export function zipWithPar<R1, E1, B, A, C>(
 /**
  * Runs this continuation..
  */
-export function runCache(
-  cache: Cache
+export function runContext(
+  queryContext: QueryContext
 ): <R, E, A>(self: Continue<R, E, A>) => T.Effect<R, E, A> {
   return (self) => {
     switch (self._tag) {
       case "Effect":
-        return Q.runCache(cache)(self.query)
+        return Q.runContext(queryContext)(self.query)
       case "Get":
         return self.io
     }
