@@ -294,6 +294,74 @@ export function bimap<E, E1, A, B>(f: (e: E) => E1, g: (a: A) => B) {
 }
 
 /**
+ * Enables caching for this query. Note that caching is enabled by default
+ * so this will only be effective to enable caching in part of a larger
+ * query in which caching has been disabled.
+ */
+export function cached<R, E, A>(self: Query<R, E, A>): Query<R, E, A> {
+  return pipe(
+    queryContext,
+    chain((ctx) =>
+      chain_(fromEffect(REF.getAndSet_(ctx.cachingEnabled, true)), (cachingEnabled) =>
+        ensuring_(self, fromEffect(REF.set_(ctx.cachingEnabled, cachingEnabled)))
+      )
+    )
+  )
+}
+
+/**
+ * Ensures that if this query starts executing, the specified query will be
+ * executed immediately after this query completes execution, whether by
+ * success or failure.
+ */
+export function ensuring_<R, E, A, R1>(
+  self: Query<R, E, A>,
+  finalizer: Query<R1, never, any>
+): Query<R & R1, E, A> {
+  return foldCauseM_(
+    self,
+    (cause1) =>
+      foldCauseM_(
+        finalizer,
+        (cause2) => halt(C.then(cause1, cause2)),
+        (_) => halt(cause1)
+      ),
+    (value) =>
+      foldCauseM_(
+        finalizer,
+        (_) => halt(_),
+        (_) => succeed(value)
+      )
+  )
+}
+
+/**
+ * Ensures that if this query starts executing, the specified query will be
+ * executed immediately after this query completes execution, whether by
+ * success or failure.
+ * @dataFirst ensuring_
+ */
+export function ensuring<R1>(finalizer: Query<R1, never, any>) {
+  return <R, E, A>(self: Query<R, E, A>) => ensuring_(self, finalizer)
+}
+
+/**
+ * Enables caching for this query. Note that caching is enabled by default
+ * so this will only be effective to enable caching in part of a larger
+ * query in which caching has been disabled.
+ */
+export function uncached<R, E, A>(self: Query<R, E, A>): Query<R, E, A> {
+  return pipe(
+    queryContext,
+    chain((ctx) =>
+      chain_(fromEffect(REF.getAndSet_(ctx.cachingEnabled, false)), (cachingEnabled) =>
+        ensuring_(self, fromEffect(REF.set_(ctx.cachingEnabled, cachingEnabled)))
+      )
+    )
+  )
+}
+
+/**
  * Provides this query with part of its required environment.
  */
 export function provideSome_<R, E, A, R0>(
@@ -664,6 +732,13 @@ export const never = fromEffect(T.never)
 export const none = fromEffect(T.none)
 
 /**
+ * Returns a query that accesses the context.
+ */
+export const queryContext: Query<unknown, never, QueryContext> = new Query(
+  T.access(([_, ctx]) => RES.done(ctx))
+)
+
+/**
  *  Constructs a query that succeeds with the specified value.
  */
 export function succeed<A>(value: A) {
@@ -766,30 +841,87 @@ export function fromRequest<R, A extends Request<any, any>>(
   request: A,
   dataSource: DataSource<R, A>
 ) {
-  return new Query<R, _GetE<A>, _GetA<A>>(
-    T.chain_(
-      T.accessM(([_, queryContext]: readonly [R, QueryContext]) =>
-        queryContext.cache.lookup(request)
-      ),
-      E.fold(
-        (leftRef) =>
-          T.succeed(
-            RES.blocked(
-              BRS.single(dataSource, BR.of(request, leftRef)),
-              CONT.apply(request, dataSource, leftRef)
-            )
-          ),
-        (rightRef) =>
-          T.map_(
-            REF.get(rightRef),
-            O.fold(
-              () => RES.blocked(BRS.empty, CONT.apply(request, dataSource, rightRef)),
-              (b) => RES.fromEither(b)
-            )
+  const whenCachingEnabled = T.chain_(
+    T.accessM(([_, queryContext]: readonly [R, QueryContext]) =>
+      queryContext.cache.lookup(request)
+    ),
+    E.fold(
+      (leftRef) =>
+        T.succeed(
+          RES.blocked(
+            BRS.single(dataSource, BR.of(request, leftRef)),
+            CONT.apply(request, dataSource, leftRef)
           )
+        ),
+      (rightRef) =>
+        T.map_(
+          REF.get(rightRef),
+          O.fold(
+            () => RES.blocked(BRS.empty, CONT.apply(request, dataSource, rightRef)),
+            (b) => RES.fromEither(b)
+          )
+        )
+    )
+  )
+
+  const whenCachingDisabled = pipe(
+    REF.makeRef(O.emptyOf<E.Either<_GetE<A>, _GetA<A>>>()),
+    T.map((ref) =>
+      RES.blocked(
+        BRS.single(dataSource, BR.of(request, ref)),
+        CONT.apply(request, dataSource, ref)
       )
     )
   )
+
+  return new Query<R, _GetE<A>, _GetA<A>>(
+    pipe(
+      T.environment<readonly [R, QueryContext]>(),
+      T.chain(([_, ctx]) =>
+        pipe(
+          REF.get(ctx.cachingEnabled),
+          T.chain((cachingEnabled) =>
+            cachingEnabled ? whenCachingEnabled : whenCachingDisabled
+          )
+        )
+      )
+    )
+  )
+}
+
+/**
+ * Constructs a query from a request and a data source but does not apply
+ * caching to the query.
+ */
+export function fromRequestUncached<R, A extends Request<any, any>>(
+  request: A,
+  dataSource: DataSource<R, A>
+) {
+  return uncached(fromRequest(request, dataSource))
+}
+
+/**
+ * Returns an effect that models executing this query with the specified
+ * context.
+ */
+export function runContext(queryContext: QueryContext) {
+  return <R, E, A>(self: Query<R, E, A>) =>
+    T.chain_(
+      T.provideSome_(self.step, (r: R) => tuple(r, queryContext)),
+      (_) => {
+        switch (_._tag) {
+          case "Blocked":
+            return T.zipRight_(
+              BRS.run(queryContext.cache)(_.blockedRequests),
+              CONT.runContext(queryContext)(_.cont)
+            )
+          case "Done":
+            return T.succeed(_.value)
+          case "Fail":
+            return T.halt(_.cause)
+        }
+      }
+    )
 }
 
 /**
@@ -798,21 +930,8 @@ export function fromRequest<R, A extends Request<any, any>>(
  */
 export function runCache(cache: CH.Cache) {
   return <R, E, A>(self: Query<R, E, A>) =>
-    T.chain_(
-      T.provideSome_(self.step, (r: R) => tuple(r, { cache })),
-      (_) => {
-        switch (_._tag) {
-          case "Blocked":
-            return T.zipRight_(
-              BRS.run(cache)(_.blockedRequests),
-              CONT.runCache(cache)(_.cont)
-            )
-          case "Done":
-            return T.succeed(_.value)
-          case "Fail":
-            return T.halt(_.cause)
-        }
-      }
+    T.chain_(REF.makeRef(true), (cachingEnabled) =>
+      runContext({ cache, cachingEnabled })(self)
     )
 }
 
