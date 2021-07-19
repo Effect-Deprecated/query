@@ -303,13 +303,8 @@ export function cached<R, E, A>(self: Query<R, E, A>): Query<R, E, A> {
   return pipe(
     queryContext,
     chain((ctx) =>
-      chain_(
-        fromEffect(pipe(ctx.cachingEnabled, FREF.getAndSet(true))),
-        (cachingEnabled) =>
-          ensuring_(
-            self,
-            fromEffect(pipe(ctx.cachingEnabled, FREF.set(cachingEnabled)))
-          )
+      chain_(fromEffect(getAndSetCaching(ctx, 0, true)), ([id, cachingEnabled]) =>
+        ensuring_(self, fromEffect(getAndSetCaching(ctx, id, cachingEnabled)))
       )
     )
   )
@@ -351,6 +346,48 @@ export function ensuring<R1>(finalizer: Query<R1, never, any>) {
   return <R, E, A>(self: Query<R, E, A>) => ensuring_(self, finalizer)
 }
 
+let id = 1
+// tracing: off
+function getAndSetCaching(
+  ctx: QueryContext,
+  pid: number,
+  newValue: boolean
+): T.Effect<unknown, never, readonly [number, boolean]> {
+  return pipe(
+    T.succeedWith(() => (pid === 0 ? id++ : pid)),
+    T.chain((id) =>
+      pipe(
+        ctx.cachingEnabled,
+        FREF.getAndSet(newValue),
+        T.tap((value) =>
+          pipe(
+            T.fiberId,
+            T.chain((fiberId) =>
+              T.chain_(T.trace, (t) =>
+                T.succeedWith(() =>
+                  console.log(
+                    "op: ",
+                    id,
+                    " fiber ID:",
+                    fiberId.seqNumber,
+                    " ",
+                    value,
+                    " -> ",
+                    newValue /*,
+                    F.prettyTrace(t)*/
+                  )
+                )
+              )
+            )
+          )
+        ),
+        T.map((v) => tuple(id, v))
+      )
+    )
+  )
+}
+// tracing: on
+
 /**
  * Enables caching for this query. Note that caching is enabled by default
  * so this will only be effective to enable caching in part of a larger
@@ -361,12 +398,10 @@ export function uncached<R, E, A>(self: Query<R, E, A>): Query<R, E, A> {
     queryContext,
     chain((ctx) =>
       chain_(
-        fromEffect(pipe(ctx.cachingEnabled, FREF.getAndSet(false))),
-        (cachingEnabled) =>
-          ensuring_(
-            self,
-            fromEffect(pipe(ctx.cachingEnabled, FREF.set(cachingEnabled)))
-          )
+        //fromEffect(pipe(ctx.cachingEnabled, FREF.getAndSet(false))),
+        fromEffect(getAndSetCaching(ctx, 0, false)),
+        ([id, cachingEnabled]) =>
+          ensuring_(self, fromEffect(getAndSetCaching(ctx, id, cachingEnabled)))
       )
     )
   )

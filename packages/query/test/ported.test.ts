@@ -102,6 +102,31 @@ const getAgeByName = (name: string) =>
 const getAgeById = (id: number) =>
   getUserNameById(id)["|>"](Q.chain((name) => getAgeByName(name)))
 
+class DummyRequest extends R.Static<{ readonly id: number }, never, number> {
+  readonly _tag = "DummyRequest"
+}
+
+const DummyDataSource = DS.makeBatched("DummyDataSource")(
+  (requests: C.Chunk<DummyRequest>) =>
+    putStrLn("Running request...")["|>"](
+      T.zipRight(
+        T.succeed(
+          requests["|>"](
+            C.reduce(CR.empty, (crm, _) => {
+              switch (_._tag) {
+                case "DummyRequest":
+                  return CR.insert_(crm, _, E.right(_.id))
+              }
+            })
+          )
+        )
+      )
+    )
+)
+
+const dummyRequest = (id: number) =>
+  Q.fromRequest(new DummyRequest({ id }), DummyDataSource)
+
 describe("Query", () => {
   const r = TE.runtime()
   it("basic query", async () => {
@@ -316,14 +341,11 @@ describe("Query", () => {
   )
   r.it("regional caching should work with parallelism", () => {
     const a = pipe(
-      getUserNameById(1), // should be un-cached (first call) (1st hit)
-      Q.chain(() => Q.fromEffect(T.sleep(1000))),
-      Q.chain(() => getUserNameById(1)), // should be un-cached (3rd hit)
+      dummyRequest(1), // should be un-cached (first call) (1st hit)
       Q.uncached
     )
     const b = pipe(
-      getUserNameById(2), // should be un-cached (different arg) (2nd hit)
-      Q.chain(() => Q.fromEffect(T.sleep(500))),
+      dummyRequest(2), // should be un-cached (different arg) (2nd hit)
       Q.cached
     )
     return pipe(
@@ -332,12 +354,10 @@ describe("Query", () => {
         Q.run,
         T.fork
       ),
-      T.tap(() => TE.adjust(500)),
-      T.tap(() => TE.adjust(1500)),
       T.chain((fiber) => F.join(fiber)),
       T.chain(() => getLogSize),
       T.provideServiceM(TestConsole)(emptyTestConsole),
-      T.map((n) => expect(n).toBe(3))
+      T.map((n) => expect(n).toBe(2))
     )
   })
 })
