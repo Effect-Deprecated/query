@@ -1,4 +1,4 @@
-// tracing: off
+// ets_tracing: off
 
 import "@effect-ts/system/Operator"
 
@@ -110,7 +110,7 @@ export function chain_<R, E, R1, E1, A, B>(
  * composed with `flatMap` or combinators derived from it will be executed
  * sequentially and will not be pipelined, though deduplication and caching of
  * requests may still be applied.
- * @dataFirst chain_
+ * @ets_data_first chain_
  */
 export function chain<R1, E1, A, B>(f: (a: A) => Query<R1, E1, B>) {
   return <R, E>(self: Query<R, E, A>): Query<R & R1, E | E1, B> => chain_(self, f)
@@ -148,7 +148,7 @@ export function fold_<R, E, A, B>(
  * Folds over the failed or successful result of this query to yield a query
  * that does not fail, but succeeds with the value returned by the left or
  * right function passed to `fold`.
- * @dataFirst fold_
+ * @ets_data_first fold_
  */
 export function fold<B, E, A>(failure: (e: E) => B, success: (a: A) => B) {
   return <R>(self: Query<R, E, A>): Query<R, never, B> => fold_(self, failure, success)
@@ -186,7 +186,7 @@ export function foldCauseM_<R, E, A, R2, E2, A2, R3, E3, A3>(
 /**
  * A more powerful version of `foldM` that allows recovering from any type
  * of failure except interruptions.
- * @dataFirst foldCauseM_
+ * @ets_data_first foldCauseM_
  */
 export function foldCauseM<E, A, R2, E2, A2, R3, E3, A3>(
   failure: (cause: C.Cause<E>) => Query<R2, E2, A2>,
@@ -211,7 +211,7 @@ export function foldM_<R, E, A, R2, E2, A2, R3, E3, A3>(
 /**
  * Recovers from errors by accepting one query to execute for the case of an
  * error, and one query to execute for the case of success.
- * @dataFirst foldM_
+ * @ets_data_first foldM_
  */
 export function foldM<E, A, R2, E2, A2, R3, E3, A3>(
   failure: (failure: E) => Query<R2, E2, A2>,
@@ -230,7 +230,7 @@ export function map_<R, E, A, B>(self: Query<R, E, A>, f: (a: A) => B): Query<R,
 
 /**
  * Maps the specified function over the successful result of this query.
- * @dataFirst map_
+ * @ets_data_first map_
  */
 export function map<A, B>(f: (a: A) => B) {
   return <R, E>(self: Query<R, E, A>): Query<R, E, B> => map_(self, f)
@@ -248,7 +248,7 @@ export function mapDataSources_<R1, R, E, A>(
 
 /**
  * Transforms all data sources with the specified data source aspect.
- * @dataFirst mapDataSources_
+ * @ets_data_first mapDataSources_
  */
 export function mapDataSources<R1, R>(f: DataSourceAspect<R1>) {
   return <E, A>(self: Query<R, E, A>): Query<R & R1, E, A> => mapDataSources_(self, f)
@@ -262,7 +262,7 @@ export function mapError_<R, E, A, E1>(self: Query<R, E, A>, f: (a: E) => E1) {
 }
 /**
  * Maps the specified function over the failed result of this query.
- * @dataFirst mapError_
+ * @ets_data_first mapError_
  */
 export function mapError<E, E1>(f: (a: E) => E1) {
   return <R, A>(self: Query<R, E, A>): Query<R, E1, A> => mapError_(self, f)
@@ -287,7 +287,7 @@ export function bimap_<R, E, A, E1, B>(
 /**
  * Returns a query whose failure and success channels have been mapped by the
  * specified pair of functions, `f` and `g`.
- * @dataFirst bimap_
+ * @ets_data_first bimap_
  */
 export function bimap<E, E1, A, B>(f: (e: E) => E1, g: (a: A) => B) {
   return <R>(self: Query<R, E, A>): Query<R, E1, B> => bimap_(self, f, g)
@@ -312,7 +312,7 @@ export function provideSome_<R, E, A, R0>(
 
 /**
  * Provides this query with part of its required environment.
- * @dataFirst provideSome_
+ * @ets_data_first provideSome_
  */
 export function provideSome<R, R0>(description: string, f: (r: R0) => R) {
   return <E, A>(self: Query<R, E, A>): Query<R0, E, A> =>
@@ -332,7 +332,7 @@ export function zip_<R, R1, E, E1, A, B>(
 /**
  * Returns a query that models the execution of this query and the specified
  * query sequentially, combining their results into a tuple.
- * @dataFirst zip_
+ * @ets_data_first zip_
  */
 export function zip<R1, E1, B>(that: Query<R1, E1, B>) {
   return <R, E, A>(self: Query<R, E, A>): Query<R & R1, E | E1, Tp.Tuple<[A, B]>> =>
@@ -407,7 +407,7 @@ export function zipWith_<R, E, R1, E1, B, A, C>(
  * Requests composed with `zipWith` or combinators derived from it will
  * automatically be pipelined.
  *
- * @dataFirst zipWith_
+ * @ets_data_first zipWith_
  */
 export function zipWith<R1, E1, B, A, C>(that: Query<R1, E1, B>, f: (a: A, b: B) => C) {
   return <R, E>(self: Query<R, E, A>): Query<R & R1, E | E1, C> =>
@@ -475,7 +475,7 @@ export function zipWithPar_<R, E, A, R1, E1, B, C>(
  * Requests composed with `zipWithPar` or combinators derived from it will
  * automatically be batched.
  *
- * @dataFirst zipWithPar_
+ * @ets_data_first zipWithPar_
  */
 export function zipWithPar<R1, E1, B, A, C>(
   that: Query<R1, E1, B>,
@@ -506,7 +506,7 @@ export function summarized_<R, E, A, R1, E1, B, C>(
  * and then combining the values to produce a summary, together with the
  * result of execution.
  *
- * @dataFirst summarized_
+ * @ets_data_first summarized_
  */
 export function summarized<A, R1, E1, B, C>(
   summary: T.Effect<R1, E1, B>,
@@ -720,7 +720,7 @@ export function forEach_<R, E, A, B>(
  * into a query returning a collection of their results. Requests will be
  * executed sequentially and will be pipelined.
  *
- * @dataFirst forEach_
+ * @ets_data_first forEach_
  */
 export function forEach<R, E, A, B>(
   f: (a: A) => Query<R, E, B>
@@ -861,7 +861,7 @@ export function forEachPar_<R, E, A, B>(
  * into a query returning a collection of their results. Requests will be
  * executed parallely and will be pipelined.
  *
- * @dataFirst forEachPar_
+ * @ets_data_first forEachPar_
  */
 export function forEachPar<R, E, A, B>(
   f: (a: A) => Query<R, E, B>
@@ -933,7 +933,7 @@ export function catchAll_<R, E, A, R1, E1, B>(
 
 /**
  * Recovers from all errors.
- * @dataFirst catchAll_
+ * @ets_data_first catchAll_
  */
 export function catchAll<R, E, A, R1, E1, B>(h: (e: E) => Query<R1, E1, B>) {
   return (self: Query<R, E, A>): Query<R & R1, E1, A | B> => catchAll_(self, h)
@@ -955,7 +955,7 @@ export function catchAllCause_<R, E, A, R1, E1, A1>(
  * Recovers from all errors with provided Cause.
  *
  * @see [[ZQuery.sandbox]] - other functions that can recover from defects
- * @dataFirst catchAllCause_
+ * @ets_data_first catchAllCause_
  */
 export function catchAllCause<R, E, A, R1, E1, A1>(
   h: (cause: C.Cause<E>) => Query<R1, E1, A1>
@@ -1000,7 +1000,7 @@ export function leftOrFail_<R, E, B, C, E1>(
 
 /**
  * Returns a successful query if the value is `Left`, or fails with the error e.
- * @dataFirst leftOrFail_
+ * @ets_data_first leftOrFail_
  */
 export function leftOrFail<R, E, B, C, E1>(e: E1) {
   return (self: Query<R, E, E.Either<B, C>>): Query<R, E | E1, B> =>
@@ -1019,7 +1019,7 @@ export function leftOrFailWith_<R, E, B, C, E1>(
 
 /**
  * Returns a successful query if the value is `Left`, or fails with the given error function 'e'.
- * @dataFirst leftOrFailWith_
+ * @ets_data_first leftOrFailWith_
  */
 export function leftOrFailWith<R, E, B, C, E1>(e: (c: C) => E1) {
   return (self: Query<R, E, E.Either<B, C>>): Query<R, E | E1, B> =>
@@ -1046,7 +1046,7 @@ export function mapErrorCause_<R, E, A, E2>(
  * preserving the original structure of `Cause`.
  *
  * @see [[sandbox]], [[catchAllCause]] - other functions for dealing with defects
- * @dataFirst mapErrorCause_
+ * @ets_data_first mapErrorCause_
  */
 export function mapErrorCause<R, E, A, E2>(h: (cause: C.Cause<E>) => C.Cause<E2>) {
   return (self: Query<R, E, A>): Query<R, E2, A> => mapErrorCause_(self, h)
@@ -1077,7 +1077,7 @@ export function orDieWith_<R, E, A>(
 /**
  * Converts this query to one that dies if a query failure occurs, using the
  * specified function to map the error to a `Throwable`.
- * @dataFirst orDieWith_
+ * @ets_data_first orDieWith_
  */
 export function orDieWith<R, E, A>(f: (e: E) => unknown) {
   return (self: Query<R, E, A>): Query<R, never, A> => orDieWith_(self, f)
@@ -1103,7 +1103,7 @@ export function provide_<R, E, A>(
 
 /**
  * Provides this query with its required environment.
- * @dataFirst provide_
+ * @ets_data_first provide_
  */
 export function provide<R, E, A>(description: string, env: R) {
   return (self: Query<R, E, A>): Query<unknown, E, A> =>

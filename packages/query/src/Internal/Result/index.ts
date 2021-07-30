@@ -1,4 +1,4 @@
-// tracing: off
+// ets_tracing: off
 
 import { _A, _E, _R } from "@effect-ts/core/Effect"
 import * as Ex from "@effect-ts/core/Effect/Exit"

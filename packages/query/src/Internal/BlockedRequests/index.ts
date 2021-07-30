@@ -1,4 +1,4 @@
-// tracing: off
+// ets_tracing: off
 
 // port of: https://github.com/zio/zio-query/blob/3f9f4237ca2d879b629163f23fe79045eb29f0b0/zio-query/shared/src/main/scala/zio/query/internal/BlockedRequests.scala
 import * as A from "@effect-ts/core/Collections/Immutable/Chunk"

@@ -1,4 +1,4 @@
-// tracing: off
+// ets_tracing: off
 
 // port of: https://github.com/zio/zio-query/blob/3f9f4237ca2d879b629163f23fe79045eb29f0b0/zio-query/shared/src/main/scala/zio/query/DataSource.scala
 import "@effect-ts/system/Operator"
@@ -93,7 +93,7 @@ export function batchN_<R, A>(self: DataSource<R, A>, n: number): DataSource<R, 
 
 /**
  * Returns a data source that executes at most `n` requests in parallel.
- * @dataFirst batchN_
+ * @ets_data_first batchN_
  */
 export function batchN(n: number) {
   return <R, A>(self: DataSource<R, A>): DataSource<R, A> => batchN_(self, n)
@@ -118,7 +118,7 @@ export function contramap_<R, A, B>(
  * Returns a new data source that executes requests of type `B` using the
  * specified function to transform `B` requests into requests that this data
  * source can execute.
- * @dataFirst contramap_
+ * @ets_data_first contramap_
  */
 export function contramap<B, A>(description: string, f: (a: B) => A) {
   return <R>(self: DataSource<R, A>): DataSource<R, B> =>
@@ -147,7 +147,7 @@ export function contramapM_<R, A, B, R1>(
  * Returns a new data source that executes requests of type `B` using the
  * specified effectual function to transform `B` requests into requests that
  * this data source can execute.
- * @dataFirst contramapM_
+ * @ets_data_first contramapM_
  */
 export function contramapM<R1, B, A>(
   description: string,
@@ -189,7 +189,7 @@ export function eitherWith_<R, A, R1, B, C>(
  * Returns a new data source that executes requests of type `C` using the
  * specified function to transform `C` requests into requests that either
  * this data source or that data source can execute.
- * @dataFirst eitherWith_
+ * @ets_data_first eitherWith_
  */
 export function eitherWith<C, A, B, R1>(
   description: string,
@@ -212,7 +212,7 @@ export function provide_<R, A>(
 
 /**
  * Provides this data source with its required environment.
- * @dataFirst provide_
+ * @ets_data_first provide_
  */
 export function provide<R>(description: string, r: R) {
   return <A>(self: DataSource<R, A>): DataSource<unknown, A> =>
@@ -234,7 +234,7 @@ export function provideSome_<R, A, R0>(
 
 /**
  * Provides this data source with part of its required environment.
- * @dataFirst provideSome_
+ * @ets_data_first provideSome_
  */
 export function provideSome<R0, R>(description: string, f: (r: R0) => R) {
   return <A>(self: DataSource<R, A>): DataSource<R0, A> =>
@@ -259,7 +259,7 @@ export function race_<R, A, R1, A1>(
  * Returns a new data source that executes requests by sending them to this
  * data source and that data source, returning the results from the first
  * data source to complete and safely interrupting the loser.
- * @dataFirst race_
+ * @ets_data_first race_
  */
 export function race<R1, A1>(that: DataSource<R1, A1>) {
   return <R, A>(self: DataSource<R, A>): DataSource<R & R1, A & A1> => race_(self, that)

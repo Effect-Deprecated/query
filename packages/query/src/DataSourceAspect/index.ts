@@ -1,4 +1,4 @@
-// tracing: off
+// ets_tracing: off
 
 import "@effect-ts/system/Operator"
 
@@ -27,7 +27,7 @@ export function andThen_<R1, R2>(
 /**
  * Returns a new aspect that represents the sequential composition of this
  * aspect with the specified one.
- * @dataFirst andThen_
+ * @ets_data_first andThen_
  */
 export function andThen<R2>(
   fb: DataSourceAspect<R2>
