@@ -1,4 +1,4 @@
-// tracing: off
+// ets_tracing: off
 
 import * as A from "@effect-ts/core/Collections/Immutable/Chunk"
 import * as HM from "@effect-ts/core/Collections/Immutable/HashMap"

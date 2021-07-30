@@ -1,4 +1,4 @@
-// tracing: off
+// ets_tracing: off
 
 // port of: https://github.com/zio/zio-query/blob/9dfe9ca0b1e3077fc56cf5c983082af3ca7a62e7/zio-query/shared/src/main/scala/zio/query/CompletedRequestMap.scala
 import "@effect-ts/system/Operator"
@@ -47,7 +47,7 @@ export function contains_(fa: CompletedRequestMap, request: any): boolean {
 
 /**
  * Returns whether a result exists for the specified request.
- * @dataFirst contains_
+ * @ets_data_first contains_
  */
 export function contains(request: any): (fa: CompletedRequestMap) => boolean {
   return (fa) => contains_(fa, request)
@@ -66,7 +66,7 @@ export function insert_<E, A>(
 
 /**
  * Appends the specified result to the completed requests map.
- * @dataFirst insert_
+ * @ets_data_first insert_
  */
 export function insert<E, A>(
   request: Request<E, A>,
@@ -97,7 +97,7 @@ export function insertOption_<E, A>(
 
 /**
  * Appends the specified optional result to the completed request map.
- * @dataFirst insertOption_
+ * @ets_data_first insertOption_
  */
 export function insertOption<E, A>(
   request: Request<E, A>,
@@ -118,7 +118,7 @@ export function lookup_<E, A>(
 
 /**
  * Retrieves the result of the specified request if it exists.
- * @dataFirst lookup_
+ * @ets_data_first lookup_
  */
 export function lookup<E, A>(
   request: Request<E, A>
