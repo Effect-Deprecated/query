@@ -38,7 +38,7 @@
     "@effect-ts/tracing-plugin": "^0.14.0",
     "@types/cpx": "^1.5.2",
     "@types/glob": "^7.1.4",
-    "@types/jest": "^26.0.24",
+    "@types/jest": "^27.0.1",
     "@types/node": "^16.4.7",
     "@typescript-eslint/eslint-plugin": "^4.28.5",
     "@typescript-eslint/parser": "^4.28.5",
