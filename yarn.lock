@@ -382,9 +382,9 @@
     "@cspotcode/source-map-consumer" "0.8.0"
 
 "@effect-ts/build-utils@^0.23.0":
-  version "0.23.0"
-  resolved "https://registry.yarnpkg.com/@effect-ts/build-utils/-/build-utils-0.23.0.tgz#92e351c5b365e459ab28e970ff7b79ef12174e99"
-  integrity sha512-jr6BLNAYsXEnGgsbrum05NjOWeT4VuJpUT1CsmwzI4FVmhL+HUmfsmED8rWEILbBaKomudZetzQv6aGT9cV8Mg==
+  version "0.23.1"
+  resolved "https://registry.yarnpkg.com/@effect-ts/build-utils/-/build-utils-0.23.1.tgz#3e0c44085f83af30801088d800c2833b0287cd4e"
+  integrity sha512-KYf5vhsb4QN9SnqhqO+jrDuQ682J7KunDnT8nS15MjvwHIdDii9xcMC974oJDopXPlxW0+EmLZGKY7YVATEqEw==
 
 "@effect-ts/core@^0.43.0":
   version "0.43.0"
