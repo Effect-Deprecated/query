@@ -387,21 +387,21 @@
   integrity sha512-L82e+2owECLqWz5DzwTQ915Wvyy7gGtlWGxopaKxxMk6LIdrsUrgs9BrgErsn0lgjaxN0xAOLxujgTeMz5kYZA==
 
 "@effect-ts/core@^0.44.11":
-  version "0.44.11"
-  resolved "https://registry.yarnpkg.com/@effect-ts/core/-/core-0.44.11.tgz#1652b469be90b917c962d1a323f3b380d9826433"
-  integrity sha512-649AB96XvtBDLd6Qke/PHPfShAaPRJGB94Yu/b4+Qz+JwcIXh9SeouZDHKl0RMVEzZNUbTwCSfD0DGnUWKFGAQ==
+  version "0.44.13"
+  resolved "https://registry.yarnpkg.com/@effect-ts/core/-/core-0.44.13.tgz#f0d89c36105804804a22e927372b4912d0e523a3"
+  integrity sha512-0Fstrjoe3p0VTpvvHtGNhqk8mxzKOnHdlNc01ZqRChwlvB/hbpTcYyRz3bssbt7PCnhuyMnb92Muja++SGKPNQ==
   dependencies:
-    "@effect-ts/system" "^0.41.9"
+    "@effect-ts/system" "^0.41.11"
 
 "@effect-ts/jest@^0.30.1":
   version "0.30.1"
   resolved "https://registry.yarnpkg.com/@effect-ts/jest/-/jest-0.30.1.tgz#5c36fc281e8c14145210b0bce97c303487be0cc2"
   integrity sha512-vRUcRh3PGftoZ2hYYo+Gtiyt9grqWW0lh0gB+tCWwB3CEXmRjbg7b5diR64bH8FWogNEl2bi48mtz02+UIXbPg==
 
-"@effect-ts/system@^0.41.9":
-  version "0.41.9"
-  resolved "https://registry.yarnpkg.com/@effect-ts/system/-/system-0.41.9.tgz#f6f375d178427a84a379e61175f66fe15a7d4a94"
-  integrity sha512-TbMv8gVxEVXPovMd7GQxZUthdrqHJjeUTNJUcFNyb/7BbQn6/Sdoj6EqXWn1egR0OITE8y6MD21X1un4yZsr9Q==
+"@effect-ts/system@^0.41.11":
+  version "0.41.11"
+  resolved "https://registry.yarnpkg.com/@effect-ts/system/-/system-0.41.11.tgz#7f004f55ac12655dbb8fc2b5a8cdbd9c87138ed2"
+  integrity sha512-BhAkYXxtt52hvX+tmrxCirn5O2v6KfU9pLO8FZyoMTaxp6YqVRZhhb4Ai56BzgiQ5uLhLmc3ASWKTJ6zwbqyoQ==
 
 "@effect-ts/tracing-plugin@^0.14.10":
   version "0.14.10"
