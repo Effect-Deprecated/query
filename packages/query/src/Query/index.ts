@@ -90,7 +90,7 @@ export function chain_<R, E, R1, E1, A, B>(
   self: Query<R, E, A>,
   f: (a: A) => Query<R1, E1, B>
 ): Query<R & R1, E | E1, B> {
-  return new Query(
+  return new Query<R & R1, E | E1, B>(
     T.chain_(self.step, (r) => {
       switch (r._tag) {
         case "Blocked":
@@ -350,7 +350,7 @@ export function zipWith_<R, E, R1, E1, B, A, C>(
   that: Query<R1, E1, B>,
   f: (a: A, b: B) => C
 ): Query<R & R1, E | E1, C> {
-  return new Query(
+  return new Query<R & R1, E | E1, C>(
     T.chain_(self.step, (res) => {
       switch (res._tag) {
         case "Blocked": {
@@ -425,7 +425,7 @@ export function zipWithPar_<R, E, A, R1, E1, B, C>(
   that: Query<R1, E1, B>,
   f: (a: A, b: B) => C
 ): Query<R & R1, E | E1, C> {
-  return new Query(
+  return new Query<R & R1, E | E1, C>(
     T.zipWithPar_(self.step, that.step, (a, b) => {
       switch (a._tag) {
         case "Blocked":
@@ -1108,6 +1108,22 @@ export function provide_<R, E, A>(
 export function provide<R, E, A>(description: string, env: R) {
   return (self: Query<R, E, A>): Query<unknown, E, A> =>
     provide_(self, description, env)
+}
+
+/**
+ * Effectfully accesses the environment of the query.
+ */
+export function access<R0, A>(fn: (env: R0) => A): Query<R0, never, A> {
+  return fromEffect(T.access(fn))
+}
+
+/**
+ * Effectfully accesses the environment of the query.
+ */
+export function accessM<R0, R, E, A>(
+  fn: (env: R0) => Query<R, E, A>
+): Query<R0 & R, E, A> {
+  return chain_(fromEffect(T.access<R0, R0>(identity)), fn)
 }
 
 /**
