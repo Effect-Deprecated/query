@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.24.0](https://github.com/Effect-TS/query/compare/@effect-ts/query@0.23.0...@effect-ts/query@0.24.0) (2022-02-06)
+
+
+### Features
+
+* **query:** access & accessM ([a2fb636](https://github.com/Effect-TS/query/commit/a2fb636a9ab25dd535e7bc0007750b0e89ad850d))
+
+
+
+
+
+
 # [0.23.0](https://github.com/Effect-TS/query/compare/@effect-ts/query@0.22.1...@effect-ts/query@0.23.0) (2021-10-04)
 
 **Note:** Version bump only for package @effect-ts/query
