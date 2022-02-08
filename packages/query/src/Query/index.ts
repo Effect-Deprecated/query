@@ -1127,6 +1127,22 @@ export function accessM<R0, R, E, A>(
 }
 
 /**
+ * Access a service with the required Service Entry
+ */
+export function accessService<T>(s: Tag<T>) {
+  return <B>(f: (a: T) => B): Query<Has<T>, never, B> =>
+    fromEffect(T.accessService(s)(f))
+}
+
+/**
+ * Access a service with the required Service Entry
+ */
+export function accessServiceM<T>(s: Tag<T>) {
+  return <R, E, B>(f: (a: T) => Query<R, E, B>): Query<R & Has<T>, E, B> =>
+    chain_(fromEffect(T.service(s)), f)
+}
+
+/**
  * Extracts the optional value or fails with NoSuchElementException.
  */
 export function getOrFail<A>(
