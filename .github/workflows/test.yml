@@ -22,7 +22,3 @@ jobs:
           yarn run ci
         env:
           CI: "true"
-
-      - uses: codecov/codecov-action@v1.0.3
-        with:
-          token: ${{secrets.CODECOV_TOKEN}}

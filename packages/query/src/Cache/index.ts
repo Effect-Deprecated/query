@@ -11,7 +11,7 @@ import { pipe } from "@effect-ts/core/Function"
 import * as O from "@effect-ts/core/Option"
 import * as REF from "@effect-ts/system/Ref"
 
-import type { Request } from "../Request"
+import type { Request } from "../Request/index.js"
 
 /**
  * A `Cache` maintains an internal state with a mapping from requests to `Ref`s

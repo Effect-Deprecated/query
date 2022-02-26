@@ -13,13 +13,13 @@ import * as O from "@effect-ts/core/Option"
 import * as St from "@effect-ts/core/Structural"
 import * as S from "@effect-ts/core/Sync"
 
-import type { Cache } from "../../Cache"
-import * as CRM from "../../CompletedRequestMap"
-import * as DS from "../../DataSource"
-import type { DataSourceAspect } from "../../DataSourceAspect"
-import type { BlockedRequest } from "../BlockedRequest"
-import * as PL from "../Parallel"
-import * as SQ from "../Sequential"
+import type { Cache } from "../../Cache/index.js"
+import * as CRM from "../../CompletedRequestMap/index.js"
+import * as DS from "../../DataSource/index.js"
+import type { DataSourceAspect } from "../../DataSourceAspect/index.js"
+import type { BlockedRequest } from "../BlockedRequest/index.js"
+import * as PL from "../Parallel/index.js"
+import * as SQ from "../Sequential/index.js"
 
 function scalaTail<A>(a: L.List<A>): L.List<A> {
   return L.size(a) === 0 ? L.empty() : L.tail(a)

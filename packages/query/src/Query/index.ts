@@ -22,16 +22,16 @@ import * as C from "@effect-ts/system/Cause"
 import * as CL from "@effect-ts/system/Clock"
 import { NoSuchElementException } from "@effect-ts/system/GlobalExceptions"
 
-import * as CH from "../Cache"
-import type { DataSource } from "../DataSource"
-import type { DataSourceAspect } from "../DataSourceAspect"
-import * as BR from "../Internal/BlockedRequest"
-import * as BRS from "../Internal/BlockedRequests"
-import * as CONT from "../Internal/Continue"
-import type { QueryContext } from "../Internal/QueryContext"
-import * as RES from "../Internal/Result"
-import { QueryFailure } from "../QueryFailure"
-import type { Request } from "../Request"
+import * as CH from "../Cache/index.js"
+import type { DataSource } from "../DataSource/index.js"
+import type { DataSourceAspect } from "../DataSourceAspect/index.js"
+import * as BR from "../Internal/BlockedRequest/index.js"
+import * as BRS from "../Internal/BlockedRequests/index.js"
+import * as CONT from "../Internal/Continue/index.js"
+import type { QueryContext } from "../Internal/QueryContext/index.js"
+import * as RES from "../Internal/Result/index.js"
+import { QueryFailure } from "../QueryFailure/index.js"
+import type { Request } from "../Request/index.js"
 
 /**
  * A `ZQuery[R, E, A]` is a purely functional description of an effectual query
@@ -462,7 +462,7 @@ export function zipWithPar_<R, E, A, R1, E1, B, C>(
             case "Done":
               return RES.fail(a.cause)
             case "Fail":
-              return RES.fail(C.both(a.cause, b.cause))
+              return RES.fail(C.combinePar(a.cause, b.cause))
           }
       }
     })

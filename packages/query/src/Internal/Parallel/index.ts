@@ -5,10 +5,10 @@ import * as HM from "@effect-ts/core/Collections/Immutable/HashMap"
 import { _R } from "@effect-ts/core/Effect"
 import * as O from "@effect-ts/core/Option"
 
-import type * as DS from "../../DataSource"
-import type { BlockedRequest } from "../BlockedRequest"
-import type { BlockedRequests } from "../BlockedRequests"
-import { Sequential } from "../Sequential"
+import type * as DS from "../../DataSource/index.js"
+import type { BlockedRequest } from "../BlockedRequest/index.js"
+import type { BlockedRequests } from "../BlockedRequests/index.js"
+import { Sequential } from "../Sequential/index.js"
 
 /**
  * A `Parallel[R]` maintains a mapping from data sources to requests from

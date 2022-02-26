@@ -12,8 +12,8 @@ import * as St from "@effect-ts/core/Structural"
 import type { _A, _E } from "@effect-ts/core/Utils"
 import { LazyGetter } from "@effect-ts/core/Utils"
 
-import * as CR from "../CompletedRequestMap"
-import type { Request } from "../Request"
+import * as CR from "../CompletedRequestMap/index.js"
+import type { Request } from "../Request/index.js"
 
 /**
  * A `DataSource[R, A]` requires an environment `R` and is capable of executing
@@ -173,7 +173,9 @@ export function eitherWith_<R, A, R1, B, C>(
     (requests) =>
       T.map_(
         T.forEach_(requests, (requests) => {
-          const { left: as, right: bs } = C.partitionMap_(requests, f)
+          const {
+            tuple: [as, bs]
+          } = C.partitionMap_(requests, f)
           return T.zipWithPar_(
             self.runAll(C.single(as)),
             that.runAll(C.single(bs)),

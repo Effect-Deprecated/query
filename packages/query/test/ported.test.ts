@@ -13,12 +13,12 @@ import * as O from "@effect-ts/core/Option"
 import * as TE from "@effect-ts/jest/Test"
 import { NoSuchElementException } from "@effect-ts/system/GlobalExceptions"
 
-import * as CH from "../src/Cache"
-import * as CR from "../src/CompletedRequestMap"
-import * as DS from "../src/DataSource"
-import * as Q from "../src/Query"
-import { QueryFailure } from "../src/QueryFailure"
-import * as R from "../src/Request"
+import * as CH from "../src/Cache/index.js"
+import * as CR from "../src/CompletedRequestMap/index.js"
+import * as DS from "../src/DataSource/index.js"
+import * as Q from "../src/Query/index.js"
+import { QueryFailure } from "../src/QueryFailure/index.js"
+import * as R from "../src/Request/index.js"
 
 interface TestConsole {
   lines: REF.Ref<A.Array<string>>

@@ -5,8 +5,8 @@ import * as HM from "@effect-ts/core/Collections/Immutable/HashMap"
 import { _R } from "@effect-ts/core/Effect"
 import * as O from "@effect-ts/core/Option"
 
-import type { DataSource } from "../../DataSource"
-import type { BlockedRequest } from "../BlockedRequest"
+import type { DataSource } from "../../DataSource/index.js"
+import type { BlockedRequest } from "../BlockedRequest/index.js"
 
 /**
  * A `Sequential[R]` maintains a mapping from data sources to batches of

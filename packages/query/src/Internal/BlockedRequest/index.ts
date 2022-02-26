@@ -7,7 +7,7 @@ import type { Option } from "@effect-ts/core/Option"
 import type { _A as _GetA, _E as _GetE } from "@effect-ts/core/Utils"
 import type { Ref } from "@effect-ts/system/Ref"
 
-import type { Request } from "../../Request"
+import type { Request } from "../../Request/index.js"
 
 export const BlockedRequestSym = Symbol.for("@effect-ts/query/Internal/BlockedRequest")
 export type BlockedRequestSym = typeof BlockedRequestSym

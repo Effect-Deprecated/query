@@ -2,7 +2,7 @@
 
 import "@effect-ts/system/Operator"
 
-import type { DataSource } from "../DataSource"
+import type { DataSource } from "../DataSource/index.js"
 
 /**
  * A `DataSourceAspect` is an aspect that can be weaved into queries. You can

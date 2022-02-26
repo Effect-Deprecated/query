@@ -6,10 +6,10 @@ import * as E from "@effect-ts/core/Either"
 import { pipe } from "@effect-ts/core/Function"
 import * as C from "@effect-ts/system/Cause"
 
-import type { DataSourceAspect } from "../../DataSourceAspect"
-import * as BRS from "../BlockedRequests"
-import type { Continue } from "../Continue"
-import * as CONT from "../Continue"
+import type { DataSourceAspect } from "../../DataSourceAspect/index.js"
+import * as BRS from "../BlockedRequests/index.js"
+import type { Continue } from "../Continue/index.js"
+import * as CONT from "../Continue/index.js"
 
 class Blocked<R, E, A> {
   readonly _tag = "Blocked";
@@ -152,7 +152,7 @@ export function fromEither<E, A>(either: E.Either<E, A>): Result<unknown, E, A> 
  * Lifts an `Exit` into a result.
  */
 export function fromExit<E, A>(exit: Ex.Exit<E, A>): Result<unknown, E, A> {
-  return Ex.fold_<E, A, Result<unknown, E, A>>(
+  return Ex.fold_(
     exit,
     (e) => fail(e),
     (a) => done(a)

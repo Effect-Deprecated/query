@@ -8,7 +8,7 @@ import type * as HS from "@effect-ts/core/Collections/Immutable/HashSet"
 import * as E from "@effect-ts/core/Either"
 import * as O from "@effect-ts/core/Option"
 
-import type { Request } from "../Request"
+import type { Request } from "../Request/index.js"
 
 /**
  * A `CompletedRequestMap` is a universally quantified mapping from requests

@@ -2,8 +2,8 @@
 
 import "@effect-ts/system/Operator"
 
-import type { DataSource } from "../DataSource"
-import type { Request } from "../Request"
+import type { DataSource } from "../DataSource/index.js"
+import type { Request } from "../Request/index.js"
 
 export class QueryFailure {
   readonly _tag = "QueryFailure"

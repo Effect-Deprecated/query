@@ -11,12 +11,12 @@ import type { _A as _GetA, _E as _GetE } from "@effect-ts/core/Utils"
 import type * as C from "@effect-ts/system/Cause"
 import * as REF from "@effect-ts/system/Ref"
 
-import type { Cache } from "../../Cache"
-import type { DataSource } from "../../DataSource"
-import type { DataSourceAspect } from "../../DataSourceAspect"
-import * as Q from "../../Query"
-import { QueryFailure } from "../../QueryFailure"
-import type { Request } from "../../Request"
+import type { Cache } from "../../Cache/index.js"
+import type { DataSource } from "../../DataSource/index.js"
+import type { DataSourceAspect } from "../../DataSourceAspect/index.js"
+import * as Q from "../../Query/index.js"
+import { QueryFailure } from "../../QueryFailure/index.js"
+import type { Request } from "../../Request/index.js"
 
 class Effect<R, E, A> {
   readonly _tag = "Effect";

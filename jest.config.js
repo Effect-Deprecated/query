@@ -10,6 +10,7 @@ module.exports = {
   setupFiles: ["./scripts/jest-setup.ts"],
   modulePathIgnorePatterns: [
     "<rootDir>/packages/.*/build",
+    "<rootDir>/packages/.*/dist",
     "<rootDir>/packages/.*/compiler-debug",
     "<rootDir>/_tmp"
   ],
@@ -17,7 +18,10 @@ module.exports = {
   globals: {
     "ts-jest": {
       tsconfig: "<rootDir>/tsconfig.jest.json",
-      compiler: "ttypescript"
+      useESM: true
     }
+  },
+  moduleNameMapper: {
+    "^(\\.{1,2}/.*)\\.js$": "$1"
   }
 }
