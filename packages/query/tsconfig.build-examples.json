@@ -1,6 +1,7 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "lib": ["ES2021", "DOM"],
     "outDir": "build/examples",
     "declarationDir": "build/examples-dts",
     "tsBuildInfoFile": "build/tsbuildinfo/examples.tsbuildinfo",

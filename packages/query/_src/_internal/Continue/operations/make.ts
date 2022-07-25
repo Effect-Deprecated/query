@@ -1,4 +1,5 @@
 import { Continue } from "@effect/query/_internal/Continue/definition"
+import type { Request } from "@effect/query/Request"
 
 /**
  * Constructs a continuation from a request, a data source, and a `Ref` that

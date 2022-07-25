@@ -1,4 +1,4 @@
-import type { _A, _E } from "@effect/query/Request"
+import type { _A, _E, Request } from "@effect/query/Request"
 
 export const BlockedRequestSym = Symbol.for("@effect/query/BlockedRequest")
 export type BlockedRequestSym = typeof BlockedRequestSym
