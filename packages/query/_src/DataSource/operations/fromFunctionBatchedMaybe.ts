@@ -1,3 +1,5 @@
+import type { Request } from "@effect/query/Request"
+
 /**
  * Constructs a data source from a pure function that takes a list of
  * requests and returns a list of optional results of the same size. Each

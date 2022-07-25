@@ -5,6 +5,7 @@ import { Result } from "@effect/query/_internal/Result/definition"
 import { cachingEnabled } from "@effect/query/Query/operations/_internal/cachingEnabled"
 import { currentCache } from "@effect/query/Query/operations/_internal/currentCache"
 import { QueryInternal } from "@effect/query/Query/operations/_internal/QueryInternal"
+import type { Request } from "@effect/query/Request"
 
 /**
  * Constructs a query from a request and a data source. Queries will die with

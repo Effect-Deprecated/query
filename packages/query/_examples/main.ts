@@ -1,82 +1,121 @@
-export const userIds: Chunk<number> = Chunk.range(1, 26)
-export const userNames: HashMap<number, string> = HashMap.from(
-  userIds.zip(Chunk.range(97, 122).map((n) => String.fromCharCode(n)))
-)
+import { Request } from "@effect/query/Request"
+import type { RequestInfo, RequestInit, Response } from "node-fetch"
+import fetch from "node-fetch"
 
-/**
- * @tsplus type effect/query/test/UserRequest
- */
-export type UserRequest = GetAllIds | GetNameById
-
-export interface GetAllIds extends Request<never, Chunk<number>> {
-  readonly _tag: "GetAllIds"
+export interface FetchError extends Case {
+  readonly _tag: "FetchError"
+  readonly error: unknown
 }
-export const GetAllIds = Request.tagged<GetAllIds>("GetAllIds")
+export const FetchError = Case.tagged<FetchError>("FetchError")
 
-export interface GetNameById extends Request<never, string> {
-  readonly _tag: "GetNameById"
-  readonly id: number
+/**
+ * @tsplus type effect/query/examples/FetchService
+ */
+export interface FetchService {
+  readonly fetch: (
+    input: RequestInfo,
+    init?: RequestInit | undefined
+  ) => Effect<never, FetchError, Response>
 }
-export const GetNameById = Request.tagged<GetNameById>("GetNameById")
 
 /**
- * @tsplus type effect/query/test/UserRequest.Ops
+ * @tsplus type effect/query/examples/FetchService.Ops
  */
-export interface UserRequestOps {}
-export const UserRequest: UserRequestOps = {}
+export interface FetchServiceOps {
+  readonly Tag: Tag<FetchService>
+}
+export const FetchService: FetchServiceOps = {
+  Tag: Tag<FetchService>()
+}
 
 /**
- * @tsplus static effect/query/test/UserRequest.Ops DataSource
+ * @tsplus static effect/query/examples/FetchService.Ops live
  */
-export const UserRequestDataSource: DataSource<never, UserRequest> = DataSource.makeBatched(
-  "UserRequestDataSource",
+export const live: Layer<never, never, FetchService> = Layer.fromValue(FetchService.Tag, {
+  fetch: (input, init) =>
+    Effect.asyncInterrupt<never, FetchError, Response>((resume) => {
+      const abortController = new AbortController()
+      fetch(input, { ...(init || {}), signal: abortController.signal as any })
+        .then((response) => resume(Effect.succeed(response)))
+        .catch((error) => resume(Effect.fail(FetchError({ error }))))
+      return Either.left(Effect.succeed(abortController.abort()))
+    })
+})
+
+export interface Quote {
+  readonly id: string
+  readonly author: string
+  readonly en: string
+}
+export const Quote = Derive<Codec<Quote>>()
+
+export interface QuoteNotFoundError extends Case {
+  readonly _tag: "QuoteNotFound"
+  readonly type: string
+  readonly title: string
+  readonly status: 0
+  readonly detail: string
+  readonly instance: string
+}
+export const QuoteNotFoundError = Case.tagged<QuoteNotFoundError>("QuoteNotFound")
+
+export type QuoteRequest = GetRandomQuote | GetQuotes
+
+export interface GetRandomQuote extends Request<never, Quote> {
+  readonly _tag: "GetRandomQuote"
+}
+export const GetRandomQuote = Request.tagged<GetRandomQuote>("GetRandomQuote")
+
+export interface GetQuotes extends Request<never, Chunk<Quote>> {
+  readonly _tag: "GetQuotes"
+  readonly count: number
+}
+export const GetQuotes = Request.tagged<GetQuotes>("GetQuotes")
+
+export const QuoteDataSource = DataSource.fromFunctionBatchedEffect<
+  FetchService,
+  FetchError | QuoteNotFoundError,
+  QuoteRequest
+>(
+  "QuoteDataSource",
   (requests) =>
-    Effect.when(
-      HashSet.from(requests).size !== requests.size,
-      Effect.dieMessage("Duplicate requests")
-    ).zipRight(
-      Effect.succeed(
-        requests.reduce(CompletedRequestMap.empty, (completedRequests, request) => {
-          switch (request._tag) {
-            case "GetAllIds": {
-              return completedRequests.insert(request, Either.right(userIds))
-            }
-            case "GetNameById": {
-              return userNames.get(request.id).fold(
-                completedRequests,
-                (name) => completedRequests.insert(request, Either.right(name))
-              )
-            }
+    Effect.service<FetchService>(FetchService.Tag).flatMap(({ fetch }) =>
+      Effect.forEachPar(requests, (request) => {
+        switch (request._tag) {
+          case "GetQuotes": {
+            /** @tsplus inline */
+            const quotes = Derive<Decoder<Chunk<Quote>>>()
+            const queryParams = `?count=${request.count}`
+            return fetch(`https://programming-quotes-api.herokuapp.com/Quotes${queryParams}`)
+              .flatMap((response) => Effect.tryPromise(response.json()).orDie())
+              .flatMap((json) => Effect.fromEither(quotes.decode(json)).orDie())
           }
-        })
-      )
+          case "GetRandomQuote": {
+            return fetch(`https://programming-quotes-api.herokuapp.com/Quotes/random`)
+              .flatMap((response) => Effect.tryPromise(response.json()).orDie())
+              .flatMap((json) => Effect.fromEither(Quote.decode(json)).orDie())
+          }
+        }
+      })
     )
 )
 
-/**
- * @tsplus static effect/query/test/UserRequest.Ops getAllUserIds
- */
-export const getAllUserIds: Query<never, never, Chunk<number>> = Query.fromRequest(
-  GetAllIds({}),
-  UserRequest.DataSource
-)
-
-/**
- * @tsplus static effect/query/test/UserRequest.Ops getAllUserNames
- */
-export const getAllUserNames: Query<never, never, Chunk<string>> = getAllUserIds
-  .flatMap((userIds) => Query.forEachPar(userIds, getUserNameById))
-
-/**
- * @tsplus static effect/query/test/UserRequest.Ops getUserNameById
- */
-export function getUserNameById(id: number): Query<never, never, string> {
-  return Query.fromRequest(GetNameById({ id }), UserRequest.DataSource)
+export function getQuotes(count: number): Query<FetchService, QuoteNotFoundError, Chunk<Quote>> {
+  return Query.fromRequest(GetQuotes({ count }), QuoteDataSource)
 }
 
-Query
-  .collectAllPar(Chunk.fill(2, () => UserRequest.getAllUserIds))
-  .run
-  .unsafeRunPromise()
-  .then((a) => console.log(JSON.stringify(a, undefined, 2)))
-  .catch((e) => console.log(JSON.stringify(e, undefined, 2)))
+export const getRandomQuote: Query<FetchService, never, Quote> = Query.fromRequest(
+  GetRandomQuote({}),
+  QuoteDataSource
+)
+
+const query = getQuotes(1)
+  .zipBatchedFlatten(getQuotes(2))
+  .zipBatchedFlatten(getRandomQuote)
+
+query.run
+  .flatMap((tuple) => Effect.succeed(console.log(tuple)))
+  .provideLayer(FetchService.live)
+  .unsafeRunAsyncWith((exit) => {
+    console.log(JSON.stringify(exit, undefined, 2))
+  })

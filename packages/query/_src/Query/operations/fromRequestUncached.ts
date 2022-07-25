@@ -1,3 +1,5 @@
+import type { Request } from "@effect/query/Request"
+
 /**
  * Constructs a query from a request and a data source but does not apply
  * caching to the query.
