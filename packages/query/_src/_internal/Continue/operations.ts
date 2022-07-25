@@ -1,0 +1,15 @@
+// codegen:start {preset: barrel, include: ./operations/*.ts, prefix: "@effect/query/_internal/Continue"}
+export * from "@effect/query/_internal/Continue/operations/collectAllPar"
+export * from "@effect/query/_internal/Continue/operations/fold"
+export * from "@effect/query/_internal/Continue/operations/foldCauseQuery"
+export * from "@effect/query/_internal/Continue/operations/make"
+export * from "@effect/query/_internal/Continue/operations/map"
+export * from "@effect/query/_internal/Continue/operations/mapDataSources"
+export * from "@effect/query/_internal/Continue/operations/mapError"
+export * from "@effect/query/_internal/Continue/operations/mapErrorCause"
+export * from "@effect/query/_internal/Continue/operations/mapQuery"
+export * from "@effect/query/_internal/Continue/operations/provideSomeEnvironment"
+export * from "@effect/query/_internal/Continue/operations/zipWith"
+export * from "@effect/query/_internal/Continue/operations/zipWithBatched"
+export * from "@effect/query/_internal/Continue/operations/zipWithPar"
+// codegen:end

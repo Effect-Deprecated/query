@@ -1,5 +1,7 @@
 {
   "compilerOptions": {
+    "moduleDetection": "force",
+    "composite": true,
     "downlevelIteration": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
@@ -10,7 +12,7 @@
     "preserveSymlinks": true,
     "moduleResolution": "node",
     "noEmit": false,
-    "lib": ["es2020"],
+    "lib": ["ES2021"],
     "sourceMap": true,
     "declarationMap": true,
     "strict": true,
@@ -19,7 +21,7 @@
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
     "noEmitOnError": false,
-    "noErrorTruncation": true,
+    "noErrorTruncation": false,
     "allowJs": false,
     "checkJs": false,
     "forceConsistentCasingInFileNames": true,
@@ -27,9 +29,20 @@
     "stripInternal": true,
     "noImplicitAny": true,
     "noImplicitThis": true,
+    "noUncheckedIndexedAccess": true,
     "strictNullChecks": true,
     "baseUrl": ".",
-    "target": "ES2018"
+    "target": "ES2021",
+    "module": "ES6",
+    "incremental": true,
+    "removeComments": false,
+    "paths": {
+      "@effect/query": ["./packages/query/_src/index.ts"],
+      "@effect/query/test/*": ["./packages/query/_test/*"],
+      "@effect/query/examples/*": ["./packages/query/_examples/*"],
+      "@effect/query/*": ["./packages/query/_src/*"]
+    }
   },
+  "include": [],
   "exclude": ["node_modules", "build", "lib"]
 }
