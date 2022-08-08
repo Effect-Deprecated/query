@@ -7,7 +7,7 @@ import { cachingEnabled } from "@effect/query/Query/operations/_internal/caching
  */
 export function cached<R, E, A>(self: Query<R, E, A>): Query<R, E, A> {
   return Do(($) => {
-    const enabled = $(Query.fromEffect(cachingEnabled.getAndSet(true)))
+    const enabled = $(Query.fromEffect(cachingEnabled.getAndUpdate(() => true)))
     return $(self.ensuring(Query.fromEffect(cachingEnabled.set(enabled))))
   })
 }

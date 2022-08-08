@@ -32,7 +32,7 @@ function raceInner<R, E, A, R2, E2, A2>(
   fiber: Fiber<never, Result<R2, E2, A2>>
 ): Query<R | R2, E | E2, A | A2> {
   concreteQuery(query)
-  return new QueryInternal(query.step.raceWith(fiber.join(), coordinate, coordinate))
+  return new QueryInternal(query.step.raceWith(fiber.join, coordinate, coordinate))
 }
 
 function coordinate<R, E, A, R2, E2, A2>(
@@ -40,13 +40,13 @@ function coordinate<R, E, A, R2, E2, A2>(
   fiber: Fiber<never, Result<R2, E2, A2>>
 ): Effect<R | R2, never, Result<R | R2, E | E2, A | A2>> {
   return exit.foldEffect(
-    (cause) => fiber.join().map((result) => result.mapErrorCause((_) => Cause.both(_, cause))),
+    (cause) => fiber.join.map((result) => result.mapErrorCause((_) => Cause.both(_, cause))),
     (result) => {
       switch (result._tag) {
         case "Blocked": {
           switch (result.cont._tag) {
             case "Eff": {
-              return Effect.succeedNow(
+              return Effect.succeed(
                 Result.blocked(
                   result.blockedRequests,
                   Continue.effect(raceInner(result.cont.query, fiber))
@@ -54,7 +54,7 @@ function coordinate<R, E, A, R2, E2, A2>(
               )
             }
             case "Get": {
-              return Effect.succeedNow(
+              return Effect.succeed(
                 Result.blocked(
                   result.blockedRequests,
                   Continue.effect<R | R2, E | E2, A | A2>(
@@ -66,12 +66,10 @@ function coordinate<R, E, A, R2, E2, A2>(
           }
         }
         case "Done": {
-          return fiber.interrupt().zipRight(Effect.succeedNow(Result.done(result.value)))
+          return fiber.interrupt.zipRight(Effect.succeed(Result.done(result.value)))
         }
         case "Fail": {
-          return fiber.join().map((_) =>
-            _.mapErrorCause((cause) => Cause.both(cause, result.cause))
-          )
+          return fiber.join.map((_) => _.mapErrorCause((cause) => Cause.both(cause, result.cause)))
         }
       }
     }

@@ -18,7 +18,7 @@ export const SucceedRequest: SucceedRequestOps = Request.of<SucceedRequest>()
  */
 export const SucceedDataSource: DataSource<never, SucceedRequest> = DataSource.fromFunctionEffect(
   "succeed",
-  (request) => request.deferred.succeed(undefined).unit()
+  (request) => request.deferred.succeed(undefined).unit
 )
 
 /**

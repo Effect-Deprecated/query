@@ -12,7 +12,7 @@ export function provideSomeLayer<R0, E2, A1>(
     Query.succeed(layer).flatMap((layer) =>
       // @ts-expect-error
       self.provideLayer(
-        Described(Layer.environment<Exclude<R, A1>>().and(layer.value), layer.description)
+        Described(Layer.environment<Exclude<R, A1>>().provideTo(layer.value), layer.description)
       )
     )
 }

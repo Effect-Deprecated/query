@@ -12,7 +12,7 @@ export function fromFunction<A extends Request<any, any>>(
   return DataSource.makeBatched(
     name,
     (requests) =>
-      Effect.succeedNow(
+      Effect.succeed(
         requests.reduce(CompletedRequestMap.empty, (map, k) => map.insert(k, Either.right(f(k))))
       )
   )

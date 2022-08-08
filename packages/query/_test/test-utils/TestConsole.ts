@@ -42,7 +42,7 @@ export function printLine(line: string): Effect<TestConsole, never, void> {
  */
 export const output: Effect<TestConsole, never, Chunk<string>> = Effect.serviceWithEffect(
   TestConsole.Tag,
-  (console) => console.lines.get().map(Chunk.from)
+  (console) => console.lines.get.map(Chunk.from)
 )
 
 /**
@@ -50,5 +50,5 @@ export const output: Effect<TestConsole, never, Chunk<string>> = Effect.serviceW
  */
 export const logSize: Effect<TestConsole, never, number> = Effect.serviceWithEffect(
   TestConsole.Tag,
-  (console) => console.lines.get().map((lines) => lines.length)
+  (console) => console.lines.get.map((lines) => lines.length)
 )

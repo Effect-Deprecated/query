@@ -7,5 +7,5 @@ import { QueryInternal } from "@effect/query/Query/operations/_internal/QueryInt
  * @tsplus static effect/query/Query.Ops succeedNow
  */
 export function succeedNow<A>(value: A): Query<never, never, A> {
-  return new QueryInternal(Effect.succeedNow(Result.done(value)))
+  return new QueryInternal(Effect.succeed(Result.done(value)))
 }

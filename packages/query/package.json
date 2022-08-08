@@ -44,8 +44,8 @@
     }
   },
   "dependencies": {
-    "@effect/core": "^0.0.7",
-    "@tsplus/stdlib": "^0.2.2"
+    "@effect/core": "^0.0.10",
+    "@tsplus/stdlib": "^0.2.3"
   },
   "config": {
     "side": [],

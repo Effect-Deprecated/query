@@ -23,19 +23,19 @@ export function fromRequest<R, A extends Request<any, any>>(
     Effect.suspendSucceed(() => {
       const request = request0()
       const dataSource = dataSource0()
-      return cachingEnabled.get().flatMap((cachingEnabled) => {
+      return cachingEnabled.get.flatMap((cachingEnabled) => {
         if (cachingEnabled) {
-          return currentCache.get().flatMap((cache) => {
+          return currentCache.get.flatMap((cache) => {
             return cache.lookup(request).flatMap((either) => {
               switch (either._tag) {
                 case "Left": {
-                  return Effect.succeedNow(Result.blocked(
+                  return Effect.succeed(Result.blocked(
                     BlockedRequests.single(dataSource, BlockedRequest(request, either.left)),
                     Continue(request, dataSource, either.left)
                   ))
                 }
                 case "Right": {
-                  return either.right.get().map((maybe) => {
+                  return either.right.get.map((maybe) => {
                     switch (maybe._tag) {
                       case "None": {
                         return Result.blocked(
@@ -53,7 +53,7 @@ export function fromRequest<R, A extends Request<any, any>>(
             })
           })
         }
-        return Ref.make(Maybe.emptyOf<Either<Request.GetE<A>, Request.GetA<A>>>()).map((ref) =>
+        return Ref.make(Maybe.empty<Either<Request.GetE<A>, Request.GetA<A>>>()).map((ref) =>
           Result.blocked(
             BlockedRequests.single(dataSource, BlockedRequest(request, ref)),
             Continue(request, dataSource, ref)

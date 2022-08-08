@@ -17,7 +17,7 @@ export function makeBatched<R, A>(
         (completedRequestMap, requests) => {
           const newRequests: Chunk<A> = requests.filter((a) => !completedRequestMap.contains(a))
           return newRequests.isEmpty ?
-            Effect.succeedNow(completedRequestMap) :
+            Effect.succeed(completedRequestMap) :
             run(newRequests).map((map) => completedRequestMap.concat(map))
         }
       )

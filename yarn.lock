@@ -615,12 +615,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@effect/core@npm:^0.0.7":
-  version: 0.0.7
-  resolution: "@effect/core@npm:0.0.7"
+"@effect/core@npm:^0.0.10":
+  version: 0.0.10
+  resolution: "@effect/core@npm:0.0.10"
   dependencies:
-    "@tsplus/stdlib": ^0.2.1
-  checksum: 8ee4e3c032a79d67f0010795a8316204ad541b50f135e56ba86c2812207ec15453f86c83582c95594e766dcff185d2ffb2ee617f5ed906eee39bbe25e6a40b65
+    "@tsplus/stdlib": ^0.2.3
+  checksum: 24fc688af71b7e24609af5afe0ce4b40e17e9cb16ae82bf672a28abfedc83755b7aeb4c0a14ddfb167a986dbae2efd5d710223436247d1a8290da70e95ab5cd2
   languageName: node
   linkType: hard
 
@@ -628,8 +628,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@effect/query@workspace:packages/query"
   dependencies:
-    "@effect/core": ^0.0.7
-    "@tsplus/stdlib": ^0.2.2
+    "@effect/core": ^0.0.10
+    "@tsplus/stdlib": ^0.2.3
   languageName: unknown
   linkType: soft
 
@@ -923,10 +923,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tsplus/stdlib@npm:0.2.2, @tsplus/stdlib@npm:^0.2.1, @tsplus/stdlib@npm:^0.2.2":
+"@tsplus/stdlib@npm:0.2.2":
   version: 0.2.2
   resolution: "@tsplus/stdlib@npm:0.2.2"
   checksum: 337d384f63f64fc58ead07e75d95ce05eac0329b9f95d2aa28cb8a56cbdcfe4befb0cbbfbb4560f5ceba8d81de5d541a97d3455494e3ea40b5775f7a39055674
+  languageName: node
+  linkType: hard
+
+"@tsplus/stdlib@npm:^0.2.3":
+  version: 0.2.3
+  resolution: "@tsplus/stdlib@npm:0.2.3"
+  checksum: 4143dfede74d59bdbff8791d0265c3ebaf841d246e9cc135265fee7550307f6981387730ef1ab816f1102bcdfa1cfdbb511ce61dca59a82ce88173b7947af02e
   languageName: node
   linkType: hard
 

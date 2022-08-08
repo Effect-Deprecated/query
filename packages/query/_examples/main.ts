@@ -38,7 +38,7 @@ export const live: Layer<never, never, FetchService> = Layer.fromValue(FetchServ
       fetch(input, { ...(init || {}), signal: abortController.signal as any })
         .then((response) => resume(Effect.succeed(response)))
         .catch((error) => resume(Effect.fail(FetchError({ error }))))
-      return Either.left(Effect.succeed(abortController.abort()))
+      return Either.left(Effect.sync(abortController.abort()))
     })
 })
 
@@ -87,13 +87,13 @@ export const QuoteDataSource = DataSource.fromFunctionBatchedEffect<
             const quotes = Derive<Decoder<Chunk<Quote>>>()
             const queryParams = `?count=${request.count}`
             return fetch(`https://programming-quotes-api.herokuapp.com/Quotes${queryParams}`)
-              .flatMap((response) => Effect.tryPromise(response.json()).orDie())
-              .flatMap((json) => Effect.fromEither(quotes.decode(json)).orDie())
+              .flatMap((response) => Effect.tryPromise(response.json()).orDie)
+              .flatMap((json) => Effect.fromEither(quotes.decode(json)).orDie)
           }
           case "GetRandomQuote": {
             return fetch(`https://programming-quotes-api.herokuapp.com/Quotes/random`)
-              .flatMap((response) => Effect.tryPromise(response.json()).orDie())
-              .flatMap((json) => Effect.fromEither(Quote.decode(json)).orDie())
+              .flatMap((response) => Effect.tryPromise(response.json()).orDie)
+              .flatMap((json) => Effect.fromEither(Quote.decode(json)).orDie)
           }
         }
       })

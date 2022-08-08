@@ -9,7 +9,7 @@ import { currentCache } from "@effect/query/Query/operations/_internal/currentCa
  * @tsplus getter effect/query/BlockedRequests run
  */
 export function run<R>(self: BlockedRequests<R>): Effect<R, never, void> {
-  return currentCache.get().flatMap((cache) =>
+  return currentCache.get.flatMap((cache) =>
     Effect.forEachDiscard(
       self.flatten,
       (requestsByDataSource) =>
@@ -31,7 +31,7 @@ export function run<R>(self: BlockedRequests<R>): Effect<R, never, void> {
               Ref.make(completedRequests.lookup(request)).flatMap((ref) =>
                 cache.put(request, ref)
               )))
-          }).unit())
+          }).unit)
     )
   )
 }

@@ -46,7 +46,7 @@ export function zipWithParQuery<R, E, A, R2, E2, B, C>(
 ): Query<R | R2, E | E2, C> {
   concreteQuery(self)
   return new QueryInternal(
-    Effect.succeed(that).flatMap((that) => {
+    Effect.sync(that).flatMap((that) => {
       concreteQuery(that)
       return self.step.zipWithPar(that.step, (r1, r2) => {
         switch (r1._tag) {

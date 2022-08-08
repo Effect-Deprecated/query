@@ -42,7 +42,7 @@ export function _foldCauseQuery<R, E, A, R2, E2, A2, R3, E3, A3>(
       (result) => {
         switch (result._tag) {
           case "Blocked": {
-            return Effect.succeedNow(
+            return Effect.succeed(
               Result.blocked(
                 result.blockedRequests,
                 result.cont.foldCauseQuery(failure, success)
