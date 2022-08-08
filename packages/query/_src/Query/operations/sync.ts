@@ -4,8 +4,8 @@ import { QueryInternal } from "@effect/query/Query/operations/_internal/QueryInt
 /**
  * Constructs a query that succeeds with the specified value.
  *
- * @tsplus static effect/query/Query.Ops succeedNow
+ * @tsplus static effect/query/Query.Ops sync
  */
-export function succeedNow<A>(value: A): Query<never, never, A> {
-  return new QueryInternal(Effect.succeedNow(Result.done(value)))
+export function sync<A>(value: LazyArg<A>): Query<never, never, A> {
+  return new QueryInternal(Effect.sync(value).map(Result.done))
 }

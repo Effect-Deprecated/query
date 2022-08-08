@@ -3,4 +3,4 @@
  *
  * @tsplus static effect/query/Query.Ops none
  */
-export const none: Query<never, never, Maybe<never>> = Query.succeedNow(Maybe.none)
+export const none: Query<never, never, Maybe<never>> = Query.succeed(Maybe.none)

@@ -12,5 +12,5 @@ export function fromFunctionBatched<A extends Request<any, any>>(
   name: string,
   f: (requests: Chunk<A>) => Chunk<Request.GetA<A>>
 ): DataSource<never, A> {
-  return DataSource.fromFunctionBatchedEffect(name, (as) => Effect.succeedNow(f(as)))
+  return DataSource.fromFunctionBatchedEffect(name, (as) => Effect.succeed(f(as)))
 }

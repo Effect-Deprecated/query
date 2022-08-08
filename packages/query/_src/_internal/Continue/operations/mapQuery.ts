@@ -32,7 +32,7 @@ export function flatMapQuery<R, E, A, R2, E2, A2>(
     self.step.flatMap((result) => {
       switch (result._tag) {
         case "Blocked": {
-          return Effect.succeedNow(
+          return Effect.succeed(
             Result.blocked(result.blockedRequests, result.cont.mapQuery(f))
           )
         }
@@ -42,7 +42,7 @@ export function flatMapQuery<R, E, A, R2, E2, A2>(
           return query.step
         }
         case "Fail": {
-          return Effect.succeedNow(Result.fail(result.cause))
+          return Effect.succeed(Result.fail(result.cause))
         }
       }
     })

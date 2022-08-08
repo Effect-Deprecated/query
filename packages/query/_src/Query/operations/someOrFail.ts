@@ -12,7 +12,7 @@ export function someOrFail<E2>(e: LazyArg<E2>) {
           return Query.succeed(maybe.value)
         }
         case "None": {
-          return Query.fail(e)
+          return Query.failSync(e)
         }
       }
     })

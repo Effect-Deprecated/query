@@ -16,50 +16,46 @@ import type { Request } from "@effect/query/Request"
  * @tsplus static effect/query/Query.Ops fromRequest
  */
 export function fromRequest<R, A extends Request<any, any>>(
-  request0: LazyArg<A>,
-  dataSource0: LazyArg<DataSource<R, A>>
+  request: A,
+  dataSource: DataSource<R, A>
 ): Query<R, Request.GetE<A>, Request.GetA<A>> {
   return new QueryInternal(
-    Effect.suspendSucceed(() => {
-      const request = request0()
-      const dataSource = dataSource0()
-      return cachingEnabled.get().flatMap((cachingEnabled) => {
-        if (cachingEnabled) {
-          return currentCache.get().flatMap((cache) => {
-            return cache.lookup(request).flatMap((either) => {
-              switch (either._tag) {
-                case "Left": {
-                  return Effect.succeedNow(Result.blocked(
-                    BlockedRequests.single(dataSource, BlockedRequest(request, either.left)),
-                    Continue(request, dataSource, either.left)
-                  ))
-                }
-                case "Right": {
-                  return either.right.get().map((maybe) => {
-                    switch (maybe._tag) {
-                      case "None": {
-                        return Result.blocked(
-                          BlockedRequests.empty,
-                          Continue(request, dataSource, either.right)
-                        )
-                      }
-                      case "Some": {
-                        return Result.fromEither(maybe.value)
-                      }
-                    }
-                  })
-                }
+    cachingEnabled.get.flatMap((cachingEnabled) => {
+      if (cachingEnabled) {
+        return currentCache.get.flatMap((cache) => {
+          return cache.lookup(request).flatMap((either) => {
+            switch (either._tag) {
+              case "Left": {
+                return Effect.succeed(Result.blocked(
+                  BlockedRequests.single(dataSource, BlockedRequest(request, either.left)),
+                  Continue(request, dataSource, either.left)
+                ))
               }
-            })
+              case "Right": {
+                return either.right.get.map((maybe) => {
+                  switch (maybe._tag) {
+                    case "None": {
+                      return Result.blocked(
+                        BlockedRequests.empty,
+                        Continue(request, dataSource, either.right)
+                      )
+                    }
+                    case "Some": {
+                      return Result.fromEither(maybe.value)
+                    }
+                  }
+                })
+              }
+            }
           })
-        }
-        return Ref.make(Maybe.emptyOf<Either<Request.GetE<A>, Request.GetA<A>>>()).map((ref) =>
-          Result.blocked(
-            BlockedRequests.single(dataSource, BlockedRequest(request, ref)),
-            Continue(request, dataSource, ref)
-          )
+        })
+      }
+      return Ref.make(Maybe.empty<Either<Request.GetE<A>, Request.GetA<A>>>()).map((ref) =>
+        Result.blocked(
+          BlockedRequests.single(dataSource, BlockedRequest(request, ref)),
+          Continue(request, dataSource, ref)
         )
-      })
+      )
     })
   )
 }

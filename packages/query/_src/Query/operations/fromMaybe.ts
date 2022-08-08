@@ -3,15 +3,13 @@
  *
  * @tsplus static effect/query/Query.Ops fromMaybe
  */
-export function fromMaybe<A>(maybe: LazyArg<Maybe<A>>): Query<never, Maybe<never>, A> {
-  return Query.succeed(maybe).flatMap((maybe) => {
-    switch (maybe._tag) {
-      case "None": {
-        return Query.fail(Maybe.none)
-      }
-      case "Some": {
-        return Query.succeedNow(maybe.value)
-      }
+export function fromMaybe<A>(maybe: Maybe<A>): Query<never, Maybe<never>, A> {
+  switch (maybe._tag) {
+    case "None": {
+      return Query.fail(Maybe.none)
     }
-  })
+    case "Some": {
+      return Query.succeed(maybe.value)
+    }
+  }
 }

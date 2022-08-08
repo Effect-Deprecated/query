@@ -5,7 +5,7 @@
  * @tsplus static effect/query/Query.Aspects zipParRight
  * @tsplus pipeable effect/query/Query zipParRight
  */
-export function zipParRight<R2, E2, A2>(that: LazyArg<Query<R2, E2, A2>>) {
+export function zipParRight<R2, E2, A2>(that: Query<R2, E2, A2>) {
   return <R, E, A>(self: Query<R, E, A>): Query<R | R2, E | E2, A2> =>
     self.zipWithPar(
       that,

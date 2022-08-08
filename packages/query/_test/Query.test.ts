@@ -24,9 +24,9 @@ describe.concurrent("Query", () => {
 
   it("failure to complete request is query failure", () =>
     Do(($) => {
-      const result = $(UserRequest.getUserNameById(27).run.exit())
+      const result = $(UserRequest.getUserNameById(27).run.exit)
       assert.deepStrictEqual(
-        result.untraced,
+        result,
         Exit.die(
           QueryFailure({
             dataSource: UserRequest.DataSource,
@@ -78,7 +78,7 @@ describe.concurrent("Query", () => {
       const deferred = $(Deferred.make<never, void>())
       const raceQuery = Query.fromRequest(SucceedRequest({ deferred }), raceDataSource)
       $(raceQuery.run)
-      const result = $(deferred.await())
+      const result = $(deferred.await)
       assert.isUndefined(result)
     }).unsafeRunPromise())
 
@@ -153,10 +153,10 @@ describe.concurrent("Query", () => {
         .zipRight(Query.fromEffect(Effect.sleep((10).millis)))
         .unit
       const query = left.uncached.zipPar(right.cached)
-      const fiber = $(query.run.fork())
+      const fiber = $(query.run.fork)
       $(Effect.sleep((20).millis))
       $(Effect.sleep((70).millis))
-      $(fiber.join())
+      $(fiber.join)
       const logSize = $(TestConsole.logSize)
       assert.strictEqual(logSize, 1)
     }).provideLayer(TestConsole.live).unsafeRunPromise())
@@ -168,7 +168,7 @@ describe.concurrent("Query", () => {
         const query1 = Query.fromEffect(ref.update((list) => list.prepend(1)))
         const query2 = Query.fromEffect(ref.update((list) => list.prepend(2)))
         $(query1.zipRight(query2).run)
-        const result = $(ref.get())
+        const result = $(ref.get)
         assert.isTrue(result == List(2, 1))
       }).unsafeRunPromise())
 
@@ -214,8 +214,8 @@ describe.concurrent("Query", () => {
       Do(($) => {
         const ref = $(Ref.make(true))
         const query = Query.fail("fail").zipRight(Query.fromEffect(ref.set(false)))
-        $(query.run.ignore())
-        const result = $(ref.get())
+        $(query.run.ignore)
+        const result = $(ref.get)
         assert.isTrue(result)
       }).unsafeRunPromise())
 
@@ -233,8 +233,8 @@ describe.concurrent("Query", () => {
     it("queries to multiple data sources can be executed in parallel", () =>
       Do(($) => {
         const deferred = $(Deferred.make<never, void>())
-        $(NeverRequest.neverQuery.zipBatched(SucceedRequest.succeedQuery(deferred)).run.fork())
-        const result = $(deferred.await())
+        $(NeverRequest.neverQuery.zipBatched(SucceedRequest.succeedQuery(deferred)).run.fork)
+        const result = $(deferred.await)
         assert.isUndefined(result)
       }).unsafeRunPromise())
 
@@ -244,7 +244,7 @@ describe.concurrent("Query", () => {
         const query1 = Query.fromEffect(ref.update((list) => list.prepend(1)))
         const query2 = Query.fromEffect(ref.update((list) => list.prepend(2)))
         $(query1.zipBatchedRight(query2).run)
-        const result = $(ref.get())
+        const result = $(ref.get)
         assert.isTrue(result == List(2, 1))
       }).unsafeRunPromise())
   })
@@ -253,16 +253,16 @@ describe.concurrent("Query", () => {
     it("queries to multiple data sources can be executed in parallel", () =>
       Do(($) => {
         const deferred = $(Deferred.make<never, void>())
-        $(NeverRequest.neverQuery.zipPar(SucceedRequest.succeedQuery(deferred)).run.fork())
-        const result = $(deferred.await())
+        $(NeverRequest.neverQuery.zipPar(SucceedRequest.succeedQuery(deferred)).run.fork)
+        const result = $(deferred.await)
         assert.isUndefined(result)
       }).unsafeRunPromise())
 
     it("arbitrary effects can be executed in parallel", () =>
       Do(($) => {
         const deferred = $(Deferred.make<never, void>())
-        $(Query.never.zipPar(Query.fromEffect(deferred.succeed(undefined))).run.fork())
-        const result = $(deferred.await())
+        $(Query.never.zipPar(Query.fromEffect(deferred.succeed(undefined))).run.fork)
+        const result = $(deferred.await)
         assert.isUndefined(result)
       }).unsafeRunPromise())
 
@@ -277,8 +277,8 @@ describe.concurrent("Query", () => {
   describe.concurrent("timeout", () => {
     it("times out a query that does not complete", () =>
       Do(($) => {
-        const fiber = $(Query.never.timeout((10).millis).run.fork())
-        const result = $(Effect.sleep((20).millis).zipRight(fiber.join()).unit())
+        const fiber = $(Query.never.timeout((10).millis).run.fork)
+        const result = $(Effect.sleep((20).millis).zipRight(fiber.join).unit)
         assert.isUndefined(result)
       }).unsafeRunPromise())
 
@@ -288,9 +288,9 @@ describe.concurrent("Query", () => {
           (Query.fromEffect(Effect.sleep((20).millis)).zipRight(NeverRequest.neverQuery))
             .timeout((10).millis)
             .run
-            .fork()
+            .fork
         )
-        const result = $(Effect.sleep((50).millis).zipRight(fiber.join()).unit())
+        const result = $(Effect.sleep((50).millis).zipRight(fiber.join).unit)
         assert.isUndefined(result)
       }).unsafeRunPromise())
   })
@@ -313,9 +313,9 @@ describe.concurrent("Query", () => {
             .zipRight(Effect.never)
             .onInterrupt(() => deferred2.succeed(undefined))
         )
-        const right = Query.fromEffect(deferred1.await())
+        const right = Query.fromEffect(deferred1.await)
         $(left.race(right).run)
-        const result = $(deferred2.await())
+        const result = $(deferred2.await)
         assert.isUndefined(result)
       }).unsafeRunPromise())
   })
@@ -324,7 +324,7 @@ describe.concurrent("Query", () => {
     it("wraps data source with before and after effects that are evaluated accordingly", () =>
       Do(($) => {
         const beforeRef = $(Ref.make(0))
-        const before = beforeRef.set(1).zipRight(beforeRef.get())
+        const before = beforeRef.set(1).zipRight(beforeRef.get)
         const afterRef = $(Ref.make(0))
         const after = (n: number) => afterRef.set(n * 2)
         const query = UserRequest.getUserNameById(1).apply(Query.around(
@@ -332,8 +332,8 @@ describe.concurrent("Query", () => {
           Described(after, "after effect")
         ))
         $(query.run)
-        const beforeRun = $(beforeRef.get())
-        const afterRun = $(afterRef.get())
+        const beforeRun = $(beforeRef.get)
+        const afterRun = $(afterRef.get)
         assert.strictEqual(beforeRun, 1)
         assert.strictEqual(afterRun, 2)
       }).provideLayer(TestConsole.live).unsafeRunPromise())

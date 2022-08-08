@@ -14,7 +14,7 @@ export function make<R, A extends Request<any, any>>(
   ref: Ref<Maybe<Either<Request.GetE<A>, Request.GetA<A>>>>
 ): Continue<R, Request.GetE<A>, Request.GetA<A>> {
   return Continue.get(
-    ref.get().flatMap((maybe) => {
+    ref.get.flatMap((maybe) => {
       switch (maybe._tag) {
         case "None": {
           return Effect.die(QueryFailure({ dataSource, request }))

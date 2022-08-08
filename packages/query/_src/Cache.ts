@@ -51,7 +51,7 @@ export const Cache: CacheOps = {}
  *
  * @tsplus static effect/query/Cache.Ops empty
  */
-export const empty: Effect<never, never, Cache> = Effect.succeed(unsafeMake())
+export const empty: Effect<never, never, Cache> = Effect.sync(unsafeMake())
 
 /**
  * Unsafely constructs an empty cache.
@@ -66,13 +66,13 @@ class DefaultCache implements Cache {
   constructor(readonly state: Ref<HashMap<any, any>>) {}
 
   get<E, A>(request: Request<E, A>): Effect<never, void, Ref<Maybe<Either<E, A>>>> {
-    return this.state.get().map((map) => map.get(request)).some.orElseFail(undefined)
+    return this.state.get.map((map) => map.get(request)).some.orElseFail(undefined)
   }
 
   lookup<E, A>(
     request: Request<E, A>
   ): Effect<never, never, Either<Ref<Maybe<Either<E, A>>>, Ref<Maybe<Either<E, A>>>>> {
-    return Ref.make(Maybe.emptyOf<Either<E, A>>()).flatMap((ref) =>
+    return Ref.make(Maybe.empty<Either<E, A>>()).flatMap((ref) =>
       this.state.modify((map) => {
         type ReturnValue = Either<Ref<Maybe<Either<E, A>>>, Ref<Maybe<Either<E, A>>>>
         const result = map.get(request)

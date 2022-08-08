@@ -41,7 +41,7 @@ export function zipWith<A, R2, E2, B, C>(that: Continue<R2, E2, B>, f: (a: A, b:
 
 export function zipWithQuery<R, E, A, R2, E2, B, C>(
   self: Query<R, E, A>,
-  that: LazyArg<Query<R2, E2, B>>,
+  that: Query<R2, E2, B>,
   f: (a: A, b: B) => C
 ): Query<R | R2, E | E2, C> {
   return flatMapQuery(Query.succeed(that), (that) => {
@@ -53,7 +53,7 @@ export function zipWithQuery<R, E, A, R2, E2, B, C>(
           case "Blocked": {
             switch (result.cont._tag) {
               case "Eff": {
-                return Effect.succeedNow(
+                return Effect.succeed(
                   Result.blocked(
                     result.blockedRequests,
                     Continue.effect(zipWithQuery(result.cont.query, that, f))
@@ -102,7 +102,7 @@ export function zipWithQuery<R, E, A, R2, E2, B, C>(
             })
           }
           case "Fail": {
-            return Effect.succeedNow(Result.fail(result.cause))
+            return Effect.succeed(Result.fail(result.cause))
           }
         }
       })

@@ -13,10 +13,10 @@ import {
  * @tsplus static effect/query/Query.Aspects timeoutTo
  * @tsplus pipeable effect/query/Query timeoutTo
  */
-export function timeoutTo<A, B, B1>(def: LazyArg<B>, f: (a: A) => B1, duration: LazyArg<Duration>) {
+export function timeoutTo<A, B, B1>(def: B, f: (a: A) => B1, duration: Duration) {
   return <R, E>(self: Query<R, E, A>): Query<R, E, B | B1> =>
     Query
-      .fromEffect(Effect.sleep(duration).interruptible().as(def).fork())
+      .fromEffect(Effect.sleep(duration).interruptible.as(def).fork)
       .flatMap((fiber) => race(self.map(f), fiber))
 }
 
@@ -27,16 +27,16 @@ function race<R, E, A, B>(
   concreteQuery(query)
   return new QueryInternal(
     query.step.raceWith(
-      fiber.join(),
+      fiber.join,
       (leftExit, rightFiber) =>
         leftExit.foldEffect(
-          (cause) => rightFiber.interrupt().zipRight(Effect.succeedNow(Result.fail(cause))),
+          (cause) => rightFiber.interrupt.zipRight(Effect.succeed(Result.fail(cause))),
           (result) => {
             switch (result._tag) {
               case "Blocked": {
                 switch (result.cont._tag) {
                   case "Eff": {
-                    return Effect.succeedNow(
+                    return Effect.succeed(
                       Result.blocked(
                         result.blockedRequests,
                         Continue.effect(race(result.cont.query, rightFiber))
@@ -44,7 +44,7 @@ function race<R, E, A, B>(
                     )
                   }
                   case "Get": {
-                    return Effect.succeedNow(
+                    return Effect.succeed(
                       Result.blocked(
                         result.blockedRequests,
                         Continue.effect(race(Query.fromEffect(result.cont.io), rightFiber))
@@ -54,16 +54,16 @@ function race<R, E, A, B>(
                 }
               }
               case "Done": {
-                return rightFiber.interrupt().zipRight(Effect.succeedNow(Result.done(result.value)))
+                return rightFiber.interrupt.zipRight(Effect.succeed(Result.done(result.value)))
               }
               case "Fail": {
-                return rightFiber.interrupt().zipRight(Effect.succeedNow(Result.fail(result.cause)))
+                return rightFiber.interrupt.zipRight(Effect.succeed(Result.fail(result.cause)))
               }
             }
           }
         ),
       (rightExit, leftFiber) =>
-        leftFiber.interrupt().zipRight(Effect.succeedNow(Result.fromExit(rightExit)))
+        leftFiber.interrupt.zipRight(Effect.succeed(Result.fromExit(rightExit)))
     )
   )
 }

@@ -8,6 +8,6 @@
 export function some<R, E, A>(self: Query<R, E, Maybe<A>>): Query<R, Maybe<E>, A> {
   return self.foldQuery(
     (e) => Query.fail(Maybe.some(e)),
-    (a) => a.fold(Query.fail(Maybe.none), Query.succeedNow)
+    (a) => a.fold(Query.fail(Maybe.none), Query.succeed)
   )
 }

@@ -6,6 +6,6 @@
  *
  * @tsplus static effect/query/Query.Ops unsandbox
  */
-export function unsandbox<R, E, A>(query: LazyArg<Query<R, Cause<E>, A>>): Query<R, E, A> {
-  return Query.suspend(query).mapErrorCause((cause) => cause.flatten)
+export function unsandbox<R, E, A>(query: Query<R, Cause<E>, A>): Query<R, E, A> {
+  return query.mapErrorCause((cause) => cause.flatten)
 }

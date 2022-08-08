@@ -6,6 +6,6 @@ import { QueryInternal } from "@effect/query/Query/operations/_internal/QueryInt
  *
  * @tsplus static effect/query/Query.Ops fromEffect
  */
-export function fromEffect<R, E, A>(effect: LazyArg<Effect<R, E, A>>): Query<R, E, A> {
-  return new QueryInternal(Effect.suspendSucceed(effect).foldCause(Result.fail, Result.done))
+export function fromEffect<R, E, A>(effect: Effect<R, E, A>): Query<R, E, A> {
+  return new QueryInternal(effect.foldCause(Result.fail, Result.done))
 }

@@ -7,6 +7,6 @@
 export function left<R, E, A, B>(self: Query<R, E, Either<A, B>>): Query<R, Either<E, B>, A> {
   return self.foldQuery(
     (e) => Query.fail(Either.left(e)),
-    (a) => a.fold(Query.succeedNow, (c) => Query.fail(Either.right(c)))
+    (a) => a.fold(Query.succeed, (c) => Query.fail(Either.right(c)))
   )
 }

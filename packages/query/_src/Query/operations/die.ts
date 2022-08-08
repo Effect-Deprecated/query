@@ -3,6 +3,6 @@
  *
  * @tsplus static effect/query/Query.Ops die
  */
-export function die(defect: LazyArg<unknown>): Query<never, never, never> {
+export function die(defect: unknown): Query<never, never, never> {
   return Query.fromEffect(Effect.die(defect))
 }
