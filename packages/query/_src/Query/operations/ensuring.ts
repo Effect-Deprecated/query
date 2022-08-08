@@ -6,20 +6,18 @@
  * @tsplus static effect/query/Query.Aspects ensuring
  * @tsplus pipeable effect/query/Query ensuring
  */
-export function ensuring<R2, X>(finalizer: LazyArg<Query<R2, never, X>>) {
+export function ensuring<R2, X>(finalizer: Query<R2, never, X>) {
   return <R, E, A>(self: Query<R, E, A>): Query<R | R2, E, A> =>
-    Query.succeed(finalizer).flatMap((finalizer) =>
-      self.foldCauseQuery(
-        (cause1) =>
-          finalizer.foldCauseQuery(
-            (cause2) => Query.failCause(Cause.then(cause1, cause2)),
-            () => Query.failCause(cause1)
-          ),
-        (value) =>
-          finalizer.foldCauseQuery(
-            (cause) => Query.failCause(cause),
-            () => Query.succeedNow(value)
-          )
-      )
+    self.foldCauseQuery(
+      (cause1) =>
+        finalizer.foldCauseQuery(
+          (cause2) => Query.failCause(Cause.then(cause1, cause2)),
+          () => Query.failCause(cause1)
+        ),
+      (value) =>
+        finalizer.foldCauseQuery(
+          (cause) => Query.failCause(cause),
+          () => Query.succeed(value)
+        )
     )
 }

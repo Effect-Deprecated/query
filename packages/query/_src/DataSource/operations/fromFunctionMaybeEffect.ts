@@ -15,7 +15,7 @@ export function fromFunctionMaybeEffect<R, E, A extends Request<any, any>>(
     (requests) =>
       Effect.forEachPar(
         requests,
-        (a) => f(a).either().map((either) => Tuple(a, either))
+        (a) => f(a).either.map((either) => Tuple(a, either))
       ).map((chunk) =>
         chunk.reduce(CompletedRequestMap.empty, (map, { tuple: [k, v] }) => map.insertMaybe(k, v))
       )

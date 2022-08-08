@@ -7,5 +7,5 @@
  */
 export function orDieWith<E>(f: (e: E) => unknown) {
   return <R, A>(self: Query<R, E, A>): Query<R, never, A> =>
-    self.foldQuery((e) => Query.die(f(e)), Query.succeedNow)
+    self.foldQuery((e) => Query.die(f(e)), Query.succeed)
 }

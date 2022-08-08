@@ -11,7 +11,7 @@ export function fromFunctionEffect<R, E, A extends Request<any, any>>(
 ): DataSource<R, A> {
   return DataSource.makeBatched(name, (requests) =>
     Effect
-      .forEachPar(requests, (a) => f(a).either().map((either) => Tuple(a, either)))
+      .forEachPar(requests, (a) => f(a).either.map((either) => Tuple(a, either)))
       .map((chunk) =>
         chunk.reduce(CompletedRequestMap.empty, (map, { tuple: [k, v] }) => map.insert(k, v))
       ))

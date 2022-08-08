@@ -35,7 +35,7 @@ export function collectAllPar<R, E, A>(
   )
 
   if (queries.isEmpty) {
-    return Continue.get(Effect.collectAll(() => ios.map((tuple) => tuple.get(0))))
+    return Continue.get(Effect.collectAll(ios.map((tuple) => tuple.get(0))))
   }
   const query = collectAllParQuery(queries.map((tuple) => tuple.get(0))).flatMap((as) => {
     const array: Array<A> = new Array(conts0.length)

@@ -12,6 +12,6 @@ export function mapErrorCause<E, E2>(f: (cause: Cause<E>) => Cause<E2>) {
   return <R, A>(self: Query<R, E, A>): Query<R, E2, A> =>
     self.foldCauseQuery(
       (c) => Query.failCause(f(c)),
-      Query.succeedNow
+      Query.succeed
     )
 }

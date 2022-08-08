@@ -8,5 +8,5 @@
  */
 export function catchAllCause<E, R2, E2, A2>(f: (cause: Cause<E>) => Query<R2, E2, A2>) {
   return <R, A>(self: Query<R, E, A>): Query<R | R2, E2, A | A2> =>
-    self.foldCauseQuery(f, Query.succeedNow)
+    self.foldCauseQuery(f, Query.succeed)
 }

@@ -5,7 +5,7 @@
  */
 export function unmaybe<R, E, A>(self: Query<R, Maybe<E>, A>): Query<R, E, Maybe<A>> {
   return self.foldQuery(
-    (e) => e.fold(Query.succeedNow(Maybe.none), (e) => Query.fail(e)),
-    (a) => Query.succeedNow(Maybe.some(a))
+    (e) => e.fold(Query.succeed(Maybe.none), (e) => Query.fail(e)),
+    (a) => Query.succeed(Maybe.some(a))
   )
 }

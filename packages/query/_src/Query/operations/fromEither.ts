@@ -3,15 +3,13 @@
  *
  * @tsplus static effect/query/Query.Ops fromEither
  */
-export function fromEither<E, A>(either: LazyArg<Either<E, A>>): Query<never, E, A> {
-  return Query.succeed(either).flatMap((either) => {
-    switch (either._tag) {
-      case "Left": {
-        return Query.fail(either.left)
-      }
-      case "Right": {
-        return Query.succeedNow(either.right)
-      }
+export function fromEither<E, A>(either: Either<E, A>): Query<never, E, A> {
+  switch (either._tag) {
+    case "Left": {
+      return Query.fail(either.left)
     }
-  })
+    case "Right": {
+      return Query.succeed(either.right)
+    }
+  }
 }

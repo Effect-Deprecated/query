@@ -8,11 +8,9 @@ import { concreteQuery } from "@effect/query/Query/operations/_internal/QueryInt
  * @tsplus static effect/query/Query.Aspects runCache
  * @tsplus pipeable effect/query/Query runCache
  */
-export function runCache(cache: LazyArg<Cache>) {
+export function runCache(cache: Cache) {
   return <R, E, A>(self: Query<R, E, A>): Effect<R, E, A> => {
-    return Effect.succeed(cache).flatMap((cache) =>
-      runCacheInternal(self).apply(currentCache.locally(cache))
-    )
+    return runCacheInternal(self).apply(currentCache.locally(cache))
   }
 }
 
@@ -31,7 +29,7 @@ export function runCacheInternal<R, E, A>(self: Query<R, E, A>): Effect<R, E, A>
         }
       }
       case "Done": {
-        return Effect.succeedNow(result.value)
+        return Effect.succeed(result.value)
       }
       case "Fail": {
         return Effect.failCause(result.cause)

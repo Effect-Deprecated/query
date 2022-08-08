@@ -4,8 +4,8 @@ import { QueryInternal } from "@effect/query/Query/operations/_internal/QueryInt
 /**
  * Constructs a query that fails with the specified error.
  *
- * @tsplus static effect/query/Query.Ops fail
+ * @tsplus static effect/query/Query.Ops failSync
  */
-export function fail<E>(error: E): Query<never, E, never> {
-  return new QueryInternal(Effect.succeed(Result.fail(Cause.fail(error))))
+export function failSync<E>(error: LazyArg<E>): Query<never, E, never> {
+  return new QueryInternal(Effect.sync(error).map(e => Result.fail(Cause.fail(e))))
 }

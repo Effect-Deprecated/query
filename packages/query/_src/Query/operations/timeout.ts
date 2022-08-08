@@ -5,7 +5,7 @@
  * @tsplus static effect/query/Query.Aspects timeout
  * @tsplus pipeable effect/query/Query timeout
  */
-export function timeout(duration: LazyArg<Duration>) {
+export function timeout(duration: Duration) {
   return <R, E, A>(self: Query<R, E, A>): Query<R, E, Maybe<A>> =>
     self.timeoutTo(Maybe.none, Maybe.some, duration)
 }

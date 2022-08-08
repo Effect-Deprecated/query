@@ -73,17 +73,17 @@ export const live: Layer<never, never, CacheRequestDataSource> = Layer.fromEffec
     return {
       identifier: "CacheDataSource",
       clear: cache.set(HashMap.empty()).zipRight(ref.set(List.empty())),
-      log: ref.get(),
+      log: ref.get,
       runAll: (requests) =>
         ref.update((list) => list.prepend(requests.map(HashSet.from).toList)).zipRight(
           Effect.forEach(requests, (requests) =>
             Effect.forEachPar(requests, (request) => {
               switch (request._tag) {
                 case "Get": {
-                  return cache.get().map((map) => map.get(request.key))
+                  return cache.get.map((map) => map.get(request.key))
                 }
                 case "GetAll": {
-                  return cache.get()
+                  return cache.get
                 }
                 case "Put": {
                   return cache.update((map) => map.set(request.key, request.value))

@@ -10,5 +10,5 @@ export function fromFunctionMaybe<A extends Request<any, any>>(
   name: string,
   f: (a: A) => Maybe<Request.GetA<A>>
 ): DataSource<never, A> {
-  return DataSource.fromFunctionMaybeEffect(name, a => Effect.succeedNow(f(a)))
+  return DataSource.fromFunctionMaybeEffect(name, a => Effect.succeed(f(a)))
 }

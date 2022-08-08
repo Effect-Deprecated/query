@@ -6,6 +6,6 @@ import { QueryInternal } from "@effect/query/Query/operations/_internal/QueryInt
  *
  * @tsplus static effect/query/Query.Ops succeed
  */
-export function succeed<A>(value: LazyArg<A>): Query<never, never, A> {
-  return new QueryInternal(Effect.succeed(Result.done(value())))
+export function succeed<A>(value: A): Query<never, never, A> {
+  return new QueryInternal(Effect.succeed(Result.done(value)))
 }

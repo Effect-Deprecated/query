@@ -8,7 +8,7 @@ import { zipWithBatchedQuery } from "@effect/query/_internal/Continue/operations
  * @tsplus pipeable effect/query/Query zipWithBatched
  */
 export function zipWithBatched<R2, E2, B, A, C>(
-  that: LazyArg<Query<R2, E2, B>>,
+  that: Query<R2, E2, B>,
   f: (a: A, b: B) => C
 ) {
   return <R, E>(self: Query<R, E, A>): Query<R | R2, E | E2, C> =>

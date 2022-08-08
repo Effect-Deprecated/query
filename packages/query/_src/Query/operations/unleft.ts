@@ -6,7 +6,7 @@
  */
 export function unleft<R, E, A, B>(self: Query<R, Either<E, B>, A>): Query<R, E, Either<A, B>> {
   return self.foldQuery(
-    (e) => e.fold((e1) => Query.fail(e1), (b) => Query.succeedNow(Either.right(b))),
-    (a) => Query.succeedNow(Either.left(a))
+    (e) => e.fold((e1) => Query.fail(e1), (b) => Query.succeed(Either.right(b))),
+    (a) => Query.succeed(Either.left(a))
   )
 }

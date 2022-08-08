@@ -12,5 +12,5 @@ export function fromFunctionBatchedMaybe<A extends Request<any, any>>(
   name: string,
   f: (requests: Chunk<A>) => Chunk<Maybe<Request.GetA<A>>>
 ): DataSource<never, A> {
-  return DataSource.fromFunctionBatchedMaybeEffect(name, (as) => Effect.succeedNow(f(as)))
+  return DataSource.fromFunctionBatchedMaybeEffect(name, (as) => Effect.succeed(f(as)))
 }

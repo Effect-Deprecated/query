@@ -6,13 +6,11 @@
  * @tsplus pipeable effect/query/Query provideSomeLayer
  */
 export function provideSomeLayer<R0, E2, A1>(
-  layer: LazyArg<Described<Layer<R0, E2, A1>>>
+  layer: Described<Layer<R0, E2, A1>>
 ) {
   return <R, E, A>(self: Query<R, E, A>): Query<R0 | Exclude<R, A1>, E | E2, A> =>
-    Query.succeed(layer).flatMap((layer) =>
-      // @ts-expect-error
-      self.provideLayer(
-        Described(Layer.environment<Exclude<R, A1>>().and(layer.value), layer.description)
-      )
+    // @ts-expect-error
+    self.provideLayer(
+      Described(Layer.environment<Exclude<R, A1>>().provideTo(layer.value), layer.description)
     )
 }

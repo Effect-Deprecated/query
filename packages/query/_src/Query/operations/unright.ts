@@ -6,7 +6,7 @@
  */
 export function unright<R, E, A, B>(self: Query<R, Either<B, E>, A>): Query<R, E, Either<B, A>> {
   return self.foldQuery(
-    (e) => e.fold((b) => Query.succeedNow(Either.left(b)), (e) => Query.fail(e)),
-    (a) => Query.succeedNow(Either.right(a))
+    (e) => e.fold((b) => Query.succeed(Either.left(b)), (e) => Query.fail(e)),
+    (a) => Query.succeed(Either.right(a))
   )
 }
