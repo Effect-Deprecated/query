@@ -15,12 +15,10 @@ import {
 export function race<R2, E2, A2>(that: LazyArg<Query<R2, E2, A2>>) {
   return <R, E, A>(self: Query<R, E, A>): Query<R | R2, E | E2, A | A2> => {
     concreteQuery(self)
+    const that0 = that()
+    concreteQuery(that0)
     return new QueryInternal(self.step.raceWith(
-      () => {
-        const that0 = that()
-        concreteQuery(that0)
-        return that0.step
-      },
+      that0.step,
       coordinate,
       coordinate
     ))

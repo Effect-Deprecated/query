@@ -97,7 +97,7 @@ export const QuoteDataSource = DataSource.fromFunctionBatchedEffect<
           }
         }
       })
-    )
+    ) as any
 )
 
 export function getQuotes(count: number): Query<FetchService, QuoteNotFoundError, Chunk<Quote>> {

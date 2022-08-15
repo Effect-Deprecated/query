@@ -16,7 +16,7 @@ import {
 export function timeoutTo<A, B, B1>(def: LazyArg<B>, f: (a: A) => B1, duration: LazyArg<Duration>) {
   return <R, E>(self: Query<R, E, A>): Query<R, E, B | B1> =>
     Query
-      .fromEffect(Effect.sleep(duration).interruptible.as(def).fork)
+      .fromEffect(Effect.sleep(duration()).interruptible.as(def()).fork)
       .flatMap((fiber) => race(self.map(f), fiber))
 }
 
