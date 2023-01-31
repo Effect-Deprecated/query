@@ -1,7 +1,0 @@
-export * as cache from "@effect/query/Cache"
-export * as completedRequestMap from "@effect/query/CompletedRequestMap"
-export * as dataSource from "@effect/query/DataSource"
-export * as described from "@effect/query/Described"
-export * as query from "@effect/query/Query"
-export * as queryFailure from "@effect/query/QueryFailure"
-export * as request from "@effect/query/Request"
