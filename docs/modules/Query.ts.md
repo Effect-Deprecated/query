@@ -1497,7 +1497,9 @@ Purdy. {@link http://simonmar.github.io/bib/papers/haxl-icfp14.pdf}
 **Signature**
 
 ```ts
-export interface Query<R, E, A> extends Query.Variance<R, E, A> {
+export interface Query<R, E, A> extends Query.Variance<R, E, A>, Effect.Effect<R, E, A> {
+  traced(trace: Debug.Trace): Query<R, E, A>
+
   /** @internal */
   readonly step: Effect.Effect<R, never, Result.Result<R, E, A>>
 }

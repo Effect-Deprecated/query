@@ -2,6 +2,7 @@
  * @since 1.0.0
  */
 import type * as Cause from "@effect/io/Cause"
+import type * as Debug from "@effect/io/Debug"
 import type * as Effect from "@effect/io/Effect"
 import type * as Layer from "@effect/io/Layer"
 import type * as Cache from "@effect/query/Cache"
@@ -70,7 +71,9 @@ export type QueryTypeId = typeof QueryTypeId
  * @since 1.0.0
  * @category models
  */
-export interface Query<R, E, A> extends Query.Variance<R, E, A> {
+export interface Query<R, E, A> extends Query.Variance<R, E, A>, Effect.Effect<R, E, A> {
+  traced(trace: Debug.Trace): Query<R, E, A>
+
   /** @internal */
   readonly step: Effect.Effect<R, never, Result.Result<R, E, A>>
 }
