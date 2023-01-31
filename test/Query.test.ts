@@ -49,7 +49,7 @@ const raceQuery = (deferred: Deferred.Deferred<never, void>): Query.Query<never,
 describe.concurrent("Query", () => {
   it.effect("n + 1 selects problem", () =>
     Effect.gen(function*($) {
-      yield* $(Query.run(UserRequest.getAllUserNames))
+      yield* $(UserRequest.getAllUserNames)
       const log = yield* $(TestConsole.output)
       expect(log).toHaveLength(2)
     }))
@@ -70,7 +70,7 @@ describe.concurrent("Query", () => {
         ),
         Query.mapError(identity)
       )
-      yield* $(Query.run(Query.collectAllPar([a, b])))
+      yield* $(Query.collectAllPar([a, b]))
       const log = yield* $(TestConsole.output)
       expect(log).toHaveLength(2)
     }))
@@ -78,7 +78,7 @@ describe.concurrent("Query", () => {
   it.effect("failure to complete request is query failure", () =>
     Effect.gen(function*($) {
       const result = yield* $(pipe(
-        Query.run(UserRequest.getUserNameById(27)),
+        UserRequest.getUserNameById(27),
         Effect.exit
       ))
       expect(Exit.unannotate(result)).toEqual(
@@ -105,7 +105,7 @@ describe.concurrent("Query", () => {
         UserRequest.getUserNameById(3),
         UserRequest.getUserNameById(4)
       )
-      yield* $(Query.run(Query.collectAllPar([a, b])))
+      yield* $(Query.collectAllPar([a, b]))
       const log = yield* $(TestConsole.output)
       expect(log).toHaveLength(2)
     }))
@@ -126,7 +126,7 @@ describe.concurrent("Query", () => {
       const ref = yield* $(Ref.make<ReadonlyArray<number>>([]))
       const query1 = Query.fromEffect(Ref.update(ref, ReadonlyArray.append(1)))
       const query2 = Query.fromEffect(Ref.update(ref, ReadonlyArray.append(2)))
-      yield* $(Query.run(Query.zipRight(query1, query2)))
+      yield* $(Query.zipRight(query1, query2))
       const result = yield* $(Ref.get(ref))
       expect(result).toEqual([1, 2])
     }))
@@ -139,7 +139,7 @@ describe.concurrent("Query", () => {
         Query.zipLeft(CacheRequest.put(1, -1))
       )
       const result = yield* $(pipe(
-        Query.run(query),
+        query,
         Effect.provideLayer(CacheRequest.layer)
       ))
       expect(result).toEqual(HashMap.make([0, 1]))
@@ -153,7 +153,7 @@ describe.concurrent("Query", () => {
         Query.zipLeft(CacheRequest.put(1, -1))
       )
       const log = yield* $(pipe(
-        Query.run(query),
+        query,
         Effect.zipRight(CacheRequest.log()),
         Effect.provideLayer(CacheRequest.layer)
       ))
@@ -169,7 +169,7 @@ describe.concurrent("Query", () => {
         Query.zipLeft(CacheRequest.put(1, -1))
       )
       const log = yield* $(pipe(
-        Query.run(query),
+        query,
         Effect.zipRight(CacheRequest.log()),
         Effect.provideLayer(CacheRequest.layer)
       ))
@@ -185,7 +185,7 @@ describe.concurrent("Query", () => {
         Query.flatMap(() => Query.succeed(0))
       )
       const log = yield* $(pipe(
-        Query.run(query),
+        query,
         Effect.zipRight(CacheRequest.log()),
         Effect.provideLayer(CacheRequest.layer)
       ))
@@ -200,7 +200,7 @@ describe.concurrent("Query", () => {
         Query.zipRight(Query.fromEffect(Ref.set(ref, false)))
       )
       yield* $(pipe(
-        Query.run(query),
+        query,
         Effect.catchAll(Effect.unit)
       ))
       const result = yield* $(Ref.get(ref))
@@ -215,7 +215,7 @@ describe.concurrent("Query", () => {
         Query.zipRight(CacheRequest.getAll())
       )
       const result = yield* $(pipe(
-        Query.run(Query.uncached(query)),
+        Query.uncached(query),
         Effect.provideLayer(CacheRequest.layer)
       ))
       expect(result).toEqual(HashMap.make([0, 1]))
@@ -226,7 +226,7 @@ describe.concurrent("Query", () => {
       const deferred = yield* $(Deferred.make<never, void>())
       const query = pipe(neverQuery, Query.zipBatched(successQuery(deferred)))
       yield* $(pipe(
-        Query.run(query),
+        query,
         Effect.fork
       ))
       const result = yield* $(Deferred.await(deferred))
@@ -238,7 +238,7 @@ describe.concurrent("Query", () => {
       const ref = yield* $(Ref.make<ReadonlyArray<number>>([]))
       const query1 = Query.fromEffect(Ref.update(ref, ReadonlyArray.prepend(1)))
       const query2 = Query.fromEffect(Ref.update(ref, ReadonlyArray.prepend(2)))
-      yield* $(Query.run(Query.zipBatchedRight(query1, query2)))
+      yield* $(Query.zipBatchedRight(query1, query2))
       const result = yield* $(Ref.get(ref))
       expect(result).toEqual([2, 1])
     }))
@@ -295,7 +295,7 @@ describe.concurrent("Query", () => {
   it.effect("data sources can be raced", () =>
     Effect.gen(function*($) {
       const deferred = yield* $(Deferred.make<never, void>())
-      yield* $(Query.run(raceQuery(deferred)))
+      yield* $(raceQuery(deferred))
       const result = yield* $(Deferred.await(deferred))
       expect(result).toBeUndefined()
     }))
@@ -306,7 +306,7 @@ describe.concurrent("Query", () => {
         UserRequest.getAllUserNames,
         Query.maxBatchSize(3)
       )
-      const result = yield* $(Query.run(query))
+      const result = yield* $(query)
       const log = yield* $(TestConsole.output)
       expect(result).toEqual(Array.from(UserRequest.userNames.values()))
       expect(log).toHaveLength(10)
@@ -339,7 +339,7 @@ describe.concurrent("Query", () => {
           )
         )
       )
-      const result = yield* $(Query.run(query))
+      const result = yield* $(query)
       expect(result).toHaveLength(Sources.totalCount)
     }))
 
@@ -350,7 +350,7 @@ describe.concurrent("Query", () => {
         Query.map(HashSet.fromIterable)
       )
       const query = Query.zipRight(TestRequest.getAll, getSome)
-      const result = yield* $(Query.run(query))
+      const result = yield* $(query)
       const log = yield* $(TestConsole.output)
       expect(result).toEqual(HashSet.fromIterable(["c", "d"]))
       expect(log).toEqual(["getAll called"])
@@ -409,7 +409,7 @@ describe.concurrent("Query", () => {
         Query.flatMap(() => Query.fromEffect(Effect.sleep(Duration.millis(500))))
       )
       const query = Query.zipPar(Query.uncached(left), Query.cached(right))
-      const fiber = yield* $(Effect.fork(Query.run(query)))
+      const fiber = yield* $(Effect.fork(query))
       yield* $(TestClock.adjust(Duration.millis(500)))
       yield* $(TestClock.adjust(Duration.millis(1000)))
       yield* $(Fiber.join(fiber))
@@ -423,7 +423,7 @@ describe.concurrent("Query", () => {
   it.effect("race - race with never", () =>
     Effect.gen(function*($) {
       const query = Query.race(Query.never(), Query.succeed(void 0))
-      const result = yield* $(Query.run(query))
+      const result = yield* $(query)
       expect(result).toBeUndefined()
     }))
 
@@ -437,7 +437,7 @@ describe.concurrent("Query", () => {
         Effect.onInterrupt(() => Deferred.succeed(deferred2, void 0))
       ))
       const right = Query.fromEffect(Deferred.await(deferred1))
-      const result = yield* $(Query.run(Query.race(left, right)))
+      const result = yield* $(Query.race(left, right))
       yield* $(Deferred.await(deferred2))
       expect(result).toBeUndefined()
     }))
@@ -456,7 +456,7 @@ describe.concurrent("Query", () => {
         Described.make(before, "before effect"),
         Described.make(after, "after effect")
       )
-      yield* $(Query.run(query))
+      yield* $(query)
       const isBeforeRan = yield* $(Ref.get(beforeRef))
       const isAfterRan = yield* $(Ref.get(afterRef))
       expect(isBeforeRan).toBe(1)

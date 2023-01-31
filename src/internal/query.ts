@@ -30,6 +30,8 @@ import * as ReadonlyArray from "@fp-ts/core/ReadonlyArray"
 import * as Chunk from "@fp-ts/data/Chunk"
 import type * as Context from "@fp-ts/data/Context"
 import * as Duration from "@fp-ts/data/Duration"
+import * as Equal from "@fp-ts/data/Equal"
+import * as Hash from "@fp-ts/data/Hash"
 import * as HashSet from "@fp-ts/data/HashSet"
 
 /** @internal */
@@ -49,8 +51,30 @@ const queryVariance = {
 
 /** @internal */
 class QueryImpl<R, E, A> implements Query.Query<R, E, A> {
+  readonly _tag = "Commit"
   readonly [QueryTypeId] = queryVariance
-  constructor(readonly step: Effect.Effect<R, never, Result.Result<R, E, A>>) {}
+  constructor(readonly step: Effect.Effect<R, never, Result.Result<R, E, A>>, readonly trace?: Debug.Trace) {}
+
+  [Equal.symbol](that: unknown) {
+    return this === that
+  }
+
+  [Hash.symbol]() {
+    return Hash.random(this)
+  }
+
+  readonly [Effect.EffectTypeId] = queryVariance
+
+  traced(trace: Debug.Trace): Query.Query<R, E, A> {
+    if (trace) {
+      return new QueryImpl(matchCauseQuery(this, failCause, succeed).step.traced(trace))
+    }
+    return this
+  }
+
+  commit() {
+    return run(this)
+  }
 }
 
 const cachingEnabled: FiberRef.FiberRef<boolean> = FiberRef.unsafeMake(true)
