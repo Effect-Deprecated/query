@@ -4,15 +4,9 @@
     "allowJs": true,
     "baseUrl": ".",
     "paths": {
-      "@effect/query": ["./packages/query/build/esm/index.js"],
-      "@effect/query/test/*": ["./packages/query/build/test/*"],
-      "@effect/query/examples/*": ["./packages/query/build/examples/*"],
-      "@effect/query/*": ["./packages/query/build/esm/*"]
+      "@effect/query": ["./build/esm/index.js"],
+      "@effect/query/*": ["./build/esm/*"]
     }
   },
-  "include": [
-    "./packages/query/build/esm/**/*.js",
-    "./packages/query/build/test/**/*.js",
-    "./packages/query/build/examples/**/*.js"
-  ]
+  "include": ["./build/esm/**/*.js"]
 }
