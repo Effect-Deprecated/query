@@ -1,5 +1,11 @@
 # @effect/query
 
+## 0.1.1
+
+### Patch Changes
+
+- [#436](https://github.com/Effect-TS/query/pull/436) [`4748027`](https://github.com/Effect-TS/query/commit/4748027bf90c00a77d259c6b853e1d66321cf326) Thanks [@mikearnaldi](https://github.com/mikearnaldi)! - Make Query a sub-type of Effect
+
 ## 0.1.0
 
 ### Minor Changes
