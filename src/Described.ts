@@ -1,7 +1,7 @@
 /**
  * @since 1.0.0
  */
-import * as internal from "@effect/query/internal/described"
+import * as internal from "@effect/query/internal_effect_untraced/described"
 
 /**
  * @since 1.0.0
