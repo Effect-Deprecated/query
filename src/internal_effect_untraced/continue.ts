@@ -1,7 +1,7 @@
 import * as Effect from "@effect/io/Effect"
 import * as Ref from "@effect/io/Ref"
 import type * as DataSource from "@effect/query/DataSource"
-import * as queryFailure from "@effect/query/internal/queryFailure"
+import * as queryFailure from "@effect/query/internal_effect_untraced/queryFailure"
 import type * as Query from "@effect/query/Query"
 import type * as Request from "@effect/query/Request"
 import type * as Either from "@fp-ts/core/Either"

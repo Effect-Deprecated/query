@@ -1,7 +1,7 @@
 import * as Debug from "@effect/io/Debug"
 import * as Effect from "@effect/io/Effect"
 import type * as CompletedRequestMap from "@effect/query/CompletedRequestMap"
-import * as completedRequestMap from "@effect/query/internal/completedRequestMap"
+import * as completedRequestMap from "@effect/query/internal_effect_untraced/completedRequestMap"
 import type * as Request from "@effect/query/Request"
 import * as Either from "@fp-ts/core/Either"
 import * as Data from "@fp-ts/data/Data"

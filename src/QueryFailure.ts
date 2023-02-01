@@ -2,7 +2,7 @@
  * @since 1.0.0
  */
 import type * as DataSource from "@effect/query/DataSource"
-import * as internal from "@effect/query/internal/queryFailure"
+import * as internal from "@effect/query/internal_effect_untraced/queryFailure"
 import type * as Request from "@effect/query/Request"
 
 /**

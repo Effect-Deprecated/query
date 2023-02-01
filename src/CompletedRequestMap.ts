@@ -1,7 +1,7 @@
 /**
  * @since 1.0.0
  */
-import * as internal from "@effect/query/internal/completedRequestMap"
+import * as internal from "@effect/query/internal_effect_untraced/completedRequestMap"
 import type * as Request from "@effect/query/Request"
 import type * as Either from "@fp-ts/core/Either"
 import type * as Option from "@fp-ts/core/Option"

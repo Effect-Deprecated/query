@@ -1,7 +1,7 @@
 import * as Cause from "@effect/io/Cause"
 import type * as Exit from "@effect/io/Exit"
-import type * as BlockedRequests from "@effect/query/internal/blockedRequests"
-import type * as Continue from "@effect/query/internal/continue"
+import type * as BlockedRequests from "@effect/query/internal_effect_untraced/blockedRequests"
+import type * as Continue from "@effect/query/internal_effect_untraced/continue"
 import * as Either from "@fp-ts/core/Either"
 
 /**
