@@ -14,9 +14,9 @@ import type * as Request from "@effect/query/Request"
 import type * as Either from "@fp-ts/core/Either"
 import type { LazyArg } from "@fp-ts/core/Function"
 import type * as Option from "@fp-ts/core/Option"
-import type * as Chunk from "@fp-ts/data/Chunk"
-import type * as Context from "@fp-ts/data/Context"
-import type * as Duration from "@fp-ts/data/Duration"
+import type * as Chunk from "@effect/data/Chunk"
+import type * as Context from "@effect/data/Context"
+import type * as Duration from "@effect/data/Duration"
 
 /**
  * @since 1.0.0
@@ -47,7 +47,7 @@ export type QueryTypeId = typeof QueryTypeId
  * the following query from a user service.
  *
  * ```ts
- * import * as Chunk from "@fp-ts/data/Chunk"
+ * import * as Chunk from "@effect/data/Chunk"
  * import * as Query from "@effect/query/Query"
  *
  * declare const getAllUserIds: Query.Query<never, never, Chunk.Chunk<number>>

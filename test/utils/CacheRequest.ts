@@ -1,3 +1,7 @@
+import * as Chunk from "@effect/data/Chunk"
+import * as Context from "@effect/data/Context"
+import * as HashMap from "@effect/data/HashMap"
+import * as HashSet from "@effect/data/HashSet"
 import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import * as Ref from "@effect/io/Ref"
@@ -7,10 +11,6 @@ import * as Request from "@effect/query/Request"
 import { pipe } from "@fp-ts/core/Function"
 import type * as Option from "@fp-ts/core/Option"
 import * as ReadonlyArray from "@fp-ts/core/ReadonlyArray"
-import * as Chunk from "@fp-ts/data/Chunk"
-import * as Context from "@fp-ts/data/Context"
-import * as HashMap from "@fp-ts/data/HashMap"
-import * as HashSet from "@fp-ts/data/HashSet"
 
 export type CacheRequest = Get | GetAll | Put
 

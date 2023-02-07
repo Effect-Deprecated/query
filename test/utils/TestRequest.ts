@@ -1,3 +1,6 @@
+import * as Chunk from "@effect/data/Chunk"
+import * as Data from "@effect/data/Data"
+import * as HashMap from "@effect/data/HashMap"
 import * as Effect from "@effect/io/Effect"
 import * as DataSource from "@effect/query/DataSource"
 import * as Query from "@effect/query/Query"
@@ -6,9 +9,6 @@ import * as TestConsole from "@effect/query/test/utils/TestConsole"
 import * as Either from "@fp-ts/core/Either"
 import { pipe } from "@fp-ts/core/Function"
 import * as Option from "@fp-ts/core/Option"
-import * as Chunk from "@fp-ts/data/Chunk"
-import * as Data from "@fp-ts/data/Data"
-import * as HashMap from "@fp-ts/data/HashMap"
 
 const testData: HashMap.HashMap<number, string> = HashMap.make(
   [1, "a"],

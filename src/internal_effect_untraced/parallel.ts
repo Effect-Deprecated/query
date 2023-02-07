@@ -1,10 +1,10 @@
+import * as Chunk from "@effect/data/Chunk"
+import * as HashMap from "@effect/data/HashMap"
 import type * as DataSource from "@effect/query/DataSource"
 import type * as BlockedRequest from "@effect/query/internal_effect_untraced/blockedRequest"
 import * as Sequential from "@effect/query/internal_effect_untraced/sequential"
 import { pipe } from "@fp-ts/core/Function"
 import * as Option from "@fp-ts/core/Option"
-import * as Chunk from "@fp-ts/data/Chunk"
-import * as HashMap from "@fp-ts/data/HashMap"
 
 /** @internal */
 export const ParallelTypeId: unique symbol = Symbol.for("@effect/query/Parallel")

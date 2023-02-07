@@ -1,3 +1,5 @@
+import * as Chunk from "@effect/data/Chunk"
+import * as HashSet from "@effect/data/HashSet"
 import * as Effect from "@effect/io/Effect"
 import * as DataSource from "@effect/query/DataSource"
 import * as Query from "@effect/query/Query"
@@ -6,8 +8,6 @@ import * as TestConsole from "@effect/query/test/utils/TestConsole"
 import * as Either from "@fp-ts/core/Either"
 import { pipe } from "@fp-ts/core/Function"
 import * as ReadonlyArray from "@fp-ts/core/ReadonlyArray"
-import * as Chunk from "@fp-ts/data/Chunk"
-import * as HashSet from "@fp-ts/data/HashSet"
 
 export const userIds: ReadonlyArray<number> = ReadonlyArray.range(1, 26)
 

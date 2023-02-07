@@ -1,11 +1,11 @@
+import * as Chunk from "@effect/data/Chunk"
+import * as Data from "@effect/data/Data"
+import * as HashMap from "@effect/data/HashMap"
 import * as Effect from "@effect/io/Effect"
 import * as DataSource from "@effect/query/DataSource"
 import * as Query from "@effect/query/Query"
 import * as Request from "@effect/query/Request"
 import { pipe } from "@fp-ts/core/Function"
-import * as Chunk from "@fp-ts/data/Chunk"
-import * as Data from "@fp-ts/data/Data"
-import * as HashMap from "@fp-ts/data/HashMap"
 
 export interface Bearer extends Data.Case {
   readonly value: string
