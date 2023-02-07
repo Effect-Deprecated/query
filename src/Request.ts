@@ -6,7 +6,7 @@ import type * as CompletedRequestMap from "@effect/query/CompletedRequestMap"
 import * as internal from "@effect/query/internal_effect_untraced/request"
 import type * as Either from "@fp-ts/core/Either"
 import type * as Option from "@fp-ts/core/Option"
-import type * as Data from "@fp-ts/data/Data"
+import type * as Data from "@effect/data/Data"
 
 /**
  * @since 1.0.0

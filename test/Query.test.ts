@@ -1,3 +1,6 @@
+import * as Duration from "@effect/data/Duration"
+import * as HashMap from "@effect/data/HashMap"
+import * as HashSet from "@effect/data/HashSet"
 import * as Deferred from "@effect/io/Deferred"
 import * as Effect from "@effect/io/Effect"
 import * as Exit from "@effect/io/Exit"
@@ -19,9 +22,6 @@ import * as UserRequest from "@effect/query/test/utils/UserRequest"
 import { identity, pipe } from "@fp-ts/core/Function"
 import * as Option from "@fp-ts/core/Option"
 import * as ReadonlyArray from "@fp-ts/core/ReadonlyArray"
-import * as Duration from "@fp-ts/data/Duration"
-import * as HashMap from "@fp-ts/data/HashMap"
-import * as HashSet from "@fp-ts/data/HashSet"
 import { describe, expect } from "vitest"
 
 interface NeverRequest extends Request.Request<never, never> {}

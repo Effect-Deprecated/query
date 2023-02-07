@@ -1,3 +1,7 @@
+import * as Chunk from "@effect/data/Chunk"
+import type * as Context from "@effect/data/Context"
+import * as Equal from "@effect/data/Equal"
+import * as Hash from "@effect/data/Hash"
 import * as Cause from "@effect/io/Cause"
 import * as Debug from "@effect/io/Debug"
 import * as Effect from "@effect/io/Effect"
@@ -10,10 +14,6 @@ import type * as Request from "@effect/query/Request"
 import * as Either from "@fp-ts/core/Either"
 import { pipe } from "@fp-ts/core/Function"
 import type * as Option from "@fp-ts/core/Option"
-import * as Chunk from "@fp-ts/data/Chunk"
-import type * as Context from "@fp-ts/data/Context"
-import * as Equal from "@fp-ts/data/Equal"
-import * as Hash from "@fp-ts/data/Hash"
 
 /** @internal */
 const DataSourceSymbolKey = "@effect/query/DataSource"

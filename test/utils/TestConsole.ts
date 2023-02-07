@@ -1,8 +1,8 @@
+import * as Context from "@effect/data/Context"
 import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import * as Ref from "@effect/io/Ref"
 import * as ReadonlyArray from "@fp-ts/core/ReadonlyArray"
-import * as Context from "@fp-ts/data/Context"
 
 export interface TestConsole {
   readonly lines: Ref.Ref<ReadonlyArray<string>>

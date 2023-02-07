@@ -5,10 +5,10 @@ import * as internal from "@effect/query/internal_effect_untraced/completedReque
 import type * as Request from "@effect/query/Request"
 import type * as Either from "@fp-ts/core/Either"
 import type * as Option from "@fp-ts/core/Option"
-import type * as Context from "@fp-ts/data/Context"
-import type * as HashMap from "@fp-ts/data/HashMap"
-import type * as HashSet from "@fp-ts/data/HashSet"
-import type * as MutableRef from "@fp-ts/data/MutableRef"
+import type * as Context from "@effect/data/Context"
+import type * as HashMap from "@effect/data/HashMap"
+import type * as HashSet from "@effect/data/HashSet"
+import type * as MutableRef from "@effect/data/MutableRef"
 
 /**
  * @since 1.0.0
