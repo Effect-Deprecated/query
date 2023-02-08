@@ -46,60 +46,64 @@ export const tagged = <R extends Request.Request<any, any> & { _tag: string }>(
     })
 
 /** @internal */
-export const complete = Debug.dual<
+export const complete = Debug.dualWithTrace<
+  <A extends Request.Request<any, any>>(
+    result: Request.Request.Result<A>
+  ) => (self: A) => Effect.Effect<CompletedRequestMap.CompletedRequestMap, never, void>,
   <A extends Request.Request<any, any>>(
     self: A,
     result: Request.Request.Result<A>
-  ) => Effect.Effect<CompletedRequestMap.CompletedRequestMap, never, void>,
-  <A extends Request.Request<any, any>>(
-    result: Request.Request.Result<A>
-  ) => (self: A) => Effect.Effect<CompletedRequestMap.CompletedRequestMap, never, void>
->(2, (self, result) =>
-  Effect.serviceWith(
-    completedRequestMap.Tag,
-    (map) => completedRequestMap.set(map, self, result)
-  ))
+  ) => Effect.Effect<CompletedRequestMap.CompletedRequestMap, never, void>
+>(2, (trace) =>
+  (self, result) =>
+    Effect.serviceWith(
+      completedRequestMap.Tag,
+      (map) => completedRequestMap.set(map, self, result)
+    ).traced(trace))
 
 /** @internal */
-export const completeEffect = Debug.dual<
+export const completeEffect = Debug.dualWithTrace<
+  <A extends Request.Request<any, any>, R>(
+    effect: Effect.Effect<R, Request.Request.Error<A>, Request.Request.Success<A>>
+  ) => (self: A) => Effect.Effect<R | CompletedRequestMap.CompletedRequestMap, never, void>,
   <A extends Request.Request<any, any>, R>(
     self: A,
     effect: Effect.Effect<R, Request.Request.Error<A>, Request.Request.Success<A>>
-  ) => Effect.Effect<R | CompletedRequestMap.CompletedRequestMap, never, void>,
-  <A extends Request.Request<any, any>, R>(
-    effect: Effect.Effect<R, Request.Request.Error<A>, Request.Request.Success<A>>
-  ) => (self: A) => Effect.Effect<R | CompletedRequestMap.CompletedRequestMap, never, void>
->(2, (self, effect) =>
-  Effect.matchEffect(
-    effect,
-    // @ts-expect-error
-    (error) => complete(self, Either.left(error)),
-    // @ts-expect-error
-    (value) => complete(self, Either.right(value))
-  ))
+  ) => Effect.Effect<R | CompletedRequestMap.CompletedRequestMap, never, void>
+>(2, (trace) =>
+  (self, effect) =>
+    Effect.matchEffect(
+      effect,
+      // @ts-expect-error
+      (error) => complete(self, Either.left(error)),
+      // @ts-expect-error
+      (value) => complete(self, Either.right(value))
+    ).traced(trace))
 
 /** @internal */
-export const fail = Debug.dual<
+export const fail = Debug.dualWithTrace<
+  <A extends Request.Request<any, any>>(
+    error: Request.Request.Error<A>
+  ) => (self: A) => Effect.Effect<CompletedRequestMap.CompletedRequestMap, never, void>,
   <A extends Request.Request<any, any>>(
     self: A,
     error: Request.Request.Error<A>
-  ) => Effect.Effect<CompletedRequestMap.CompletedRequestMap, never, void>,
-  <A extends Request.Request<any, any>>(
-    error: Request.Request.Error<A>
-  ) => (self: A) => Effect.Effect<CompletedRequestMap.CompletedRequestMap, never, void>
->(2, (self, error) =>
-  // @ts-expect-error
-  complete(self, Either.left(error)))
+  ) => Effect.Effect<CompletedRequestMap.CompletedRequestMap, never, void>
+>(2, (trace) =>
+  (self, error) =>
+    // @ts-expect-error
+    complete(self, Either.left(error)).traced(trace))
 
 /** @internal */
-export const succeed = Debug.dual<
+export const succeed = Debug.dualWithTrace<
+  <A extends Request.Request<any, any>>(
+    value: Request.Request.Success<A>
+  ) => (self: A) => Effect.Effect<CompletedRequestMap.CompletedRequestMap, never, void>,
   <A extends Request.Request<any, any>>(
     self: A,
     value: Request.Request.Success<A>
-  ) => Effect.Effect<CompletedRequestMap.CompletedRequestMap, never, void>,
-  <A extends Request.Request<any, any>>(
-    value: Request.Request.Success<A>
-  ) => (self: A) => Effect.Effect<CompletedRequestMap.CompletedRequestMap, never, void>
->(2, (self, value) =>
-  // @ts-expect-error
-  complete(self, Either.right(value)))
+  ) => Effect.Effect<CompletedRequestMap.CompletedRequestMap, never, void>
+>(2, (trace) =>
+  (self, value) =>
+    // @ts-expect-error
+    complete(self, Either.right(value)).traced(trace))

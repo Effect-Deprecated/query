@@ -88,21 +88,21 @@ export const absolve = Debug.untracedMethod(() =>
 
 /** @internal */
 export const around = Debug.untracedDual<
+  <R2, A2, R3, _>(
+    before: Described.Described<Effect.Effect<R2, never, A2>>,
+    after: Described.Described<(a: A2) => Effect.Effect<R3, never, _>>
+  ) => <R, E, A>(self: Query.Query<R, E, A>) => Query.Query<R | R2 | R3, E, A>,
   <R, E, A, R2, A2, R3, _>(
     self: Query.Query<R, E, A>,
     before: Described.Described<Effect.Effect<R2, never, A2>>,
     after: Described.Described<(a: A2) => Effect.Effect<R3, never, _>>
-  ) => Query.Query<R | R2 | R3, E, A>,
-  <R2, A2, R3, _>(
-    before: Described.Described<Effect.Effect<R2, never, A2>>,
-    after: Described.Described<(a: A2) => Effect.Effect<R3, never, _>>
-  ) => <R, E, A>(self: Query.Query<R, E, A>) => Query.Query<R | R2 | R3, E, A>
+  ) => Query.Query<R | R2 | R3, E, A>
 >(3, () => (self, before, after) => mapDataSources(self, (source) => dataSource.around(source, before, after)))
 
 /** @internal */
 export const as = Debug.untracedDual<
-  <R, E, A, A2>(self: Query.Query<R, E, A>, value: A2) => Query.Query<R, E, A2>,
-  <A2>(value: A2) => <R, E, A>(self: Query.Query<R, E, A>) => Query.Query<R, E, A2>
+  <A2>(value: A2) => <R, E, A>(self: Query.Query<R, E, A>) => Query.Query<R, E, A2>,
+  <R, E, A, A2>(self: Query.Query<R, E, A>, value: A2) => Query.Query<R, E, A2>
 >(2, () => (self, value) => map(self, () => value))
 
 /** @internal */
@@ -126,24 +126,24 @@ export const cached = Debug.untracedMethod(() =>
 
 /** @internal */
 export const catchAll = Debug.untracedDual<
+  <E, R2, E2, A2>(
+    f: (error: E) => Query.Query<R2, E2, A2>
+  ) => <R, A>(self: Query.Query<R, E, A>) => Query.Query<R | R2, E2, A | A2>,
   <R, A, E, R2, E2, A2>(
     self: Query.Query<R, E, A>,
     f: (error: E) => Query.Query<R2, E2, A2>
-  ) => Query.Query<R | R2, E2, A | A2>,
-  <E, R2, E2, A2>(
-    f: (error: E) => Query.Query<R2, E2, A2>
-  ) => <R, A>(self: Query.Query<R, E, A>) => Query.Query<R | R2, E2, A | A2>
+  ) => Query.Query<R | R2, E2, A | A2>
 >(2, (restore) => (self, f) => matchQuery(self, restore(f), succeed))
 
 /** @internal */
 export const catchAllCause = Debug.untracedDual<
+  <E, R2, E2, A2>(
+    f: (cause: Cause.Cause<E>) => Query.Query<R2, E2, A2>
+  ) => <R, A>(self: Query.Query<R, E, A>) => Query.Query<R | R2, E2, A | A2>,
   <R, E, A, R2, E2, A2>(
     self: Query.Query<R, E, A>,
     f: (cause: Cause.Cause<E>) => Query.Query<R2, E2, A2>
-  ) => Query.Query<R | R2, E2, A | A2>,
-  <E, R2, E2, A2>(
-    f: (cause: Cause.Cause<E>) => Query.Query<R2, E2, A2>
-  ) => <R, A>(self: Query.Query<R, E, A>) => Query.Query<R | R2, E2, A | A2>
+  ) => Query.Query<R | R2, E2, A | A2>
 >(2, (restore) => (self, f) => matchCauseQuery(self, restore(f), succeed))
 
 /** @internal */
@@ -186,13 +186,13 @@ export const contextWithQuery = Debug.untracedMethod((restore) =>
 
 /** @internal */
 export const contramapContext = Debug.dualWithTrace<
+  <R0, R>(
+    f: Described.Described<(context: Context.Context<R0>) => Context.Context<R>>
+  ) => <E, A>(self: Query.Query<R, E, A>) => Query.Query<R0, E, A>,
   <R, E, A, R0>(
     self: Query.Query<R, E, A>,
     f: Described.Described<(context: Context.Context<R0>) => Context.Context<R>>
-  ) => Query.Query<R0, E, A>,
-  <R0, R>(
-    f: Described.Described<(context: Context.Context<R0>) => Context.Context<R>>
-  ) => <E, A>(self: Query.Query<R, E, A>) => Query.Query<R0, E, A>
+  ) => Query.Query<R0, E, A>
 >(
   2,
   (trace, restore) =>
@@ -227,13 +227,13 @@ export const either = Debug.untracedMethod(() =>
 
 /** @internal */
 export const ensuring = Debug.untracedDual<
+  <R2, E2, A2>(
+    finalizer: Query.Query<R2, E2, A2>
+  ) => <R, E, A>(self: Query.Query<R, E, A>) => Query.Query<R | R2, E | E2, A>,
   <R, E, A, R2, E2, A2>(
     self: Query.Query<R, E, A>,
     finalizer: Query.Query<R2, E2, A2>
-  ) => Query.Query<R | R2, E | E2, A>,
-  <R2, E2, A2>(
-    finalizer: Query.Query<R2, E2, A2>
-  ) => <R, E, A>(self: Query.Query<R, E, A>) => Query.Query<R | R2, E | E2, A>
+  ) => Query.Query<R | R2, E | E2, A>
 >(2, () =>
   (self, finalizer) =>
     matchCauseQuery(self, (cause1) =>
@@ -269,13 +269,13 @@ export const failCauseSync = Debug.methodWithTrace((trace, restore) =>
 
 /** @internal */
 export const flatMap = Debug.dualWithTrace<
+  <A, R2, E2, A2>(
+    f: (a: A) => Query.Query<R2, E2, A2>
+  ) => <R, E>(self: Query.Query<R, E, A>) => Query.Query<R | R2, E | E2, A2>,
   <R, E, A, R2, E2, A2>(
     self: Query.Query<R, E, A>,
     f: (a: A) => Query.Query<R2, E2, A2>
-  ) => Query.Query<R | R2, E | E2, A2>,
-  <A, R2, E2, A2>(
-    f: (a: A) => Query.Query<R2, E2, A2>
-  ) => <R, E>(self: Query.Query<R, E, A>) => Query.Query<R | R2, E | E2, A2>
+  ) => Query.Query<R | R2, E | E2, A2>
 >(2, (trace, restore) =>
   (self, f) =>
     new QueryImpl(
@@ -309,13 +309,13 @@ export const flatten = Debug.untracedMethod(() =>
 /** @internal */
 export const forEach = Debug.untracedDual<
   <A, R, E, B>(
-    elements: Iterable<A>,
-    f: (a: A) => Query.Query<R, E, B>
-  ) => Query.Query<R, E, Chunk.Chunk<B>>,
-  <A, R, E, B>(
     f: (a: A) => Query.Query<R, E, B>
   ) => (
     elements: Iterable<A>
+  ) => Query.Query<R, E, Chunk.Chunk<B>>,
+  <A, R, E, B>(
+    elements: Iterable<A>,
+    f: (a: A) => Query.Query<R, E, B>
   ) => Query.Query<R, E, Chunk.Chunk<B>>
 >(2, (restore) =>
   <A, R, E, B>(elements: Iterable<A>, f: (a: A) => Query.Query<R, E, B>) => {
@@ -339,13 +339,13 @@ export const forEach = Debug.untracedDual<
 /** @internal */
 export const forEachBatched = Debug.untracedDual<
   <A, R, E, B>(
-    elements: Iterable<A>,
-    f: (a: A) => Query.Query<R, E, B>
-  ) => Query.Query<R, E, Chunk.Chunk<B>>,
-  <A, R, E, B>(
     f: (a: A) => Query.Query<R, E, B>
   ) => (
     elements: Iterable<A>
+  ) => Query.Query<R, E, Chunk.Chunk<B>>,
+  <A, R, E, B>(
+    elements: Iterable<A>,
+    f: (a: A) => Query.Query<R, E, B>
   ) => Query.Query<R, E, Chunk.Chunk<B>>
 >(2, (restore) =>
   <A, R, E, B>(elements: Iterable<A>, f: (a: A) => Query.Query<R, E, B>) => {
@@ -369,13 +369,13 @@ export const forEachBatched = Debug.untracedDual<
 /** @internal */
 export const forEachPar = Debug.untracedDual<
   <A, R, E, B>(
-    elements: Iterable<A>,
-    f: (a: A) => Query.Query<R, E, B>
-  ) => Query.Query<R, E, Chunk.Chunk<B>>,
-  <A, R, E, B>(
     f: (a: A) => Query.Query<R, E, B>
   ) => (
     elements: Iterable<A>
+  ) => Query.Query<R, E, Chunk.Chunk<B>>,
+  <A, R, E, B>(
+    elements: Iterable<A>,
+    f: (a: A) => Query.Query<R, E, B>
   ) => Query.Query<R, E, Chunk.Chunk<B>>
 >(2, (restore) =>
   (elements, f) =>
@@ -476,8 +476,8 @@ export const left = Debug.untracedMethod(() =>
 
 /** @internal */
 export const map = Debug.dualWithTrace<
-  <R, E, A, B>(self: Query.Query<R, E, A>, f: (a: A) => B) => Query.Query<R, E, B>,
-  <A, B>(f: (a: A) => B) => <R, E>(self: Query.Query<R, E, A>) => Query.Query<R, E, B>
+  <A, B>(f: (a: A) => B) => <R, E>(self: Query.Query<R, E, A>) => Query.Query<R, E, B>,
+  <R, E, A, B>(self: Query.Query<R, E, A>, f: (a: A) => B) => Query.Query<R, E, B>
 >(2, (trace, restore) =>
   (self, f) =>
     new QueryImpl(
@@ -489,8 +489,8 @@ export const map = Debug.dualWithTrace<
 
 /** @internal */
 export const mapBoth = Debug.untracedDual<
-  <R, E, E2, A, A2>(self: Query.Query<R, E, A>, f: (e: E) => E2, g: (a: A) => A2) => Query.Query<R, E2, A2>,
-  <E, E2, A, A2>(f: (e: E) => E2, g: (a: A) => A2) => <R>(self: Query.Query<R, E, A>) => Query.Query<R, E2, A2>
+  <E, E2, A, A2>(f: (e: E) => E2, g: (a: A) => A2) => <R>(self: Query.Query<R, E, A>) => Query.Query<R, E2, A2>,
+  <R, E, E2, A, A2>(self: Query.Query<R, E, A>, f: (e: E) => E2, g: (a: A) => A2) => Query.Query<R, E2, A2>
 >(3, (restore) =>
   (self, f, g) =>
     matchQuery(
@@ -501,13 +501,13 @@ export const mapBoth = Debug.untracedDual<
 
 /** @internal */
 export const mapDataSources = Debug.dualWithTrace<
+  <R, A, R2>(
+    f: (dataSource: DataSource.DataSource<R, A>) => DataSource.DataSource<R2, A>
+  ) => <E>(self: Query.Query<R, E, A>) => Query.Query<R | R2, E, A>,
   <R, E, A, R2>(
     self: Query.Query<R, E, A>,
     f: (dataSource: DataSource.DataSource<R, A>) => DataSource.DataSource<R2, A>
-  ) => Query.Query<R | R2, E, A>,
-  <R, A, R2>(
-    f: (dataSource: DataSource.DataSource<R, A>) => DataSource.DataSource<R2, A>
-  ) => <E>(self: Query.Query<R, E, A>) => Query.Query<R | R2, E, A>
+  ) => Query.Query<R | R2, E, A>
 >(2, (trace, restore) =>
   (self, f) =>
     new QueryImpl(
@@ -519,38 +519,38 @@ export const mapDataSources = Debug.dualWithTrace<
 
 /** @internal */
 export const mapError = Debug.untracedDual<
-  <R, A, E, E2>(self: Query.Query<R, E, A>, f: (e: E) => E2) => Query.Query<R, E2, A>,
-  <E, E2>(f: (e: E) => E2) => <R, A>(self: Query.Query<R, E, A>) => Query.Query<R, E2, A>
+  <E, E2>(f: (e: E) => E2) => <R, A>(self: Query.Query<R, E, A>) => Query.Query<R, E2, A>,
+  <R, A, E, E2>(self: Query.Query<R, E, A>, f: (e: E) => E2) => Query.Query<R, E2, A>
 >(2, (restore) => (self, f) => mapBoth(self, restore(f), identity))
 
 /** @internal */
 export const mapErrorCause = Debug.untracedDual<
-  <R, E, A, E2>(self: Query.Query<R, E, A>, f: (cause: Cause.Cause<E>) => Cause.Cause<E2>) => Query.Query<R, E2, A>,
-  <E, E2>(f: (cause: Cause.Cause<E>) => Cause.Cause<E2>) => <R, A>(self: Query.Query<R, E, A>) => Query.Query<R, E2, A>
+  <E, E2>(f: (cause: Cause.Cause<E>) => Cause.Cause<E2>) => <R, A>(self: Query.Query<R, E, A>) => Query.Query<R, E2, A>,
+  <R, E, A, E2>(self: Query.Query<R, E, A>, f: (cause: Cause.Cause<E>) => Cause.Cause<E2>) => Query.Query<R, E2, A>
 >(2, (restore) => (self, f) => matchCauseQuery(self, (cause) => failCause(restore(f)(cause)), succeed))
 
 /** @internal */
 export const mapEffect = Debug.untracedDual<
+  <A, R2, E2, A2>(
+    f: (a: A) => Effect.Effect<R2, E2, A2>
+  ) => <R, E>(self: Query.Query<R, E, A>) => Query.Query<R | R2, E | E2, A2>,
   <R, E, A, R2, E2, A2>(
     self: Query.Query<R, E, A>,
     f: (a: A) => Effect.Effect<R2, E2, A2>
-  ) => Query.Query<R | R2, E | E2, A2>,
-  <A, R2, E2, A2>(
-    f: (a: A) => Effect.Effect<R2, E2, A2>
-  ) => <R, E>(self: Query.Query<R, E, A>) => Query.Query<R | R2, E | E2, A2>
+  ) => Query.Query<R | R2, E | E2, A2>
 >(2, (restore) => (self, f) => flatMap(self, (a) => fromEffect(restore(f)(a))))
 
 /** @internal */
 export const match = Debug.untracedDual<
+  <E, Z, A>(
+    onFailure: (error: E) => Z,
+    onSuccess: (value: A) => Z
+  ) => <R>(self: Query.Query<R, E, A>) => Query.Query<R, never, Z>,
   <R, E, A, Z>(
     self: Query.Query<R, E, A>,
     onFailure: (error: E) => Z,
     onSuccess: (value: A) => Z
-  ) => Query.Query<R, never, Z>,
-  <E, Z, A>(
-    onFailure: (error: E) => Z,
-    onSuccess: (value: A) => Z
-  ) => <R>(self: Query.Query<R, E, A>) => Query.Query<R, never, Z>
+  ) => Query.Query<R, never, Z>
 >(3, (restore) =>
   (self, onFailure, onSuccess) =>
     matchQuery(
@@ -561,15 +561,15 @@ export const match = Debug.untracedDual<
 
 /** @internal */
 export const matchCauseQuery = Debug.dualWithTrace<
+  <E, R2, E2, A2, A, R3, E3, A3>(
+    onFailure: (cause: Cause.Cause<E>) => Query.Query<R2, E2, A2>,
+    onSuccess: (value: A) => Query.Query<R3, E3, A3>
+  ) => <R>(self: Query.Query<R, E, A>) => Query.Query<R | R2 | R3, E2 | E3, A2 | A3>,
   <R, E, A, R2, E2, A2, R3, E3, A3>(
     self: Query.Query<R, E, A>,
     onFailure: (cause: Cause.Cause<E>) => Query.Query<R2, E2, A2>,
     onSuccess: (value: A) => Query.Query<R3, E3, A3>
-  ) => Query.Query<R | R2 | R3, E2 | E3, A2 | A3>,
-  <E, R2, E2, A2, A, R3, E3, A3>(
-    onFailure: (cause: Cause.Cause<E>) => Query.Query<R2, E2, A2>,
-    onSuccess: (value: A) => Query.Query<R3, E3, A3>
-  ) => <R>(self: Query.Query<R, E, A>) => Query.Query<R | R2 | R3, E2 | E3, A2 | A3>
+  ) => Query.Query<R | R2 | R3, E2 | E3, A2 | A3>
 >(3, (trace, restore) =>
   <R, E, A, R2, E2, A2, R3, E3, A3>(
     self: Query.Query<R, E, A>,
@@ -607,15 +607,15 @@ export const matchCauseQuery = Debug.dualWithTrace<
 
 /** @internal */
 export const matchQuery = Debug.untracedDual<
+  <E, R2, E2, A2, A, R3, E3, A3>(
+    onFailure: (error: E) => Query.Query<R2, E2, A2>,
+    onSuccess: (value: A) => Query.Query<R3, E3, A3>
+  ) => <R>(self: Query.Query<R, E, A>) => Query.Query<R | R2 | R3, E2 | E3, A2 | A3>,
   <R, E, A, R2, E2, A2, R3, E3, A3>(
     self: Query.Query<R, E, A>,
     onFailure: (error: E) => Query.Query<R2, E2, A2>,
     onSuccess: (value: A) => Query.Query<R3, E3, A3>
-  ) => Query.Query<R | R2 | R3, E2 | E3, A2 | A3>,
-  <E, R2, E2, A2, A, R3, E3, A3>(
-    onFailure: (error: E) => Query.Query<R2, E2, A2>,
-    onSuccess: (value: A) => Query.Query<R3, E3, A3>
-  ) => <R>(self: Query.Query<R, E, A>) => Query.Query<R | R2 | R3, E2 | E3, A2 | A3>
+  ) => Query.Query<R | R2 | R3, E2 | E3, A2 | A3>
 >(3, (restore) =>
   (self, onFailure, onSuccess) =>
     matchCauseQuery(self, (cause) =>
@@ -626,8 +626,8 @@ export const matchQuery = Debug.untracedDual<
 
 /** @internal */
 export const maxBatchSize = Debug.untracedDual<
-  <R, E, A>(self: Query.Query<R, E, A>, n: number) => Query.Query<R, E, A>,
-  (n: number) => <R, E, A>(self: Query.Query<R, E, A>) => Query.Query<R, E, A>
+  (n: number) => <R, E, A>(self: Query.Query<R, E, A>) => Query.Query<R, E, A>,
+  <R, E, A>(self: Query.Query<R, E, A>, n: number) => Query.Query<R, E, A>
 >(2, () => (self, n) => mapDataSources(self, (source) => dataSource.batchN(source, n)))
 
 /** @internal */
@@ -655,20 +655,20 @@ export const orDie = Debug.untracedMethod(() =>
 
 /** @internal */
 export const orDieWith = Debug.untracedDual<
-  <R, E, A>(self: Query.Query<R, E, A>, f: (error: E) => unknown) => Query.Query<R, never, A>,
-  <E>(f: (error: E) => unknown) => <R, A>(self: Query.Query<R, E, A>) => Query.Query<R, never, A>
+  <E>(f: (error: E) => unknown) => <R, A>(self: Query.Query<R, E, A>) => Query.Query<R, never, A>,
+  <R, E, A>(self: Query.Query<R, E, A>, f: (error: E) => unknown) => Query.Query<R, never, A>
 >(2, (restore) => (self, f) => matchQuery(self, (e) => die(restore(f)(e)), succeed))
 
 /** @internal */
 export const partitionQuery = Debug.untracedDual<
   <A, R, E, B>(
-    elements: Iterable<A>,
-    f: (a: A) => Query.Query<R, E, B>
-  ) => Query.Query<R, never, readonly [Chunk.Chunk<E>, Chunk.Chunk<B>]>,
-  <A, R, E, B>(
     f: (a: A) => Query.Query<R, E, B>
   ) => (
     elements: Iterable<A>
+  ) => Query.Query<R, never, readonly [Chunk.Chunk<E>, Chunk.Chunk<B>]>,
+  <A, R, E, B>(
+    elements: Iterable<A>,
+    f: (a: A) => Query.Query<R, E, B>
   ) => Query.Query<R, never, readonly [Chunk.Chunk<E>, Chunk.Chunk<B>]>
 >(2, (restore) =>
   (elements, f) =>
@@ -680,13 +680,13 @@ export const partitionQuery = Debug.untracedDual<
 /** @internal */
 export const partitionQueryPar = Debug.untracedDual<
   <A, R, E, B>(
-    elements: Iterable<A>,
-    f: (a: A) => Query.Query<R, E, B>
-  ) => Query.Query<R, never, readonly [Chunk.Chunk<E>, Chunk.Chunk<B>]>,
-  <A, R, E, B>(
     f: (a: A) => Query.Query<R, E, B>
   ) => (
     elements: Iterable<A>
+  ) => Query.Query<R, never, readonly [Chunk.Chunk<E>, Chunk.Chunk<B>]>,
+  <A, R, E, B>(
+    elements: Iterable<A>,
+    f: (a: A) => Query.Query<R, E, B>
   ) => Query.Query<R, never, readonly [Chunk.Chunk<E>, Chunk.Chunk<B>]>
 >(2, (restore) =>
   (elements, f) =>
@@ -697,26 +697,26 @@ export const partitionQueryPar = Debug.untracedDual<
 
 /** @internal */
 export const provideContext = Debug.untracedDual<
-  <R, E, A>(
-    self: Query.Query<R, E, A>,
-    context: Described.Described<Context.Context<R>>
-  ) => Query.Query<never, E, A>,
   <R>(
     context: Described.Described<Context.Context<R>>
   ) => <E, A>(
     self: Query.Query<R, E, A>
+  ) => Query.Query<never, E, A>,
+  <R, E, A>(
+    self: Query.Query<R, E, A>,
+    context: Described.Described<Context.Context<R>>
   ) => Query.Query<never, E, A>
 >(2, () => (self, context) => contramapContext(self, described.make(() => context.value, context.description)))
 
 /** @internal */
 export const provideLayer = Debug.dualWithTrace<
+  <R0, E2, R>(
+    layer: Described.Described<Layer.Layer<R0, E2, R>>
+  ) => <E, A>(self: Query.Query<R, E, A>) => Query.Query<R0, E | E2, A>,
   <R, E, A, R0, E2>(
     self: Query.Query<R, E, A>,
     layer: Described.Described<Layer.Layer<R0, E2, R>>
-  ) => Query.Query<R0, E | E2, A>,
-  <R0, E2, R>(
-    layer: Described.Described<Layer.Layer<R0, E2, R>>
-  ) => <E, A>(self: Query.Query<R, E, A>) => Query.Query<R0, E | E2, A>
+  ) => Query.Query<R0, E | E2, A>
 >(2, (trace) =>
   <R, E, A, R0, E2>(
     self: Query.Query<R, E, A>,
@@ -736,13 +736,13 @@ export const provideLayer = Debug.dualWithTrace<
 
 /** @internal */
 export const provideSomeLayer = Debug.untracedDual<
+  <R2, E2, A2>(
+    layer: Described.Described<Layer.Layer<R2, E2, A2>>
+  ) => <R, E, A>(self: Query.Query<R, E, A>) => Query.Query<R2 | Exclude<R, A2>, E2 | E, A>,
   <R, E, A, R2, E2, A2>(
     self: Query.Query<R, E, A>,
     layer: Described.Described<Layer.Layer<R2, E2, A2>>
-  ) => Query.Query<R2 | Exclude<R, A2>, E | E2, A>,
-  <R2, E2, A2>(
-    layer: Described.Described<Layer.Layer<R2, E2, A2>>
-  ) => <R, E, A>(self: Query.Query<R, E, A>) => Query.Query<R2 | Exclude<R, A2>, E2 | E, A>
+  ) => Query.Query<R2 | Exclude<R, A2>, E | E2, A>
 >(
   2,
   () =>
@@ -756,13 +756,13 @@ export const provideSomeLayer = Debug.untracedDual<
 
 /** @internal */
 export const race = Debug.dualWithTrace<
+  <R2, E2, A2>(
+    that: Query.Query<R2, E2, A2>
+  ) => <R, E, A>(self: Query.Query<R, E, A>) => Query.Query<R | R2, E | E2, A | A2>,
   <R, E, A, R2, E2, A2>(
     self: Query.Query<R, E, A>,
     that: Query.Query<R2, E2, A2>
-  ) => Query.Query<R | R2, E | E2, A | A2>,
-  <R2, E2, A2>(
-    that: Query.Query<R2, E2, A2>
-  ) => <R, E, A>(self: Query.Query<R, E, A>) => Query.Query<R | R2, E | E2, A | A2>
+  ) => Query.Query<R | R2, E | E2, A | A2>
 >(2, (trace) =>
   <R, E, A, R2, E2, A2>(self: Query.Query<R, E, A>, that: Query.Query<R2, E2, A2>) => {
     const coordinate = (
@@ -823,21 +823,21 @@ export const race = Debug.dualWithTrace<
 
 /** @internal */
 export const refineOrDie = Debug.untracedDual<
-  <R, E, A, E2>(self: Query.Query<R, E, A>, pf: (error: E) => Option.Option<E2>) => Query.Query<R, E2, A>,
-  <E, E2>(pf: (error: E) => Option.Option<E2>) => <R, A>(self: Query.Query<R, E, A>) => Query.Query<R, E2, A>
+  <E, E2>(pf: (error: E) => Option.Option<E2>) => <R, A>(self: Query.Query<R, E, A>) => Query.Query<R, E2, A>,
+  <R, E, A, E2>(self: Query.Query<R, E, A>, pf: (error: E) => Option.Option<E2>) => Query.Query<R, E2, A>
 >(2, (restore) => (self, pf) => refineOrDieWith(self, restore(pf), identity))
 
 /** @internal */
 export const refineOrDieWith = Debug.untracedDual<
+  <E, E2>(
+    pf: (error: E) => Option.Option<E2>,
+    f: (error: E) => unknown
+  ) => <R, A>(self: Query.Query<R, E, A>) => Query.Query<R, E2, A>,
   <R, E, A, E2>(
     self: Query.Query<R, E, A>,
     pf: (error: E) => Option.Option<E2>,
     f: (error: E) => unknown
-  ) => Query.Query<R, E2, A>,
-  <E, E2>(
-    pf: (error: E) => Option.Option<E2>,
-    f: (error: E) => unknown
-  ) => <R, A>(self: Query.Query<R, E, A>) => Query.Query<R, E2, A>
+  ) => Query.Query<R, E2, A>
 >(3, (restore) =>
   (self, pf, f) =>
     catchAll(
@@ -865,8 +865,8 @@ export const run = Debug.methodWithTrace((trace) =>
 
 /** @internal */
 export const runCache = Debug.dualWithTrace<
-  <R, E, A>(self: Query.Query<R, E, A>, cache: Cache.Cache) => Effect.Effect<R, E, A>,
-  (cache: Cache.Cache) => <R, E, A>(self: Query.Query<R, E, A>) => Effect.Effect<R, E, A>
+  (cache: Cache.Cache) => <R, E, A>(self: Query.Query<R, E, A>) => Effect.Effect<R, E, A>,
+  <R, E, A>(self: Query.Query<R, E, A>, cache: Cache.Cache) => Effect.Effect<R, E, A>
 >(2, (trace) =>
   <R, E, A>(self: Query.Query<R, E, A>, cache: Cache.Cache) => {
     const runInternal = (query: Query.Query<R, E, A>): Effect.Effect<R, E, A> =>
@@ -917,12 +917,12 @@ export const sandbox = Debug.untracedMethod(() =>
 /** @internal */
 export const sandboxWith = Debug.untracedDual<
   <R, E, A, R2, E2, A2>(
+    f: (self: Query.Query<R, Cause.Cause<E>, A>) => Query.Query<R2, Cause.Cause<E2>, A2>
+  ) => (self: Query.Query<R, E, A>) => Query.Query<R | R2, E2, A | A2>,
+  <R, E, A, R2, E2, A2>(
     self: Query.Query<R, E, A>,
     f: (self: Query.Query<R, Cause.Cause<E>, A>) => Query.Query<R2, Cause.Cause<E2>, A2>
-  ) => Query.Query<R | R2, E2, A | A2>,
-  <R, E, A, R2, E2, A2>(
-    f: (self: Query.Query<R, Cause.Cause<E>, A>) => Query.Query<R2, Cause.Cause<E2>, A2>
-  ) => (self: Query.Query<R, E, A>) => Query.Query<R | R2, E2, A | A2>
+  ) => Query.Query<R | R2, E2, A | A2>
 >(2, (restore) => (self, f) => unsandbox(restore(f)(sandbox(self))))
 
 /** @internal */
@@ -966,19 +966,19 @@ export const some = Debug.untracedMethod(() =>
 
 /** @internal */
 export const someOrElse = Debug.untracedDual<
-  <R, E, A, B>(self: Query.Query<R, E, Option.Option<A>>, def: LazyArg<B>) => Query.Query<R, E, A | B>,
-  <A, B>(def: LazyArg<B>) => <R, E>(self: Query.Query<R, E, Option.Option<A>>) => Query.Query<R, E, A | B>
+  <A, B>(def: LazyArg<B>) => <R, E>(self: Query.Query<R, E, Option.Option<A>>) => Query.Query<R, E, A | B>,
+  <R, E, A, B>(self: Query.Query<R, E, Option.Option<A>>, def: LazyArg<B>) => Query.Query<R, E, A | B>
 >(2, (restore) => (self, def) => map(self, Option.getOrElse(restore(def))))
 
 /** @internal */
 export const someOrElseEffect = Debug.untracedDual<
+  <R2, E2, A2>(
+    def: LazyArg<Query.Query<R2, E2, A2>>
+  ) => <R, E, A>(self: Query.Query<R, E, Option.Option<A>>) => Query.Query<R | R2, E | E2, A | A2>,
   <R, E, A, R2, E2, A2>(
     self: Query.Query<R, E, Option.Option<A>>,
     def: LazyArg<Query.Query<R2, E2, A2>>
-  ) => Query.Query<R | R2, E | E2, A | A2>,
-  <R2, E2, A2>(
-    def: LazyArg<Query.Query<R2, E2, A2>>
-  ) => <R, E, A>(self: Query.Query<R, E, Option.Option<A>>) => Query.Query<R | R2, E | E2, A | A2>
+  ) => Query.Query<R | R2, E | E2, A | A2>
 >(
   2,
   (restore) =>
@@ -988,8 +988,8 @@ export const someOrElseEffect = Debug.untracedDual<
 
 /** @internal */
 export const someOrFail = Debug.untracedDual<
-  <R, E, A, E2>(self: Query.Query<R, E, Option.Option<A>>, error: LazyArg<E2>) => Query.Query<R, E | E2, A>,
-  <E2>(error: LazyArg<E2>) => <R, E, A>(self: Query.Query<R, E, Option.Option<A>>) => Query.Query<R, E | E2, A>
+  <E2>(error: LazyArg<E2>) => <R, E, A>(self: Query.Query<R, E, Option.Option<A>>) => Query.Query<R, E | E2, A>,
+  <R, E, A, E2>(self: Query.Query<R, E, Option.Option<A>>, error: LazyArg<E2>) => Query.Query<R, E | E2, A>
 >(2, (restore) => (self, error) => flatMap(self, Option.match(() => failSync(restore(error)), succeed)))
 
 /** @internal */
@@ -1009,15 +1009,15 @@ export const succeedSome = Debug.untracedMethod(() =>
 
 /** @internal */
 export const summarized = Debug.untracedDual<
+  <R2, E2, B, C>(
+    summary: Effect.Effect<R2, E2, B>,
+    f: (start: B, end: B) => C
+  ) => <R, E, A>(self: Query.Query<R, E, A>) => Query.Query<R | R2, E | E2, readonly [C, A]>,
   <R, E, A, R2, E2, B, C>(
     self: Query.Query<R, E, A>,
     summary: Effect.Effect<R2, E2, B>,
     f: (start: B, end: B) => C
-  ) => Query.Query<R | R2, E | E2, readonly [C, A]>,
-  <R2, E2, B, C>(
-    summary: Effect.Effect<R2, E2, B>,
-    f: (start: B, end: B) => C
-  ) => <R, E, A>(self: Query.Query<R, E, A>) => Query.Query<R | R2, E | E2, readonly [C, A]>
+  ) => Query.Query<R | R2, E | E2, readonly [C, A]>
 >(3, (restore) =>
   (self, summary, f) =>
     flatMap(
@@ -1052,22 +1052,22 @@ export const timed = Debug.untracedMethod(() =>
 
 /** @internal */
 export const timeout = Debug.untracedDual<
-  <R, E, A>(self: Query.Query<R, E, A>, duration: Duration.Duration) => Query.Query<R, E, Option.Option<A>>,
-  (duration: Duration.Duration) => <R, E, A>(self: Query.Query<R, E, A>) => Query.Query<R, E, Option.Option<A>>
+  (duration: Duration.Duration) => <R, E, A>(self: Query.Query<R, E, A>) => Query.Query<R, E, Option.Option<A>>,
+  <R, E, A>(self: Query.Query<R, E, A>, duration: Duration.Duration) => Query.Query<R, E, Option.Option<A>>
 >(2, () => (self, duration) => timeoutTo(self, Option.none(), Option.some, duration))
 
 /** @internal */
 export const timeoutFail = Debug.untracedDual<
-  <R, E, A, E2>(
-    self: Query.Query<R, E, A>,
-    error: LazyArg<E2>,
-    duration: Duration.Duration
-  ) => Query.Query<R, E | E2, A>,
   <E2>(
     error: LazyArg<E2>,
     duration: Duration.Duration
   ) => <R, E, A>(
     self: Query.Query<R, E, A>
+  ) => Query.Query<R, E | E2, A>,
+  <R, E, A, E2>(
+    self: Query.Query<R, E, A>,
+    error: LazyArg<E2>,
+    duration: Duration.Duration
   ) => Query.Query<R, E | E2, A>
 >(3, (restore) =>
   (self, error, duration) =>
@@ -1080,15 +1080,15 @@ export const timeoutFail = Debug.untracedDual<
 
 /** @internal */
 export const timeoutFailCause = Debug.untracedDual<
+  <E2>(
+    evaluate: LazyArg<Cause.Cause<E2>>,
+    duration: Duration.Duration
+  ) => <R, E, A>(self: Query.Query<R, E, A>) => Query.Query<R, E | E2, A>,
   <R, E, A, E2>(
     self: Query.Query<R, E, A>,
     evaluate: LazyArg<Cause.Cause<E2>>,
     duration: Duration.Duration
-  ) => Query.Query<R, E | E2, A>,
-  <E2>(
-    evaluate: LazyArg<Cause.Cause<E2>>,
-    duration: Duration.Duration
-  ) => <R, E, A>(self: Query.Query<R, E, A>) => Query.Query<R, E | E2, A>
+  ) => Query.Query<R, E | E2, A>
 >(3, (restore) =>
   (self, evaluate, duration) =>
     flatten(timeoutTo(
@@ -1100,17 +1100,17 @@ export const timeoutFailCause = Debug.untracedDual<
 
 /** @internal */
 export const timeoutTo = Debug.untracedDual<
+  <B2, A, B>(
+    def: B2,
+    f: (a: A) => B,
+    duration: Duration.Duration
+  ) => <R, E>(self: Query.Query<R, E, A>) => Query.Query<R, E, B | B2>,
   <R, E, A, B2, B>(
     self: Query.Query<R, E, A>,
     def: B2,
     f: (a: A) => B,
     duration: Duration.Duration
-  ) => Query.Query<R, E, B | B2>,
-  <B2, A, B>(
-    def: B2,
-    f: (a: A) => B,
-    duration: Duration.Duration
-  ) => <R, E>(self: Query.Query<R, E, A>) => Query.Query<R, E, B | B2>
+  ) => Query.Query<R, E, B | B2>
 >(4, (restore) =>
   <R, E, A, B2, B>(
     self: Query.Query<R, E, A>,
@@ -1228,21 +1228,23 @@ export const unoption = Debug.untracedMethod(() =>
 
 /** @internal */
 export const unrefine = Debug.untracedDual<
-  <R, E, A, E2>(self: Query.Query<R, E, A>, pf: (defect: unknown) => Option.Option<E2>) => Query.Query<R, E | E2, A>,
-  <E, E2>(pf: (defect: unknown) => Option.Option<E2>) => <R, A>(self: Query.Query<R, E, A>) => Query.Query<R, E | E2, A>
+  <E, E2>(
+    pf: (defect: unknown) => Option.Option<E2>
+  ) => <R, A>(self: Query.Query<R, E, A>) => Query.Query<R, E | E2, A>,
+  <R, E, A, E2>(self: Query.Query<R, E, A>, pf: (defect: unknown) => Option.Option<E2>) => Query.Query<R, E | E2, A>
 >(2, (restore) => (self, pf) => unrefineWith(self, restore(pf), identity))
 
 /** @internal */
 export const unrefineWith = Debug.untracedDual<
+  <E, E2, E3>(
+    pf: (defect: unknown) => Option.Option<E2>,
+    f: (error: E) => E3
+  ) => <R, A>(self: Query.Query<R, E, A>) => Query.Query<R, E2 | E3, A>,
   <R, E, A, E2, E3>(
     self: Query.Query<R, E, A>,
     pf: (defect: unknown) => Option.Option<E2>,
     f: (error: E) => E3
-  ) => Query.Query<R, E2 | E3, A>,
-  <E, E2, E3>(
-    pf: (defect: unknown) => Option.Option<E2>,
-    f: (error: E) => E3
-  ) => <R, A>(self: Query.Query<R, E, A>) => Query.Query<R, E2 | E3, A>
+  ) => Query.Query<R, E2 | E3, A>
 >(3, (restore) =>
   <R, E, A, E2, E3>(
     self: Query.Query<R, E, A>,
@@ -1288,128 +1290,128 @@ export const unwrap = Debug.untracedMethod(() =>
 
 /** @internal */
 export const zip = Debug.untracedDual<
+  <R2, E2, A2>(
+    that: Query.Query<R2, E2, A2>
+  ) => <R, E, A>(self: Query.Query<R, E, A>) => Query.Query<R | R2, E | E2, readonly [A, A2]>,
   <R, E, A, R2, E2, A2>(
     self: Query.Query<R, E, A>,
     that: Query.Query<R2, E2, A2>
-  ) => Query.Query<R | R2, E | E2, readonly [A, A2]>,
-  <R2, E2, A2>(
-    that: Query.Query<R2, E2, A2>
-  ) => <R, E, A>(self: Query.Query<R, E, A>) => Query.Query<R | R2, E | E2, readonly [A, A2]>
+  ) => Query.Query<R | R2, E | E2, readonly [A, A2]>
 >(2, () => (self, that) => zipWith(self, that, (a, b) => [a, b] as const))
 
 /** @internal */
 export const zipBatched = Debug.untracedDual<
-  <R, E, A, R2, E2, A2>(
-    self: Query.Query<R, E, A>,
-    that: Query.Query<R2, E2, A2>
-  ) => Query.Query<R | R2, E | E2, readonly [A, A2]>,
   <R2, E2, A2>(
     that: Query.Query<R2, E2, A2>
   ) => <R, E, A>(
     self: Query.Query<R, E, A>
+  ) => Query.Query<R | R2, E | E2, readonly [A, A2]>,
+  <R, E, A, R2, E2, A2>(
+    self: Query.Query<R, E, A>,
+    that: Query.Query<R2, E2, A2>
   ) => Query.Query<R | R2, E | E2, readonly [A, A2]>
 >(2, () => (self, that) => zipWithBatched(self, that, (a, b) => [a, b] as const))
 
 /** @internal */
 export const zipBatchedLeft = Debug.untracedDual<
+  <R2, E2, A2>(
+    that: Query.Query<R2, E2, A2>
+  ) => <R, E, A>(self: Query.Query<R, E, A>) => Query.Query<R | R2, E | E2, A>,
   <R, E, A, R2, E2, A2>(
     self: Query.Query<R, E, A>,
     that: Query.Query<R2, E2, A2>
-  ) => Query.Query<R | R2, E | E2, A>,
-  <R2, E2, A2>(
-    that: Query.Query<R2, E2, A2>
-  ) => <R, E, A>(self: Query.Query<R, E, A>) => Query.Query<R | R2, E | E2, A>
+  ) => Query.Query<R | R2, E | E2, A>
 >(2, () => (self, that) => zipWithBatched(self, that, (a, _) => a))
 
 /** @internal */
 export const zipBatchedRight = Debug.untracedDual<
+  <R2, E2, A2>(
+    that: Query.Query<R2, E2, A2>
+  ) => <R, E, A>(self: Query.Query<R, E, A>) => Query.Query<R | R2, E | E2, A2>,
   <R, E, A, R2, E2, A2>(
     self: Query.Query<R, E, A>,
     that: Query.Query<R2, E2, A2>
-  ) => Query.Query<R | R2, E | E2, A2>,
-  <R2, E2, A2>(
-    that: Query.Query<R2, E2, A2>
-  ) => <R, E, A>(self: Query.Query<R, E, A>) => Query.Query<R | R2, E | E2, A2>
+  ) => Query.Query<R | R2, E | E2, A2>
 >(2, () => (self, that) => zipWithBatched(self, that, (_, b) => b))
 
 /** @internal */
 export const zipLeft = Debug.untracedDual<
+  <R2, E2, A2>(
+    that: Query.Query<R2, E2, A2>
+  ) => <R, E, A>(self: Query.Query<R, E, A>) => Query.Query<R | R2, E | E2, A>,
   <R, E, A, R2, E2, A2>(
     self: Query.Query<R, E, A>,
     that: Query.Query<R2, E2, A2>
-  ) => Query.Query<R | R2, E | E2, A>,
-  <R2, E2, A2>(
-    that: Query.Query<R2, E2, A2>
-  ) => <R, E, A>(self: Query.Query<R, E, A>) => Query.Query<R | R2, E | E2, A>
+  ) => Query.Query<R | R2, E | E2, A>
 >(2, () => (self, that) => zipWith(self, that, (a, _) => a))
 
 /** @internal */
 export const zipRight = Debug.untracedDual<
+  <R2, E2, A2>(
+    that: Query.Query<R2, E2, A2>
+  ) => <R, E, A>(self: Query.Query<R, E, A>) => Query.Query<R | R2, E | E2, A2>,
   <R, E, A, R2, E2, A2>(
     self: Query.Query<R, E, A>,
     that: Query.Query<R2, E2, A2>
-  ) => Query.Query<R | R2, E | E2, A2>,
-  <R2, E2, A2>(
-    that: Query.Query<R2, E2, A2>
-  ) => <R, E, A>(self: Query.Query<R, E, A>) => Query.Query<R | R2, E | E2, A2>
+  ) => Query.Query<R | R2, E | E2, A2>
 >(2, () => (self, that) => zipWith(self, that, (_, a2) => a2))
 
 /** @internal */
 export const zipPar = Debug.untracedDual<
-  <R, E, A, R2, E2, A2>(
-    self: Query.Query<R, E, A>,
-    that: Query.Query<R2, E2, A2>
-  ) => Query.Query<R | R2, E | E2, readonly [A, A2]>,
   <R2, E2, A2>(
     that: Query.Query<R2, E2, A2>
   ) => <R, E, A>(
     self: Query.Query<R, E, A>
+  ) => Query.Query<R | R2, E | E2, readonly [A, A2]>,
+  <R, E, A, R2, E2, A2>(
+    self: Query.Query<R, E, A>,
+    that: Query.Query<R2, E2, A2>
   ) => Query.Query<R | R2, E | E2, readonly [A, A2]>
 >(2, () => (self, that) => zipWithPar(self, that, (a, b) => [a, b] as const))
 
 /** @internal */
 export const zipParLeft = Debug.untracedDual<
+  <R2, E2, A2>(
+    that: Query.Query<R2, E2, A2>
+  ) => <R, E, A>(self: Query.Query<R, E, A>) => Query.Query<R | R2, E | E2, A>,
   <R, E, A, R2, E2, A2>(
     self: Query.Query<R, E, A>,
     that: Query.Query<R2, E2, A2>
-  ) => Query.Query<R | R2, E | E2, A>,
-  <R2, E2, A2>(
-    that: Query.Query<R2, E2, A2>
-  ) => <R, E, A>(self: Query.Query<R, E, A>) => Query.Query<R | R2, E | E2, A>
+  ) => Query.Query<R | R2, E | E2, A>
 >(2, () => (self, that) => zipWithPar(self, that, (a, _) => a))
 
 /** @internal */
 export const zipParRight = Debug.untracedDual<
+  <R2, E2, A2>(
+    that: Query.Query<R2, E2, A2>
+  ) => <R, E, A>(self: Query.Query<R, E, A>) => Query.Query<R | R2, E | E2, A2>,
   <R, E, A, R2, E2, A2>(
     self: Query.Query<R, E, A>,
     that: Query.Query<R2, E2, A2>
-  ) => Query.Query<R | R2, E | E2, A2>,
-  <R2, E2, A2>(
-    that: Query.Query<R2, E2, A2>
-  ) => <R, E, A>(self: Query.Query<R, E, A>) => Query.Query<R | R2, E | E2, A2>
+  ) => Query.Query<R | R2, E | E2, A2>
 >(2, () => (self, that) => zipWithPar(self, that, (_, a2) => a2))
 
 /** @internal */
 export const zipWith: {
+  <R2, E2, B, A, C>(
+    that: Query.Query<R2, E2, B>,
+    f: (a: A, b: B) => C
+  ): <R, E>(self: Query.Query<R, E, A>) => Query.Query<R2 | R, E2 | E, C>
   <R, E, A, R2, E2, B, C>(
     self: Query.Query<R, E, A>,
     that: Query.Query<R2, E2, B>,
     f: (a: A, b: B) => C
   ): Query.Query<R | R2, E | E2, C>
+} = Debug.dualWithTrace<
   <R2, E2, B, A, C>(
     that: Query.Query<R2, E2, B>,
     f: (a: A, b: B) => C
-  ): <R, E>(self: Query.Query<R, E, A>) => Query.Query<R | R2, E | E2, C>
-} = Debug.dualWithTrace<
+  ) => <R, E>(self: Query.Query<R, E, A>) => Query.Query<R | R2, E | E2, C>,
   <R, E, A, R2, E2, B, C>(
     self: Query.Query<R, E, A>,
     that: Query.Query<R2, E2, B>,
     f: (a: A, b: B) => C
-  ) => Query.Query<R | R2, E | E2, C>,
-  <R2, E2, B, A, C>(
-    that: Query.Query<R2, E2, B>,
-    f: (a: A, b: B) => C
-  ) => <R, E>(self: Query.Query<R, E, A>) => Query.Query<R | R2, E | E2, C>
+  ) => Query.Query<R | R2, E | E2, C>
 >(3, (trace, restore) =>
   (self, that, f) =>
     new QueryImpl(
@@ -1475,15 +1477,15 @@ export const zipWith: {
 
 /** @internal */
 export const zipWithBatched = Debug.untracedDual<
+  <A, R2, E2, B, C>(
+    that: Query.Query<R2, E2, B>,
+    f: (a: A, b: B) => C
+  ) => <R, E>(self: Query.Query<R, E, A>) => Query.Query<R | R2, E | E2, C>,
   <R, E, A, R2, E2, B, C>(
     self: Query.Query<R, E, A>,
     that: Query.Query<R2, E2, B>,
     f: (a: A, b: B) => C
-  ) => Query.Query<R | R2, E | E2, C>,
-  <A, R2, E2, B, C>(
-    that: Query.Query<R2, E2, B>,
-    f: (a: A, b: B) => C
-  ) => <R, E>(self: Query.Query<R, E, A>) => Query.Query<R | R2, E | E2, C>
+  ) => Query.Query<R | R2, E | E2, C>
 >(3, (restore) =>
   (self, that, f) =>
     new QueryImpl(Effect.zipWith(
@@ -1528,15 +1530,15 @@ export const zipWithBatched = Debug.untracedDual<
 
 /** @internal */
 export const zipWithPar = Debug.untracedDual<
+  <A, R2, E2, B, C>(
+    that: Query.Query<R2, E2, B>,
+    f: (a: A, b: B) => C
+  ) => <R, E>(self: Query.Query<R, E, A>) => Query.Query<R | R2, E | E2, C>,
   <R, E, A, R2, E2, B, C>(
     self: Query.Query<R, E, A>,
     that: Query.Query<R2, E2, B>,
     f: (a: A, b: B) => C
-  ) => Query.Query<R | R2, E | E2, C>,
-  <A, R2, E2, B, C>(
-    that: Query.Query<R2, E2, B>,
-    f: (a: A, b: B) => C
-  ) => <R, E>(self: Query.Query<R, E, A>) => Query.Query<R | R2, E | E2, C>
+  ) => Query.Query<R | R2, E | E2, C>
 >(3, (restore) =>
   (self, that, f) =>
     new QueryImpl(Effect.zipWithPar(
