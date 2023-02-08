@@ -86,16 +86,16 @@ export const makeBatched = Debug.untracedMethod((restore) =>
 
 /** @internal */
 export const around = Debug.untracedDual<
-  <R, A, R2, A2, R3, _>(
-    self: DataSource.DataSource<R, A>,
-    before: Described.Described<Effect.Effect<R2, never, A2>>,
-    after: Described.Described<(a: A2) => Effect.Effect<R3, never, _>>
-  ) => DataSource.DataSource<R | R2 | R3, A>,
   <R2, A2, R3, _>(
     before: Described.Described<Effect.Effect<R2, never, A2>>,
     after: Described.Described<(a: A2) => Effect.Effect<R3, never, _>>
   ) => <R, A>(
     self: DataSource.DataSource<R, A>
+  ) => DataSource.DataSource<R | R2 | R3, A>,
+  <R, A, R2, A2, R3, _>(
+    self: DataSource.DataSource<R, A>,
+    before: Described.Described<Effect.Effect<R2, never, A2>>,
+    after: Described.Described<(a: A2) => Effect.Effect<R3, never, _>>
   ) => DataSource.DataSource<R | R2 | R3, A>
 >(3, (restore) =>
   (self, before, after) =>
@@ -111,8 +111,8 @@ export const around = Debug.untracedDual<
 
 /** @internal */
 export const batchN = Debug.untracedDual<
-  <R, A>(self: DataSource.DataSource<R, A>, n: number) => DataSource.DataSource<R, A>,
-  (n: number) => <R, A>(self: DataSource.DataSource<R, A>) => DataSource.DataSource<R, A>
+  (n: number) => <R, A>(self: DataSource.DataSource<R, A>) => DataSource.DataSource<R, A>,
+  <R, A>(self: DataSource.DataSource<R, A>, n: number) => DataSource.DataSource<R, A>
 >(2, (restore) =>
   (self, n) =>
     new DataSourceImpl(
@@ -131,13 +131,13 @@ export const batchN = Debug.untracedDual<
 
 /** @internal */
 export const contramap = Debug.untracedDual<
+  <A extends Request.Request<any, any>, B extends Request.Request<any, any>>(
+    f: Described.Described<(_: B) => A>
+  ) => <R>(self: DataSource.DataSource<R, A>) => DataSource.DataSource<R, B>,
   <R, A extends Request.Request<any, any>, B extends Request.Request<any, any>>(
     self: DataSource.DataSource<R, A>,
     f: Described.Described<(_: B) => A>
-  ) => DataSource.DataSource<R, B>,
-  <A extends Request.Request<any, any>, B extends Request.Request<any, any>>(
-    f: Described.Described<(_: B) => A>
-  ) => <R>(self: DataSource.DataSource<R, A>) => DataSource.DataSource<R, B>
+  ) => DataSource.DataSource<R, B>
 >(2, (restore) =>
   (self, f) =>
     new DataSourceImpl(
@@ -147,13 +147,13 @@ export const contramap = Debug.untracedDual<
 
 /** @internal */
 export const contramapContext = Debug.untracedDual<
+  <R0, R>(
+    f: Described.Described<(context: Context.Context<R0>) => Context.Context<R>>
+  ) => <A extends Request.Request<any, any>>(self: DataSource.DataSource<R, A>) => DataSource.DataSource<R0, A>,
   <R, A extends Request.Request<any, any>, R0>(
     self: DataSource.DataSource<R, A>,
     f: Described.Described<(context: Context.Context<R0>) => Context.Context<R>>
-  ) => DataSource.DataSource<R0, A>,
-  <R0, R>(
-    f: Described.Described<(context: Context.Context<R0>) => Context.Context<R>>
-  ) => <A extends Request.Request<any, any>>(self: DataSource.DataSource<R, A>) => DataSource.DataSource<R0, A>
+  ) => DataSource.DataSource<R0, A>
 >(2, (restore) =>
   <R, A extends Request.Request<any, any>, R0>(
     self: DataSource.DataSource<R, A>,
@@ -170,13 +170,13 @@ export const contramapContext = Debug.untracedDual<
 
 /** @internal */
 export const contramapEffect = Debug.untracedDual<
+  <A extends Request.Request<any, any>, R2, B extends Request.Request<any, any>>(
+    f: Described.Described<(_: B) => Effect.Effect<R2, never, A>>
+  ) => <R>(self: DataSource.DataSource<R, A>) => DataSource.DataSource<R | R2, B>,
   <R, A extends Request.Request<any, any>, R2, B extends Request.Request<any, any>>(
     self: DataSource.DataSource<R, A>,
     f: Described.Described<(_: B) => Effect.Effect<R2, never, A>>
-  ) => DataSource.DataSource<R | R2, B>,
-  <A extends Request.Request<any, any>, R2, B extends Request.Request<any, any>>(
-    f: Described.Described<(_: B) => Effect.Effect<R2, never, A>>
-  ) => <R>(self: DataSource.DataSource<R, A>) => DataSource.DataSource<R | R2, B>
+  ) => DataSource.DataSource<R | R2, B>
 >(2, (restore) =>
   (self, f) =>
     new DataSourceImpl(
@@ -191,6 +191,15 @@ export const contramapEffect = Debug.untracedDual<
 /** @internal */
 export const eitherWith = Debug.untracedDual<
   <
+    A extends Request.Request<any, any>,
+    R2,
+    B extends Request.Request<any, any>,
+    C extends Request.Request<any, any>
+  >(
+    that: DataSource.DataSource<R2, B>,
+    f: Described.Described<(_: C) => Either.Either<A, B>>
+  ) => <R>(self: DataSource.DataSource<R, A>) => DataSource.DataSource<R | R2, C>,
+  <
     R,
     A extends Request.Request<any, any>,
     R2,
@@ -200,16 +209,7 @@ export const eitherWith = Debug.untracedDual<
     self: DataSource.DataSource<R, A>,
     that: DataSource.DataSource<R2, B>,
     f: Described.Described<(_: C) => Either.Either<A, B>>
-  ) => DataSource.DataSource<R | R2, C>,
-  <
-    A extends Request.Request<any, any>,
-    R2,
-    B extends Request.Request<any, any>,
-    C extends Request.Request<any, any>
-  >(
-    that: DataSource.DataSource<R2, B>,
-    f: Described.Described<(_: C) => Either.Either<A, B>>
-  ) => <R>(self: DataSource.DataSource<R, A>) => DataSource.DataSource<R | R2, C>
+  ) => DataSource.DataSource<R | R2, C>
 >(
   3,
   (restore) =>
@@ -432,14 +432,14 @@ export const never = Debug.untracedMethod(() =>
 
 /** @internal */
 export const provideContext = Debug.untracedDual<
-  <R, A extends Request.Request<any, any>>(
-    self: DataSource.DataSource<R, A>,
-    context: Described.Described<Context.Context<R>>
-  ) => DataSource.DataSource<never, A>,
   <R>(
     context: Described.Described<Context.Context<R>>
   ) => <A extends Request.Request<any, any>>(
     self: DataSource.DataSource<R, A>
+  ) => DataSource.DataSource<never, A>,
+  <R, A extends Request.Request<any, any>>(
+    self: DataSource.DataSource<R, A>,
+    context: Described.Described<Context.Context<R>>
   ) => DataSource.DataSource<never, A>
 >(2, () =>
   (self, context) =>
@@ -450,14 +450,14 @@ export const provideContext = Debug.untracedDual<
 
 /** @internal */
 export const race = Debug.untracedDual<
-  <R, A extends Request.Request<any, any>, R2, A2 extends Request.Request<any, any>>(
-    self: DataSource.DataSource<R, A>,
-    that: DataSource.DataSource<R2, A2>
-  ) => DataSource.DataSource<R | R2, A | A2>,
   <R2, A2 extends Request.Request<any, any>>(
     that: DataSource.DataSource<R2, A2>
   ) => <R, A extends Request.Request<any, any>>(
     self: DataSource.DataSource<R, A>
+  ) => DataSource.DataSource<R | R2, A | A2>,
+  <R, A extends Request.Request<any, any>, R2, A2 extends Request.Request<any, any>>(
+    self: DataSource.DataSource<R, A>,
+    that: DataSource.DataSource<R2, A2>
   ) => DataSource.DataSource<R | R2, A | A2>
 >(
   2,

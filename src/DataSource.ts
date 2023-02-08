@@ -2,6 +2,9 @@
  * @since 1.0.0
  */
 
+import type * as Chunk from "@effect/data/Chunk"
+import type * as Context from "@effect/data/Context"
+import type * as Equal from "@effect/data/Equal"
 import type * as Effect from "@effect/io/Effect"
 import type * as CompletedRequestMap from "@effect/query/CompletedRequestMap"
 import type * as Described from "@effect/query/Described"
@@ -9,9 +12,6 @@ import * as internal from "@effect/query/internal_effect_untraced/dataSource"
 import type * as Request from "@effect/query/Request"
 import type * as Either from "@fp-ts/core/Either"
 import type * as Option from "@fp-ts/core/Option"
-import type * as Chunk from "@effect/data/Chunk"
-import type * as Context from "@effect/data/Context"
-import type * as Equal from "@effect/data/Equal"
 
 /**
  * @since 1.0.0
@@ -118,15 +118,15 @@ export const makeBatched: <R, A extends Request.Request<any, any>>(
  * @category combinators
  */
 export const around: {
-  <R, A extends Request.Request<any, any>, R2, A2, R3, _>(
+  <R2, A2, R3, _>(
+    before: Described.Described<Effect.Effect<R2, never, A2>>,
+    after: Described.Described<(a: A2) => Effect.Effect<R3, never, _>>
+  ): <R, A>(self: DataSource<R, A>) => DataSource<R2 | R3 | R, A>
+  <R, A, R2, A2, R3, _>(
     self: DataSource<R, A>,
     before: Described.Described<Effect.Effect<R2, never, A2>>,
     after: Described.Described<(a: A2) => Effect.Effect<R3, never, _>>
   ): DataSource<R | R2 | R3, A>
-  <R2, A2, R3, _>(
-    before: Described.Described<Effect.Effect<R2, never, A2>>,
-    after: Described.Described<(a: A2) => Effect.Effect<R3, never, _>>
-  ): <R, A extends Request.Request<any, any>>(self: DataSource<R, A>) => DataSource<R2 | R3 | R, A>
 } = internal.around
 
 /**
@@ -136,8 +136,8 @@ export const around: {
  * @category combinators
  */
 export const batchN: {
-  <R, A extends Request.Request<any, any>>(self: DataSource<R, A>, n: number): DataSource<R, A>
-  (n: number): <R, A extends Request.Request<any, any>>(self: DataSource<R, A>) => DataSource<R, A>
+  (n: number): <R, A>(self: DataSource<R, A>) => DataSource<R, A>
+  <R, A>(self: DataSource<R, A>, n: number): DataSource<R, A>
 } = internal.batchN
 
 /**
@@ -149,13 +149,13 @@ export const batchN: {
  * @category combinators
  */
 export const contramap: {
+  <A extends Request.Request<any, any>, B extends Request.Request<any, any>>(
+    f: Described.Described<(_: B) => A>
+  ): <R>(self: DataSource<R, A>) => DataSource<R, B>
   <R, A extends Request.Request<any, any>, B extends Request.Request<any, any>>(
     self: DataSource<R, A>,
     f: Described.Described<(_: B) => A>
   ): DataSource<R, B>
-  <A extends Request.Request<any, any>, B extends Request.Request<any, any>>(
-    f: Described.Described<(_: B) => A>
-  ): <R>(self: DataSource<R, A>) => DataSource<R, B>
 } = internal.contramap
 
 /**
@@ -165,15 +165,13 @@ export const contramap: {
  * @category context
  */
 export const contramapContext: {
+  <R0, R>(
+    f: Described.Described<(context: Context.Context<R0>) => Context.Context<R>>
+  ): <A extends Request.Request<any, any>>(self: DataSource<R, A>) => DataSource<R0, A>
   <R, A extends Request.Request<any, any>, R0>(
     self: DataSource<R, A>,
     f: Described.Described<(context: Context.Context<R0>) => Context.Context<R>>
   ): DataSource<R0, A>
-  <R0, R>(
-    f: Described.Described<(context: Context.Context<R0>) => Context.Context<R>>
-  ): <A extends Request.Request<any, any>>(
-    self: DataSource<R, A>
-  ) => DataSource<R0, A>
 } = internal.contramapContext
 
 /**
@@ -185,13 +183,13 @@ export const contramapContext: {
  * @category combinators
  */
 export const contramapEffect: {
+  <A extends Request.Request<any, any>, R2, B extends Request.Request<any, any>>(
+    f: Described.Described<(_: B) => Effect.Effect<R2, never, A>>
+  ): <R>(self: DataSource<R, A>) => DataSource<R2 | R, B>
   <R, A extends Request.Request<any, any>, R2, B extends Request.Request<any, any>>(
     self: DataSource<R, A>,
     f: Described.Described<(_: B) => Effect.Effect<R2, never, A>>
   ): DataSource<R | R2, B>
-  <A extends Request.Request<any, any>, R2, B extends Request.Request<any, any>>(
-    f: Described.Described<(_: B) => Effect.Effect<R2, never, A>>
-  ): <R>(self: DataSource<R, A>) => DataSource<R2 | R, B>
 } = internal.contramapEffect
 
 /**
@@ -203,6 +201,10 @@ export const contramapEffect: {
  * @category combinators
  */
 export const eitherWith: {
+  <A extends Request.Request<any, any>, R2, B extends Request.Request<any, any>, C extends Request.Request<any, any>>(
+    that: DataSource<R2, B>,
+    f: Described.Described<(_: C) => Either.Either<A, B>>
+  ): <R>(self: DataSource<R, A>) => DataSource<R2 | R, C>
   <
     R,
     A extends Request.Request<any, any>,
@@ -214,15 +216,6 @@ export const eitherWith: {
     that: DataSource<R2, B>,
     f: Described.Described<(_: C) => Either.Either<A, B>>
   ): DataSource<R | R2, C>
-  <
-    A extends Request.Request<any, any>,
-    R2,
-    B extends Request.Request<any, any>,
-    C extends Request.Request<any, any>
-  >(
-    that: DataSource<R2, B>,
-    f: Described.Described<(_: C) => Either.Either<A, B>>
-  ): <R>(self: DataSource<R, A>) => DataSource<R2 | R, C>
 } = internal.eitherWith
 
 /**
@@ -375,13 +368,13 @@ export const never: (_: void) => DataSource<never, never> = internal.never
  * @category context
  */
 export const provideContext: {
+  <R>(
+    context: Described.Described<Context.Context<R>>
+  ): <A extends Request.Request<any, any>>(self: DataSource<R, A>) => DataSource<never, A>
   <R, A extends Request.Request<any, any>>(
     self: DataSource<R, A>,
     context: Described.Described<Context.Context<R>>
   ): DataSource<never, A>
-  <R>(
-    context: Described.Described<Context.Context<R>>
-  ): <A extends Request.Request<any, any>>(self: DataSource<R, A>) => DataSource<never, A>
 } = internal.provideContext
 
 /**
@@ -393,11 +386,11 @@ export const provideContext: {
  * @category combinators
  */
 export const race: {
+  <R2, A2 extends Request.Request<any, any>>(
+    that: DataSource<R2, A2>
+  ): <R, A extends Request.Request<any, any>>(self: DataSource<R, A>) => DataSource<R2 | R, A2 | A>
   <R, A extends Request.Request<any, any>, R2, A2 extends Request.Request<any, any>>(
     self: DataSource<R, A>,
     that: DataSource<R2, A2>
   ): DataSource<R | R2, A | A2>
-  <R2, A2 extends Request.Request<any, any>>(
-    that: DataSource<R2, A2>
-  ): <R, A extends Request.Request<any, any>>(self: DataSource<R, A>) => DataSource<R2 | R, A2 | A>
 } = internal.race

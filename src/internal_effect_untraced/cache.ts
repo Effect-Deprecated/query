@@ -92,21 +92,22 @@ export const empty = Debug.methodWithTrace((trace) =>
 /** @internal */
 export const get = Debug.dualWithTrace<
   <E, A>(
-    self: Cache.Cache,
-    request: Request.Request<E, A>
-  ) => Effect.Effect<never, void, Ref.Ref<Option.Option<Either.Either<E, A>>>>,
-  <E, A>(
     request: Request.Request<E, A>
   ) => (
     self: Cache.Cache
+  ) => Effect.Effect<never, void, Ref.Ref<Option.Option<Either.Either<E, A>>>>,
+  <E, A>(
+    self: Cache.Cache,
+    request: Request.Request<E, A>
   ) => Effect.Effect<never, void, Ref.Ref<Option.Option<Either.Either<E, A>>>>
 >(2, (trace) => (self, request) => self.get(request).traced(trace))
 
 /** @internal */
 export const lookup = Debug.dualWithTrace<
   <E, A>(
-    self: Cache.Cache,
     request: Request.Request<E, A>
+  ) => (
+    self: Cache.Cache
   ) => Effect.Effect<
     never,
     never,
@@ -116,9 +117,8 @@ export const lookup = Debug.dualWithTrace<
     >
   >,
   <E, A>(
+    self: Cache.Cache,
     request: Request.Request<E, A>
-  ) => (
-    self: Cache.Cache
   ) => Effect.Effect<
     never,
     never,
@@ -132,27 +132,27 @@ export const lookup = Debug.dualWithTrace<
 /** @internal */
 export const set = Debug.dualWithTrace<
   <E, A>(
-    self: Cache.Cache,
-    request: Request.Request<E, A>,
-    result: Ref.Ref<Option.Option<Either.Either<E, A>>>
-  ) => Effect.Effect<never, never, void>,
-  <E, A>(
     request: Request.Request<E, A>,
     result: Ref.Ref<Option.Option<Either.Either<E, A>>>
   ) => (
     self: Cache.Cache
+  ) => Effect.Effect<never, never, void>,
+  <E, A>(
+    self: Cache.Cache,
+    request: Request.Request<E, A>,
+    result: Ref.Ref<Option.Option<Either.Either<E, A>>>
   ) => Effect.Effect<never, never, void>
 >(3, (trace) => (self, request, result) => self.set(request, result).traced(trace))
 
 /** @internal */
 export const remove = Debug.dualWithTrace<
   <E, A>(
-    self: Cache.Cache,
-    request: Request.Request<E, A>
-  ) => Effect.Effect<never, never, void>,
-  <E, A>(
     request: Request.Request<E, A>
   ) => (
     self: Cache.Cache
+  ) => Effect.Effect<never, never, void>,
+  <E, A>(
+    self: Cache.Cache,
+    request: Request.Request<E, A>
   ) => Effect.Effect<never, never, void>
 >(2, (trace) => (self, request) => self.remove(request).traced(trace))

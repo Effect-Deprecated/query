@@ -1,6 +1,9 @@
 /**
  * @since 1.0.0
  */
+import type * as Chunk from "@effect/data/Chunk"
+import type * as Context from "@effect/data/Context"
+import type * as Duration from "@effect/data/Duration"
 import type * as Cause from "@effect/io/Cause"
 import type * as Debug from "@effect/io/Debug"
 import type * as Effect from "@effect/io/Effect"
@@ -14,9 +17,6 @@ import type * as Request from "@effect/query/Request"
 import type * as Either from "@fp-ts/core/Either"
 import type { LazyArg } from "@fp-ts/core/Function"
 import type * as Option from "@fp-ts/core/Option"
-import type * as Chunk from "@effect/data/Chunk"
-import type * as Context from "@effect/data/Context"
-import type * as Duration from "@effect/data/Duration"
 
 /**
  * @since 1.0.0
@@ -114,15 +114,15 @@ export const absolve: <R, E, A>(self: Query<R, E, Either.Either<E, A>>) => Query
  * @category combinators
  */
 export const around: {
+  <R2, A2, R3, _>(
+    before: Described.Described<Effect.Effect<R2, never, A2>>,
+    after: Described.Described<(a: A2) => Effect.Effect<R3, never, _>>
+  ): <R, E, A>(self: Query<R, E, A>) => Query<R2 | R3 | R, E, A>
   <R, E, A, R2, A2, R3, _>(
     self: Query<R, E, A>,
     before: Described.Described<Effect.Effect<R2, never, A2>>,
     after: Described.Described<(a: A2) => Effect.Effect<R3, never, _>>
   ): Query<R | R2 | R3, E, A>
-  <R2, A2, R3, _>(
-    before: Described.Described<Effect.Effect<R2, never, A2>>,
-    after: Described.Described<(a: A2) => Effect.Effect<R3, never, _>>
-  ): <R, E, A>(self: Query<R, E, A>) => Query<R2 | R3 | R, E, A>
 } = internal.around
 
 /**
@@ -132,8 +132,8 @@ export const around: {
  * @category mapping
  */
 export const as: {
-  <R, E, A, A2>(self: Query<R, E, A>, value: A2): Query<R, E, A2>
   <A2>(value: A2): <R, E, A>(self: Query<R, E, A>) => Query<R, E, A2>
+  <R, E, A, A2>(self: Query<R, E, A>, value: A2): Query<R, E, A2>
 } = internal.as
 
 /**
@@ -170,8 +170,8 @@ export const cached: <R, E, A>(self: Query<R, E, A>) => Query<R, E, A> = interna
  * @category error handling
  */
 export const catchAll: {
-  <R, A, E, R2, E2, A2>(self: Query<R, E, A>, f: (error: E) => Query<R2, E2, A2>): Query<R | R2, E2, A | A2>
   <E, R2, E2, A2>(f: (error: E) => Query<R2, E2, A2>): <R, A>(self: Query<R, E, A>) => Query<R2 | R, E2, A2 | A>
+  <R, A, E, R2, E2, A2>(self: Query<R, E, A>, f: (error: E) => Query<R2, E2, A2>): Query<R | R2, E2, A | A2>
 } = internal.catchAll
 
 /**
@@ -182,13 +182,13 @@ export const catchAll: {
  * @category error handling
  */
 export const catchAllCause: {
+  <E, R2, E2, A2>(
+    f: (cause: Cause.Cause<E>) => Query<R2, E2, A2>
+  ): <R, A>(self: Query<R, E, A>) => Query<R2 | R, E2, A2 | A>
   <R, E, A, R2, E2, A2>(
     self: Query<R, E, A>,
     f: (cause: Cause.Cause<E>) => Query<R2, E2, A2>
   ): Query<R | R2, E2, A | A2>
-  <E, R2, E2, A2>(
-    f: (cause: Cause.Cause<E>) => Query<R2, E2, A2>
-  ): <R, A>(self: Query<R, E, A>) => Query<R2 | R, E2, A2 | A>
 } = internal.catchAllCause
 
 /**
@@ -265,13 +265,13 @@ export const contextWithQuery: <R, R2, E, A>(
  * @category context
  */
 export const contramapContext: {
+  <R0, R>(
+    f: Described.Described<(context: Context.Context<R0>) => Context.Context<R>>
+  ): <E, A>(self: Query<R, E, A>) => Query<R0, E, A>
   <R, E, A, R0>(
     self: Query<R, E, A>,
     f: Described.Described<(context: Context.Context<R0>) => Context.Context<R>>
   ): Query<R0, E, A>
-  <R0, R>(
-    f: Described.Described<(context: Context.Context<R0>) => Context.Context<R>>
-  ): <E, A>(self: Query<R, E, A>) => Query<R0, E, A>
 } = internal.contramapContext
 
 /**
@@ -309,8 +309,8 @@ export const either: <R, E, A>(self: Query<R, E, A>) => Query<R, never, Either.E
  * @category finalization
  */
 export const ensuring: {
-  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, finalizer: Query<R2, E2, A2>): Query<R | R2, E | E2, A>
   <R2, E2, A2>(finalizer: Query<R2, E2, A2>): <R, E, A>(self: Query<R, E, A>) => Query<R2 | R, E2 | E, A>
+  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, finalizer: Query<R2, E2, A2>): Query<R | R2, E | E2, A>
 } = internal.ensuring
 
 /**
@@ -356,8 +356,8 @@ export const failCauseSync: <E>(evaluate: LazyArg<Cause.Cause<E>>) => Query<neve
  * @category sequencing
  */
 export const flatMap: {
-  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, f: (a: A) => Query<R2, E2, A2>): Query<R | R2, E | E2, A2>
   <A, R2, E2, A2>(f: (a: A) => Query<R2, E2, A2>): <R, E>(self: Query<R, E, A>) => Query<R2 | R, E2 | E, A2>
+  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, f: (a: A) => Query<R2, E2, A2>): Query<R | R2, E | E2, A2>
 } = internal.flatMap
 
 /**
@@ -381,8 +381,8 @@ export const flatten: <R, E, R2, E2, A>(self: Query<R, E, Query<R2, E2, A>>) => 
  * @category traversing
  */
 export const forEach: {
-  <A, R, E, B>(elements: Iterable<A>, f: (a: A) => Query<R, E, B>): Query<R, E, Chunk.Chunk<B>>
   <A, R, E, B>(f: (a: A) => Query<R, E, B>): (elements: Iterable<A>) => Query<R, E, Chunk.Chunk<B>>
+  <A, R, E, B>(elements: Iterable<A>, f: (a: A) => Query<R, E, B>): Query<R, E, Chunk.Chunk<B>>
 } = internal.forEach
 
 /**
@@ -394,8 +394,8 @@ export const forEach: {
  * @category traversing
  */
 export const forEachBatched: {
-  <A, R, E, B>(elements: Iterable<A>, f: (a: A) => Query<R, E, B>): Query<R, E, Chunk.Chunk<B>>
   <A, R, E, B>(f: (a: A) => Query<R, E, B>): (elements: Iterable<A>) => Query<R, E, Chunk.Chunk<B>>
+  <A, R, E, B>(elements: Iterable<A>, f: (a: A) => Query<R, E, B>): Query<R, E, Chunk.Chunk<B>>
 } = internal.forEachBatched
 
 /**
@@ -407,8 +407,8 @@ export const forEachBatched: {
  * @category traversing
  */
 export const forEachPar: {
-  <A, R, E, B>(elements: Iterable<A>, f: (a: A) => Query<R, E, B>): Query<R, E, Chunk.Chunk<B>>
   <A, R, E, B>(f: (a: A) => Query<R, E, B>): (elements: Iterable<A>) => Query<R, E, Chunk.Chunk<B>>
+  <A, R, E, B>(elements: Iterable<A>, f: (a: A) => Query<R, E, B>): Query<R, E, Chunk.Chunk<B>>
 } = internal.forEachPar
 
 /**
@@ -478,8 +478,8 @@ export const left: <R, E, A, A2>(self: Query<R, E, Either.Either<A, A2>>) => Que
  * @category mapping
  */
 export const map: {
-  <R, E, A, B>(self: Query<R, E, A>, f: (a: A) => B): Query<R, E, B>
   <A, B>(f: (a: A) => B): <R, E>(self: Query<R, E, A>) => Query<R, E, B>
+  <R, E, A, B>(self: Query<R, E, A>, f: (a: A) => B): Query<R, E, B>
 } = internal.map
 
 /**
@@ -490,8 +490,8 @@ export const map: {
  * @category mapping
  */
 export const mapBoth: {
-  <R, E, E2, A, A2>(self: Query<R, E, A>, f: (e: E) => E2, g: (a: A) => A2): Query<R, E2, A2>
   <E, E2, A, A2>(f: (e: E) => E2, g: (a: A) => A2): <R>(self: Query<R, E, A>) => Query<R, E2, A2>
+  <R, E, E2, A, A2>(self: Query<R, E, A>, f: (e: E) => E2, g: (a: A) => A2): Query<R, E2, A2>
 } = internal.mapBoth
 
 /**
@@ -501,13 +501,13 @@ export const mapBoth: {
  * @category mapping
  */
 export const mapDataSources: {
+  <R, A, R2>(
+    f: (dataSource: DataSource.DataSource<R, A>) => DataSource.DataSource<R2, A>
+  ): <E>(self: Query<R, E, A>) => Query<R | R2, E, A>
   <R, E, A, R2>(
     self: Query<R, E, A>,
     f: (dataSource: DataSource.DataSource<R, A>) => DataSource.DataSource<R2, A>
   ): Query<R | R2, E, A>
-  <R, A, R2>(
-    f: (dataSource: DataSource.DataSource<R, A>) => DataSource.DataSource<R2, A>
-  ): <E>(self: Query<R, E, A>) => Query<R | R2, E, A>
 } = internal.mapDataSources
 
 /**
@@ -517,8 +517,8 @@ export const mapDataSources: {
  * @category mapping
  */
 export const mapError: {
-  <R, A, E, E2>(self: Query<R, E, A>, f: (e: E) => E2): Query<R, E2, A>
   <E, E2>(f: (e: E) => E2): <R, A>(self: Query<R, E, A>) => Query<R, E2, A>
+  <R, A, E, E2>(self: Query<R, E, A>, f: (e: E) => E2): Query<R, E2, A>
 } = internal.mapError
 
 /**
@@ -530,8 +530,8 @@ export const mapError: {
  * @category mapping
  */
 export const mapErrorCause: {
-  <R, E, A, E2>(self: Query<R, E, A>, f: (cause: Cause.Cause<E>) => Cause.Cause<E2>): Query<R, E2, A>
   <E, E2>(f: (cause: Cause.Cause<E>) => Cause.Cause<E2>): <R, A>(self: Query<R, E, A>) => Query<R, E2, A>
+  <R, E, A, E2>(self: Query<R, E, A>, f: (cause: Cause.Cause<E>) => Cause.Cause<E2>): Query<R, E2, A>
 } = internal.mapErrorCause
 
 /**
@@ -541,8 +541,8 @@ export const mapErrorCause: {
  * @category mapping
  */
 export const mapEffect: {
-  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, f: (a: A) => Effect.Effect<R2, E2, A2>): Query<R | R2, E | E2, A2>
   <A, R2, E2, A2>(f: (a: A) => Effect.Effect<R2, E2, A2>): <R, E>(self: Query<R, E, A>) => Query<R2 | R, E2 | E, A2>
+  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, f: (a: A) => Effect.Effect<R2, E2, A2>): Query<R | R2, E | E2, A2>
 } = internal.mapEffect
 
 /**
@@ -554,8 +554,8 @@ export const mapEffect: {
  * @category folding
  */
 export const match: {
-  <R, E, A, Z>(self: Query<R, E, A>, onFailure: (error: E) => Z, onSuccess: (value: A) => Z): Query<R, never, Z>
   <E, Z, A>(onFailure: (error: E) => Z, onSuccess: (value: A) => Z): <R>(self: Query<R, E, A>) => Query<R, never, Z>
+  <R, E, A, Z>(self: Query<R, E, A>, onFailure: (error: E) => Z, onSuccess: (value: A) => Z): Query<R, never, Z>
 } = internal.match
 
 /**
@@ -566,15 +566,15 @@ export const match: {
  * @category folding
  */
 export const matchCauseQuery: {
+  <E, R2, E2, A2, A, R3, E3, A3>(
+    onFailure: (cause: Cause.Cause<E>) => Query<R2, E2, A2>,
+    onSuccess: (value: A) => Query<R3, E3, A3>
+  ): <R>(self: Query<R, E, A>) => Query<R2 | R3 | R, E2 | E3, A2 | A3>
   <R, E, A, R2, E2, A2, R3, E3, A3>(
     self: Query<R, E, A>,
     onFailure: (cause: Cause.Cause<E>) => Query<R2, E2, A2>,
     onSuccess: (value: A) => Query<R3, E3, A3>
   ): Query<R | R2 | R3, E2 | E3, A2 | A3>
-  <E, R2, E2, A2, A, R3, E3, A3>(
-    onFailure: (cause: Cause.Cause<E>) => Query<R2, E2, A2>,
-    onSuccess: (value: A) => Query<R3, E3, A3>
-  ): <R>(self: Query<R, E, A>) => Query<R2 | R3 | R, E2 | E3, A2 | A3>
 } = internal.matchCauseQuery
 
 /**
@@ -585,15 +585,15 @@ export const matchCauseQuery: {
  * @category folding
  */
 export const matchQuery: {
+  <E, R2, E2, A2, A, R3, E3, A3>(
+    onFailure: (error: E) => Query<R2, E2, A2>,
+    onSuccess: (value: A) => Query<R3, E3, A3>
+  ): <R>(self: Query<R, E, A>) => Query<R2 | R3 | R, E2 | E3, A2 | A3>
   <R, E, A, R2, E2, A2, R3, E3, A3>(
     self: Query<R, E, A>,
     onFailure: (error: E) => Query<R2, E2, A2>,
     onSuccess: (value: A) => Query<R3, E3, A3>
   ): Query<R | R2 | R3, E2 | E3, A2 | A3>
-  <E, R2, E2, A2, A, R3, E3, A3>(
-    onFailure: (error: E) => Query<R2, E2, A2>,
-    onSuccess: (value: A) => Query<R3, E3, A3>
-  ): <R>(self: Query<R, E, A>) => Query<R2 | R3 | R, E2 | E3, A2 | A3>
 } = internal.matchQuery
 
 /**
@@ -603,8 +603,8 @@ export const matchQuery: {
  * @category combinators
  */
 export const maxBatchSize: {
-  <R, E, A>(self: Query<R, E, A>, n: number): Query<R, E, A>
   (n: number): <R, E, A>(self: Query<R, E, A>) => Query<R, E, A>
+  <R, E, A>(self: Query<R, E, A>, n: number): Query<R, E, A>
 } = internal.maxBatchSize
 
 /**
@@ -640,8 +640,8 @@ export const orDie: <R, E, A>(self: Query<R, E, A>) => Query<R, never, A> = inte
  * @category error handling
  */
 export const orDieWith: {
-  <R, E, A>(self: Query<R, E, A>, f: (error: E) => unknown): Query<R, never, A>
   <E>(f: (error: E) => unknown): <R, A>(self: Query<R, E, A>) => Query<R, never, A>
+  <R, E, A>(self: Query<R, E, A>, f: (error: E) => unknown): Query<R, never, A>
 } = internal.orDieWith
 
 /**
@@ -654,12 +654,12 @@ export const orDieWith: {
  */
 export const partitionQuery: {
   <A, R, E, B>(
+    f: (a: A) => Query<R, E, B>
+  ): (elements: Iterable<A>) => Query<R, never, readonly [Chunk.Chunk<E>, Chunk.Chunk<B>]>
+  <A, R, E, B>(
     elements: Iterable<A>,
     f: (a: A) => Query<R, E, B>
   ): Query<R, never, readonly [Chunk.Chunk<E>, Chunk.Chunk<B>]>
-  <A, R, E, B>(
-    f: (a: A) => Query<R, E, B>
-  ): (elements: Iterable<A>) => Query<R, never, readonly [Chunk.Chunk<E>, Chunk.Chunk<B>]>
 } = internal.partitionQuery
 
 /**
@@ -672,12 +672,12 @@ export const partitionQuery: {
  */
 export const partitionQueryPar: {
   <A, R, E, B>(
+    f: (a: A) => Query<R, E, B>
+  ): (elements: Iterable<A>) => Query<R, never, readonly [Chunk.Chunk<E>, Chunk.Chunk<B>]>
+  <A, R, E, B>(
     elements: Iterable<A>,
     f: (a: A) => Query<R, E, B>
   ): Query<R, never, readonly [Chunk.Chunk<E>, Chunk.Chunk<B>]>
-  <A, R, E, B>(
-    f: (a: A) => Query<R, E, B>
-  ): (elements: Iterable<A>) => Query<R, never, readonly [Chunk.Chunk<E>, Chunk.Chunk<B>]>
 } = internal.partitionQueryPar
 
 /**
@@ -687,8 +687,8 @@ export const partitionQueryPar: {
  * @category context
  */
 export const provideContext: {
-  <R, E, A>(self: Query<R, E, A>, context: Described.Described<Context.Context<R>>): Query<never, E, A>
   <R>(context: Described.Described<Context.Context<R>>): <E, A>(self: Query<R, E, A>) => Query<never, E, A>
+  <R, E, A>(self: Query<R, E, A>, context: Described.Described<Context.Context<R>>): Query<never, E, A>
 } = internal.provideContext
 
 /**
@@ -698,8 +698,8 @@ export const provideContext: {
  * @category context
  */
 export const provideLayer: {
-  <R, E, A, R0, E2>(self: Query<R, E, A>, layer: Described.Described<Layer.Layer<R0, E2, R>>): Query<R0, E | E2, A>
   <R0, E2, R>(layer: Described.Described<Layer.Layer<R0, E2, R>>): <E, A>(self: Query<R, E, A>) => Query<R0, E2 | E, A>
+  <R, E, A, R0, E2>(self: Query<R, E, A>, layer: Described.Described<Layer.Layer<R0, E2, R>>): Query<R0, E | E2, A>
 } = internal.provideLayer
 
 /**
@@ -710,13 +710,13 @@ export const provideLayer: {
  * @category context
  */
 export const provideSomeLayer: {
+  <R2, E2, A2>(
+    layer: Described.Described<Layer.Layer<R2, E2, A2>>
+  ): <R, E, A>(self: Query<R, E, A>) => Query<R2 | Exclude<R, A2>, E2 | E, A>
   <R, E, A, R2, E2, A2>(
     self: Query<R, E, A>,
     layer: Described.Described<Layer.Layer<R2, E2, A2>>
   ): Query<R2 | Exclude<R, A2>, E | E2, A>
-  <R2, E2, A2>(
-    layer: Described.Described<Layer.Layer<R2, E2, A2>>
-  ): <R, E, A>(self: Query<R, E, A>) => Query<R2 | Exclude<R, A2>, E2 | E, A>
 } = internal.provideSomeLayer
 
 /**
@@ -727,8 +727,8 @@ export const provideSomeLayer: {
  * @category combinators
  */
 export const race: {
-  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, that: Query<R2, E2, A2>): Query<R | R2, E | E2, A | A2>
   <R2, E2, A2>(that: Query<R2, E2, A2>): <R, E, A>(self: Query<R, E, A>) => Query<R2 | R, E2 | E, A2 | A>
+  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, that: Query<R2, E2, A2>): Query<R | R2, E | E2, A | A2>
 } = internal.race
 
 /**
@@ -738,8 +738,8 @@ export const race: {
  * @category error handling
  */
 export const refineOrDie: {
-  <R, E, A, E2>(self: Query<R, E, A>, pf: (error: E) => Option.Option<E2>): Query<R, E2, A>
   <E, E2>(pf: (error: E) => Option.Option<E2>): <R, A>(self: Query<R, E, A>) => Query<R, E2, A>
+  <R, E, A, E2>(self: Query<R, E, A>, pf: (error: E) => Option.Option<E2>): Query<R, E2, A>
 } = internal.refineOrDie
 
 /**
@@ -750,11 +750,11 @@ export const refineOrDie: {
  * @category error handling
  */
 export const refineOrDieWith: {
-  <R, E, A, E2>(self: Query<R, E, A>, pf: (error: E) => Option.Option<E2>, f: (error: E) => unknown): Query<R, E2, A>
   <E, E2>(
     pf: (error: E) => Option.Option<E2>,
     f: (error: E) => unknown
   ): <R, A>(self: Query<R, E, A>) => Query<R, E2, A>
+  <R, E, A, E2>(self: Query<R, E, A>, pf: (error: E) => Option.Option<E2>, f: (error: E) => unknown): Query<R, E2, A>
 } = internal.refineOrDieWith
 
 /**
@@ -783,8 +783,8 @@ export const run: <R, E, A>(self: Query<R, E, A>) => Effect.Effect<R, E, A> = in
  * @category destructors
  */
 export const runCache: {
-  <R, E, A>(self: Query<R, E, A>, cache: Cache.Cache): Effect.Effect<R, E, A>
   (cache: Cache.Cache): <R, E, A>(self: Query<R, E, A>) => Effect.Effect<R, E, A>
+  <R, E, A>(self: Query<R, E, A>, cache: Cache.Cache): Effect.Effect<R, E, A>
 } = internal.runCache
 
 /**
@@ -813,12 +813,12 @@ export const sandbox: <R, E, A>(self: Query<R, E, A>) => Query<R, Cause.Cause<E>
  */
 export const sandboxWith: {
   <R, E, A, R2, E2, A2>(
+    f: (self: Query<R, Cause.Cause<E>, A>) => Query<R2, Cause.Cause<E2>, A2>
+  ): (self: Query<R, E, A>) => Query<R | R2, E2, A | A2>
+  <R, E, A, R2, E2, A2>(
     self: Query<R, E, A>,
     f: (self: Query<R, Cause.Cause<E>, A>) => Query<R2, Cause.Cause<E2>, A2>
   ): Query<R | R2, E2, A | A2>
-  <R, E, A, R2, E2, A2>(
-    f: (self: Query<R, Cause.Cause<E>, A>) => Query<R2, Cause.Cause<E2>, A2>
-  ): (self: Query<R, E, A>) => Query<R | R2, E2, A | A2>
 } = internal.sandboxWith
 
 /**
@@ -880,8 +880,8 @@ export const some: <R, E, A>(self: Query<R, E, Option.Option<A>>) => Query<R, Op
  * @category combinators
  */
 export const someOrElse: {
-  <R, E, A, B>(self: Query<R, E, Option.Option<A>>, def: LazyArg<B>): Query<R, E, A | B>
   <A, B>(def: LazyArg<B>): <R, E>(self: Query<R, E, Option.Option<A>>) => Query<R, E, A | B>
+  <R, E, A, B>(self: Query<R, E, Option.Option<A>>, def: LazyArg<B>): Query<R, E, A | B>
 } = internal.someOrElse
 
 /**
@@ -891,13 +891,13 @@ export const someOrElse: {
  * @category combinators
  */
 export const someOrElseEffect: {
+  <R2, E2, A2>(
+    def: LazyArg<Query<R2, E2, A2>>
+  ): <R, E, A>(self: Query<R, E, Option.Option<A>>) => Query<R2 | R, E2 | E, A2 | A>
   <R, E, A, R2, E2, A2>(
     self: Query<R, E, Option.Option<A>>,
     def: LazyArg<Query<R2, E2, A2>>
   ): Query<R | R2, E | E2, A | A2>
-  <R2, E2, A2>(
-    def: LazyArg<Query<R2, E2, A2>>
-  ): <R, E, A>(self: Query<R, E, Option.Option<A>>) => Query<R2 | R, E2 | E, A2 | A>
 } = internal.someOrElseEffect
 
 /**
@@ -907,8 +907,8 @@ export const someOrElseEffect: {
  * @category combinators
  */
 export const someOrFail: {
-  <R, E, A, E2>(self: Query<R, E, Option.Option<A>>, error: LazyArg<E2>): Query<R, E | E2, A>
   <E2>(error: LazyArg<E2>): <R, E, A>(self: Query<R, E, Option.Option<A>>) => Query<R, E2 | E, A>
+  <R, E, A, E2>(self: Query<R, E, Option.Option<A>>, error: LazyArg<E2>): Query<R, E | E2, A>
 } = internal.someOrFail
 
 /**
@@ -944,15 +944,15 @@ export const succeedSome: <A>(value: A) => Query<never, never, Option.Option<A>>
  * @category combinators
  */
 export const summarized: {
+  <R2, E2, B, C>(
+    summary: Effect.Effect<R2, E2, B>,
+    f: (start: B, end: B) => C
+  ): <R, E, A>(self: Query<R, E, A>) => Query<R2 | R, E2 | E, readonly [C, A]>
   <R, E, A, R2, E2, B, C>(
     self: Query<R, E, A>,
     summary: Effect.Effect<R2, E2, B>,
     f: (start: B, end: B) => C
   ): Query<R | R2, E | E2, readonly [C, A]>
-  <R2, E2, B, C>(
-    summary: Effect.Effect<R2, E2, B>,
-    f: (start: B, end: B) => C
-  ): <R, E, A>(self: Query<R, E, A>) => Query<R2 | R, E2 | E, readonly [C, A]>
 } = internal.summarized
 
 /**
@@ -987,8 +987,8 @@ export const timed: <R, E, A>(self: Query<R, E, A>) => Query<R, E, readonly [Dur
  * @category combinators
  */
 export const timeout: {
-  <R, E, A>(self: Query<R, E, A>, duration: Duration.Duration): Query<R, E, Option.Option<A>>
   (duration: Duration.Duration): <R, E, A>(self: Query<R, E, A>) => Query<R, E, Option.Option<A>>
+  <R, E, A>(self: Query<R, E, A>, duration: Duration.Duration): Query<R, E, Option.Option<A>>
 } = internal.timeout
 
 /**
@@ -999,8 +999,8 @@ export const timeout: {
  * @category combinators
  */
 export const timeoutFail: {
-  <R, E, A, E2>(self: Query<R, E, A>, error: LazyArg<E2>, duration: Duration.Duration): Query<R, E | E2, A>
   <E2>(error: LazyArg<E2>, duration: Duration.Duration): <R, E, A>(self: Query<R, E, A>) => Query<R, E2 | E, A>
+  <R, E, A, E2>(self: Query<R, E, A>, error: LazyArg<E2>, duration: Duration.Duration): Query<R, E | E2, A>
 } = internal.timeoutFail
 
 /**
@@ -1011,15 +1011,15 @@ export const timeoutFail: {
  * @category combinators
  */
 export const timeoutFailCause: {
+  <E2>(
+    evaluate: LazyArg<Cause.Cause<E2>>,
+    duration: Duration.Duration
+  ): <R, E, A>(self: Query<R, E, A>) => Query<R, E2 | E, A>
   <R, E, A, E2>(
     self: Query<R, E, A>,
     evaluate: LazyArg<Cause.Cause<E2>>,
     duration: Duration.Duration
   ): Query<R, E | E2, A>
-  <E2>(
-    evaluate: LazyArg<Cause.Cause<E2>>,
-    duration: Duration.Duration
-  ): <R, E, A>(self: Query<R, E, A>) => Query<R, E2 | E, A>
 } = internal.timeoutFailCause
 
 /**
@@ -1031,8 +1031,8 @@ export const timeoutFailCause: {
  * @category combinators
  */
 export const timeoutTo: {
-  <R, E, A, B2, B>(self: Query<R, E, A>, def: B2, f: (a: A) => B, duration: Duration.Duration): Query<R, E, B2 | B>
   <B2, A, B>(def: B2, f: (a: A) => B, duration: Duration.Duration): <R, E>(self: Query<R, E, A>) => Query<R, E, B2 | B>
+  <R, E, A, B2, B>(self: Query<R, E, A>, def: B2, f: (a: A) => B, duration: Duration.Duration): Query<R, E, B2 | B>
 } = internal.timeoutTo
 
 /**
@@ -1078,8 +1078,8 @@ export const unoption: <R, E, A>(self: Query<R, Option.Option<E>, A>) => Query<R
  * @category combinators
  */
 export const unrefine: {
-  <R, E, A, E2>(self: Query<R, E, A>, pf: (defect: unknown) => Option.Option<E2>): Query<R, E | E2, A>
   <E, E2>(pf: (defect: unknown) => Option.Option<E2>): <R, A>(self: Query<R, E, A>) => Query<R, E | E2, A>
+  <R, E, A, E2>(self: Query<R, E, A>, pf: (defect: unknown) => Option.Option<E2>): Query<R, E | E2, A>
 } = internal.unrefine
 
 /**
@@ -1090,15 +1090,15 @@ export const unrefine: {
  * @category combinators
  */
 export const unrefineWith: {
+  <E, E2, E3>(
+    pf: (defect: unknown) => Option.Option<E2>,
+    f: (error: E) => E3
+  ): <R, A>(self: Query<R, E, A>) => Query<R, E2 | E3, A>
   <R, E, A, E2, E3>(
     self: Query<R, E, A>,
     pf: (defect: unknown) => Option.Option<E2>,
     f: (error: E) => E3
   ): Query<R, E2 | E3, A>
-  <E, E2, E3>(
-    pf: (defect: unknown) => Option.Option<E2>,
-    f: (error: E) => E3
-  ): <R, A>(self: Query<R, E, A>) => Query<R, E2 | E3, A>
 } = internal.unrefineWith
 
 /**
@@ -1136,8 +1136,8 @@ export const unwrap: <R, E, A>(effect: Effect.Effect<R, E, Query<R, E, A>>) => Q
  * @category zipping
  */
 export const zip: {
-  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, that: Query<R2, E2, A2>): Query<R | R2, E | E2, readonly [A, A2]>
   <R2, E2, A2>(that: Query<R2, E2, A2>): <R, E, A>(self: Query<R, E, A>) => Query<R2 | R, E2 | E, readonly [A, A2]>
+  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, that: Query<R2, E2, A2>): Query<R | R2, E | E2, readonly [A, A2]>
 } = internal.zip
 
 /**
@@ -1149,8 +1149,8 @@ export const zip: {
  * @category zipping
  */
 export const zipBatched: {
-  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, that: Query<R2, E2, A2>): Query<R | R2, E | E2, readonly [A, A2]>
   <R2, E2, A2>(that: Query<R2, E2, A2>): <R, E, A>(self: Query<R, E, A>) => Query<R2 | R, E2 | E, readonly [A, A2]>
+  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, that: Query<R2, E2, A2>): Query<R | R2, E | E2, readonly [A, A2]>
 } = internal.zipBatched
 
 /**
@@ -1162,8 +1162,8 @@ export const zipBatched: {
  * @category zipping
  */
 export const zipBatchedLeft: {
-  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, that: Query<R2, E2, A2>): Query<R | R2, E | E2, A>
   <R2, E2, A2>(that: Query<R2, E2, A2>): <R, E, A>(self: Query<R, E, A>) => Query<R2 | R, E2 | E, A>
+  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, that: Query<R2, E2, A2>): Query<R | R2, E | E2, A>
 } = internal.zipBatchedLeft
 
 /**
@@ -1175,8 +1175,8 @@ export const zipBatchedLeft: {
  * @category zipping
  */
 export const zipBatchedRight: {
-  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, that: Query<R2, E2, A2>): Query<R | R2, E | E2, A2>
   <R2, E2, A2>(that: Query<R2, E2, A2>): <R, E, A>(self: Query<R, E, A>) => Query<R2 | R, E2 | E, A2>
+  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, that: Query<R2, E2, A2>): Query<R | R2, E | E2, A2>
 } = internal.zipBatchedRight
 
 /**
@@ -1187,8 +1187,8 @@ export const zipBatchedRight: {
  * @category zipping
  */
 export const zipLeft: {
-  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, that: Query<R2, E2, A2>): Query<R | R2, E | E2, A>
   <R2, E2, A2>(that: Query<R2, E2, A2>): <R, E, A>(self: Query<R, E, A>) => Query<R2 | R, E2 | E, A>
+  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, that: Query<R2, E2, A2>): Query<R | R2, E | E2, A>
 } = internal.zipLeft
 
 /**
@@ -1199,8 +1199,8 @@ export const zipLeft: {
  * @category zipping
  */
 export const zipRight: {
-  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, that: Query<R2, E2, A2>): Query<R | R2, E | E2, A2>
   <R2, E2, A2>(that: Query<R2, E2, A2>): <R, E, A>(self: Query<R, E, A>) => Query<R2 | R, E2 | E, A2>
+  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, that: Query<R2, E2, A2>): Query<R | R2, E | E2, A2>
 } = internal.zipRight
 
 /**
@@ -1211,8 +1211,8 @@ export const zipRight: {
  * @category zipping
  */
 export const zipPar: {
-  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, that: Query<R2, E2, A2>): Query<R | R2, E | E2, readonly [A, A2]>
   <R2, E2, A2>(that: Query<R2, E2, A2>): <R, E, A>(self: Query<R, E, A>) => Query<R2 | R, E2 | E, readonly [A, A2]>
+  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, that: Query<R2, E2, A2>): Query<R | R2, E | E2, readonly [A, A2]>
 } = internal.zipPar
 
 /**
@@ -1223,8 +1223,8 @@ export const zipPar: {
  * @category zipping
  */
 export const zipParLeft: {
-  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, that: Query<R2, E2, A2>): Query<R | R2, E | E2, A>
   <R2, E2, A2>(that: Query<R2, E2, A2>): <R, E, A>(self: Query<R, E, A>) => Query<R2 | R, E2 | E, A>
+  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, that: Query<R2, E2, A2>): Query<R | R2, E | E2, A>
 } = internal.zipParLeft
 
 /**
@@ -1235,8 +1235,8 @@ export const zipParLeft: {
  * @category zipping
  */
 export const zipParRight: {
-  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, that: Query<R2, E2, A2>): Query<R | R2, E | E2, A2>
   <R2, E2, A2>(that: Query<R2, E2, A2>): <R, E, A>(self: Query<R, E, A>) => Query<R2 | R, E2 | E, A2>
+  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, that: Query<R2, E2, A2>): Query<R | R2, E | E2, A2>
 } = internal.zipParRight
 
 /**
@@ -1249,11 +1249,17 @@ export const zipParRight: {
  * @category zipping
  */
 export const zipWith: {
-  <R, E, A, R2, E2, B, C>(self: Query<R, E, A>, that: Query<R2, E2, B>, f: (a: A, b: B) => C): Query<R | R2, E | E2, C>
   <R2, E2, B, A, C>(
     that: Query<R2, E2, B>,
     f: (a: A, b: B) => C
-  ): <R, E>(self: Query<R, E, A>) => Query<R2 | R, E2 | E, C>
+  ): <R, E>(
+    self: Query<R, E, A>
+  ) => Query<R2 | R, E2 | E, C>
+  <R, E, A, R2, E2, B, C>(
+    self: Query<R, E, A>,
+    that: Query<R2, E2, B>,
+    f: (a: A, b: B) => C
+  ): Query<R | R2, E | E2, C>
 } = internal.zipWith
 
 /**
@@ -1264,11 +1270,17 @@ export const zipWith: {
  * @category zipping
  */
 export const zipWithBatched: {
-  <R, E, A, R2, E2, B, C>(self: Query<R, E, A>, that: Query<R2, E2, B>, f: (a: A, b: B) => C): Query<R | R2, E | E2, C>
   <A, R2, E2, B, C>(
     that: Query<R2, E2, B>,
     f: (a: A, b: B) => C
-  ): <R, E>(self: Query<R, E, A>) => Query<R2 | R, E2 | E, C>
+  ): <R, E>(
+    self: Query<R, E, A>
+  ) => Query<R2 | R, E2 | E, C>
+  <R, E, A, R2, E2, B, C>(
+    self: Query<R, E, A>,
+    that: Query<R2, E2, B>,
+    f: (a: A, b: B) => C
+  ): Query<R | R2, E | E2, C>
 } = internal.zipWithBatched
 
 /**
@@ -1281,9 +1293,15 @@ export const zipWithBatched: {
  * @category zipping
  */
 export const zipWithPar: {
-  <R, E, A, R2, E2, B, C>(self: Query<R, E, A>, that: Query<R2, E2, B>, f: (a: A, b: B) => C): Query<R | R2, E | E2, C>
   <A, R2, E2, B, C>(
     that: Query<R2, E2, B>,
     f: (a: A, b: B) => C
-  ): <R, E>(self: Query<R, E, A>) => Query<R2 | R, E2 | E, C>
+  ): <R, E>(
+    self: Query<R, E, A>
+  ) => Query<R2 | R, E2 | E, C>
+  <R, E, A, R2, E2, B, C>(
+    self: Query<R, E, A>,
+    that: Query<R2, E2, B>,
+    f: (a: A, b: B) => C
+  ): Query<R | R2, E | E2, C>
 } = internal.zipWithPar

@@ -103,14 +103,12 @@ export const empty: () => Effect.Effect<never, never, Cache> = internal.empty
  */
 export const get: {
   <E, A>(
+    request: Request.Request<E, A>
+  ): (self: Cache) => Effect.Effect<never, void, Ref.Ref<Option.Option<Either.Either<E, A>>>>
+  <E, A>(
     self: Cache,
     request: Request.Request<E, A>
   ): Effect.Effect<never, void, Ref.Ref<Option.Option<Either.Either<E, A>>>>
-  <E, A>(
-    request: Request.Request<E, A>
-  ): (
-    self: Cache
-  ) => Effect.Effect<never, void, Ref.Ref<Option.Option<Either.Either<E, A>>>>
 } = internal.get
 
 /**
@@ -125,18 +123,18 @@ export const get: {
  */
 export const lookup: {
   <E, A>(
-    self: Cache,
     request: Request.Request<E, A>
-  ): Effect.Effect<
+  ): (
+    self: Cache
+  ) => Effect.Effect<
     never,
     never,
     Either.Either<Ref.Ref<Option.Option<Either.Either<E, A>>>, Ref.Ref<Option.Option<Either.Either<E, A>>>>
   >
   <E, A>(
+    self: Cache,
     request: Request.Request<E, A>
-  ): (
-    self: Cache
-  ) => Effect.Effect<
+  ): Effect.Effect<
     never,
     never,
     Either.Either<Ref.Ref<Option.Option<Either.Either<E, A>>>, Ref.Ref<Option.Option<Either.Either<E, A>>>>
@@ -152,14 +150,14 @@ export const lookup: {
  */
 export const set: {
   <E, A>(
+    request: Request.Request<E, A>,
+    result: Ref.Ref<Option.Option<Either.Either<E, A>>>
+  ): (self: Cache) => Effect.Effect<never, never, void>
+  <E, A>(
     self: Cache,
     request: Request.Request<E, A>,
     result: Ref.Ref<Option.Option<Either.Either<E, A>>>
   ): Effect.Effect<never, never, void>
-  <E, A>(
-    request: Request.Request<E, A>,
-    result: Ref.Ref<Option.Option<Either.Either<E, A>>>
-  ): (self: Cache) => Effect.Effect<never, never, void>
 } = internal.set
 
 /**
@@ -169,6 +167,6 @@ export const set: {
  * @category mutations
  */
 export const remove: {
-  <E, A>(self: Cache, request: Request.Request<E, A>): Effect.Effect<never, never, void>
   <E, A>(request: Request.Request<E, A>): (self: Cache) => Effect.Effect<never, never, void>
+  <E, A>(self: Cache, request: Request.Request<E, A>): Effect.Effect<never, never, void>
 } = internal.remove

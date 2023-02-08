@@ -1,14 +1,14 @@
 /**
  * @since 1.0.0
  */
-import * as internal from "@effect/query/internal_effect_untraced/completedRequestMap"
-import type * as Request from "@effect/query/Request"
-import type * as Either from "@fp-ts/core/Either"
-import type * as Option from "@fp-ts/core/Option"
 import type * as Context from "@effect/data/Context"
 import type * as HashMap from "@effect/data/HashMap"
 import type * as HashSet from "@effect/data/HashSet"
 import type * as MutableRef from "@effect/data/MutableRef"
+import * as internal from "@effect/query/internal_effect_untraced/completedRequestMap"
+import type * as Request from "@effect/query/Request"
+import type * as Either from "@fp-ts/core/Either"
+import type * as Option from "@fp-ts/core/Option"
 
 /**
  * @since 1.0.0
@@ -90,8 +90,8 @@ export const make: <E, A>(request: Request.Request<E, A>, result: Either.Either<
  * @category combinators
  */
 export const combine: {
-  (self: CompletedRequestMap, that: CompletedRequestMap): CompletedRequestMap
   (that: CompletedRequestMap): (self: CompletedRequestMap) => CompletedRequestMap
+  (self: CompletedRequestMap, that: CompletedRequestMap): CompletedRequestMap
 } = internal.combine
 
 /**
@@ -102,14 +102,9 @@ export const combine: {
  */
 export const get: {
   <A extends Request.Request<any, any>>(
-    self: CompletedRequestMap,
     request: A
-  ): Option.Option<Request.Request.Result<A>>
-  <A extends Request.Request<any, any>>(
-    request: A
-  ): (
-    self: CompletedRequestMap
-  ) => Option.Option<Request.Request.Result<A>>
+  ): (self: CompletedRequestMap) => Option.Option<Request.Request.Result<A>>
+  <A extends Request.Request<any, any>>(self: CompletedRequestMap, request: A): Option.Option<Request.Request.Result<A>>
 } = internal.get
 
 /**
@@ -119,8 +114,8 @@ export const get: {
  * @category elements
  */
 export const has: {
-  <A extends Request.Request<any, any>>(self: CompletedRequestMap, request: A): boolean
   <A extends Request.Request<any, any>>(request: A): (self: CompletedRequestMap) => boolean
+  <A extends Request.Request<any, any>>(self: CompletedRequestMap, request: A): boolean
 } = internal.has
 
 /**
@@ -140,14 +135,10 @@ export const requests: (self: CompletedRequestMap) => HashSet.HashSet<Request.Re
  */
 export const set: {
   <A extends Request.Request<any, any>>(
-    self: CompletedRequestMap,
-    request: A,
-    result: Request.Request.Result<A>
-  ): void
-  <A extends Request.Request<any, any>>(
     request: A,
     result: Request.Request.Result<A>
   ): (self: CompletedRequestMap) => void
+  <A extends Request.Request<any, any>>(self: CompletedRequestMap, request: A, result: Request.Request.Result<A>): void
 } = internal.set
 
 /**
@@ -158,12 +149,12 @@ export const set: {
  */
 export const setOption: {
   <A extends Request.Request<any, any>>(
+    request: A,
+    result: Request.Request.OptionalResult<A>
+  ): (self: CompletedRequestMap) => void
+  <A extends Request.Request<any, any>>(
     self: CompletedRequestMap,
     request: A,
     result: Request.Request.OptionalResult<A>
   ): void
-  <A extends Request.Request<any, any>>(
-    request: A,
-    result: Request.Request.OptionalResult<A>
-  ): (self: CompletedRequestMap) => void
 } = internal.setOption

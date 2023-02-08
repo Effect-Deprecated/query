@@ -1,12 +1,12 @@
 /**
  * @since 1.0.0
  */
+import type * as Data from "@effect/data/Data"
 import type * as Effect from "@effect/io/Effect"
 import type * as CompletedRequestMap from "@effect/query/CompletedRequestMap"
 import * as internal from "@effect/query/internal_effect_untraced/request"
 import type * as Either from "@fp-ts/core/Either"
 import type * as Option from "@fp-ts/core/Option"
-import type * as Data from "@effect/data/Data"
 
 /**
  * @since 1.0.0
@@ -121,14 +121,12 @@ export const tagged: <R extends Request<any, any> & { _tag: string }>(
  */
 export const complete: {
   <A extends Request<any, any>>(
+    result: Request.Result<A>
+  ): (self: A) => Effect.Effect<CompletedRequestMap.CompletedRequestMap, never, void>
+  <A extends Request<any, any>>(
     self: A,
     result: Request.Result<A>
   ): Effect.Effect<CompletedRequestMap.CompletedRequestMap, never, void>
-  <A extends Request<any, any>>(
-    result: Request.Result<A>
-  ): (
-    self: A
-  ) => Effect.Effect<CompletedRequestMap.CompletedRequestMap, never, void>
 } = internal.complete
 
 /**
@@ -141,14 +139,12 @@ export const complete: {
  */
 export const completeEffect: {
   <A extends Request<any, any>, R>(
+    effect: Effect.Effect<R, Request.Error<A>, Request.Success<A>>
+  ): (self: A) => Effect.Effect<CompletedRequestMap.CompletedRequestMap | R, never, void>
+  <A extends Request<any, any>, R>(
     self: A,
     effect: Effect.Effect<R, Request.Error<A>, Request.Success<A>>
   ): Effect.Effect<CompletedRequestMap.CompletedRequestMap | R, never, void>
-  <A extends Request<any, any>, R>(
-    effect: Effect.Effect<R, Request.Error<A>, Request.Success<A>>
-  ): (
-    self: A
-  ) => Effect.Effect<CompletedRequestMap.CompletedRequestMap | R, never, void>
 } = internal.completeEffect
 
 /**
@@ -159,14 +155,12 @@ export const completeEffect: {
  */
 export const fail: {
   <A extends Request<any, any>>(
+    error: Request.Error<A>
+  ): (self: A) => Effect.Effect<CompletedRequestMap.CompletedRequestMap, never, void>
+  <A extends Request<any, any>>(
     self: A,
     error: Request.Error<A>
   ): Effect.Effect<CompletedRequestMap.CompletedRequestMap, never, void>
-  <A extends Request<any, any>>(
-    error: Request.Error<A>
-  ): (
-    self: A
-  ) => Effect.Effect<CompletedRequestMap.CompletedRequestMap, never, void>
 } = internal.fail
 
 /**
@@ -177,12 +171,10 @@ export const fail: {
  */
 export const succeed: {
   <A extends Request<any, any>>(
+    value: Request.Success<A>
+  ): (self: A) => Effect.Effect<CompletedRequestMap.CompletedRequestMap, never, void>
+  <A extends Request<any, any>>(
     self: A,
     value: Request.Success<A>
   ): Effect.Effect<CompletedRequestMap.CompletedRequestMap, never, void>
-  <A extends Request<any, any>>(
-    value: Request.Success<A>
-  ): (
-    self: A
-  ) => Effect.Effect<CompletedRequestMap.CompletedRequestMap, never, void>
 } = internal.succeed

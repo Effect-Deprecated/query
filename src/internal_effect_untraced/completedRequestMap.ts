@@ -2,11 +2,10 @@ import * as Context from "@effect/data/Context"
 import * as HashMap from "@effect/data/HashMap"
 import type * as HashSet from "@effect/data/HashSet"
 import * as MutableRef from "@effect/data/MutableRef"
-import * as Debug from "@effect/io/Debug"
 import type * as CompletedRequestMap from "@effect/query/CompletedRequestMap"
 import type * as Request from "@effect/query/Request"
 import * as Either from "@fp-ts/core/Either"
-import { pipe } from "@fp-ts/core/Function"
+import { dual } from "@fp-ts/core/Function"
 import * as Option from "@fp-ts/core/Option"
 
 /** @internal */
@@ -45,15 +44,15 @@ export const make = <E, A>(
   new CompletedRequestMapImpl(MutableRef.make(HashMap.make([request, result])))
 
 /** @internal */
-export const combine = Debug.dual<
-  (
-    self: CompletedRequestMap.CompletedRequestMap,
-    that: CompletedRequestMap.CompletedRequestMap
-  ) => CompletedRequestMap.CompletedRequestMap,
+export const combine = dual<
   (
     that: CompletedRequestMap.CompletedRequestMap
   ) => (
     self: CompletedRequestMap.CompletedRequestMap
+  ) => CompletedRequestMap.CompletedRequestMap,
+  (
+    self: CompletedRequestMap.CompletedRequestMap,
+    that: CompletedRequestMap.CompletedRequestMap
   ) => CompletedRequestMap.CompletedRequestMap
 >(2, (self, that) => {
   const selfMap = MutableRef.get(self.map)
@@ -62,15 +61,15 @@ export const combine = Debug.dual<
 })
 
 /** @internal */
-export const get = Debug.dual<
-  <A extends Request.Request<any, any>>(
-    self: CompletedRequestMap.CompletedRequestMap,
-    request: A
-  ) => Option.Option<Request.Request.Result<A>>,
+export const get = dual<
   <A extends Request.Request<any, any>>(
     request: A
   ) => (
     self: CompletedRequestMap.CompletedRequestMap
+  ) => Option.Option<Request.Request.Result<A>>,
+  <A extends Request.Request<any, any>>(
+    self: CompletedRequestMap.CompletedRequestMap,
+    request: A
   ) => Option.Option<Request.Request.Result<A>>
 >(2, <A extends Request.Request<any, any>>(
   self: CompletedRequestMap.CompletedRequestMap,
@@ -78,9 +77,9 @@ export const get = Debug.dual<
 ) => HashMap.get(MutableRef.get(self.map), request) as any)
 
 /** @internal */
-export const has = Debug.dual<
-  <A extends Request.Request<any, any>>(self: CompletedRequestMap.CompletedRequestMap, request: A) => boolean,
-  <A extends Request.Request<any, any>>(request: A) => (self: CompletedRequestMap.CompletedRequestMap) => boolean
+export const has = dual<
+  <A extends Request.Request<any, any>>(request: A) => (self: CompletedRequestMap.CompletedRequestMap) => boolean,
+  <A extends Request.Request<any, any>>(self: CompletedRequestMap.CompletedRequestMap, request: A) => boolean
 >(2, (self, request) => HashMap.has(MutableRef.get(self.map), request))
 
 /** @internal */
@@ -89,16 +88,16 @@ export const requests = (
 ): HashSet.HashSet<Request.Request<unknown, unknown>> => HashMap.keySet(MutableRef.get(self.map))
 
 /** @internal */
-export const set = Debug.dual<
+export const set = dual<
+  <A extends Request.Request<any, any>>(
+    request: A,
+    result: Request.Request.Result<A>
+  ) => (self: CompletedRequestMap.CompletedRequestMap) => void,
   <A extends Request.Request<any, any>>(
     self: CompletedRequestMap.CompletedRequestMap,
     request: A,
     result: Request.Request.Result<A>
-  ) => void,
-  <A extends Request.Request<any, any>>(
-    request: A,
-    result: Request.Request.Result<A>
-  ) => (self: CompletedRequestMap.CompletedRequestMap) => void
+  ) => void
 >(
   3,
   (self, request, result) => {
@@ -115,25 +114,23 @@ export const set = Debug.dual<
 )
 
 /** @internal */
-export const setOption = Debug.dual<
+export const setOption = dual<
+  <A extends Request.Request<any, any>>(
+    request: A,
+    result: Request.Request.OptionalResult<A>
+  ) => (self: CompletedRequestMap.CompletedRequestMap) => void,
   <A extends Request.Request<any, any>>(
     self: CompletedRequestMap.CompletedRequestMap,
     request: A,
     result: Request.Request.OptionalResult<A>
-  ) => void,
-  <A extends Request.Request<any, any>>(
-    request: A,
-    result: Request.Request.OptionalResult<A>
-  ) => (self: CompletedRequestMap.CompletedRequestMap) => void
+  ) => void
 >(3, (self, request, result) => {
-  pipe(
+  Either.match(
     result,
-    Either.match(
-      (e) => set(self, request, Either.left(e) as any),
-      Option.match(
-        () => self,
-        (a) => set(self, request, Either.right(a) as any)
-      )
+    (e) => set(self, request, Either.left(e) as any),
+    Option.match(
+      () => self,
+      (a) => set(self, request, Either.right(a) as any)
     )
   )
 })
