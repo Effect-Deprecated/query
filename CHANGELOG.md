@@ -1,5 +1,11 @@
 # @effect/query
 
+## 0.1.3
+
+### Patch Changes
+
+- [#442](https://github.com/Effect-TS/query/pull/442) [`10c851f`](https://github.com/Effect-TS/query/commit/10c851f4e837efdbb355aa46343ce6c45098f68e) Thanks [@IMax153](https://github.com/IMax153)! - migrate dual functions to the new @fp-ts/core@2.0.0 api
+
 ## 0.1.2
 
 ### Patch Changes
