@@ -14,7 +14,7 @@ export const userNames: ReadonlyMap<number, string> = new Map(
   pipe(
     userIds,
     ReadonlyArray.zipWith(
-      pipe(ReadonlyArray.range(97, 122), ReadonlyArray.map(String.fromCharCode)),
+      pipe(ReadonlyArray.range(97, 122), ReadonlyArray.map((a) => String.fromCharCode(a))),
       (a, b) => [a, b] as const
     )
   )
