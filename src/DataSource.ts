@@ -4,14 +4,14 @@
 
 import type * as Chunk from "@effect/data/Chunk"
 import type * as Context from "@effect/data/Context"
+import type * as Either from "@effect/data/Either"
 import type * as Equal from "@effect/data/Equal"
+import type * as Option from "@effect/data/Option"
 import type * as Effect from "@effect/io/Effect"
 import type * as CompletedRequestMap from "@effect/query/CompletedRequestMap"
 import type * as Described from "@effect/query/Described"
 import * as internal from "@effect/query/internal_effect_untraced/dataSource"
 import type * as Request from "@effect/query/Request"
-import type * as Either from "@fp-ts/core/Either"
-import type * as Option from "@fp-ts/core/Option"
 
 /**
  * @since 1.0.0

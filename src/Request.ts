@@ -2,11 +2,11 @@
  * @since 1.0.0
  */
 import type * as Data from "@effect/data/Data"
+import type * as Either from "@effect/data/Either"
+import type * as Option from "@effect/data/Option"
 import type * as Effect from "@effect/io/Effect"
 import type * as CompletedRequestMap from "@effect/query/CompletedRequestMap"
 import * as internal from "@effect/query/internal_effect_untraced/request"
-import type * as Either from "@fp-ts/core/Either"
-import type * as Option from "@fp-ts/core/Option"
 
 /**
  * @since 1.0.0

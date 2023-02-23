@@ -2,13 +2,13 @@
  * @since 1.0.0
  */
 import type * as Context from "@effect/data/Context"
+import type * as Either from "@effect/data/Either"
 import type * as HashMap from "@effect/data/HashMap"
 import type * as HashSet from "@effect/data/HashSet"
 import type * as MutableRef from "@effect/data/MutableRef"
+import type * as Option from "@effect/data/Option"
 import * as internal from "@effect/query/internal_effect_untraced/completedRequestMap"
 import type * as Request from "@effect/query/Request"
-import type * as Either from "@fp-ts/core/Either"
-import type * as Option from "@fp-ts/core/Option"
 
 /**
  * @since 1.0.0

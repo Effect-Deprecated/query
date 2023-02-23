@@ -1,9 +1,14 @@
 import * as Chunk from "@effect/data/Chunk"
 import type * as Context from "@effect/data/Context"
 import * as Duration from "@effect/data/Duration"
+import * as Either from "@effect/data/Either"
 import * as Equal from "@effect/data/Equal"
+import type { LazyArg } from "@effect/data/Function"
+import { identity, pipe } from "@effect/data/Function"
 import * as Hash from "@effect/data/Hash"
 import * as HashSet from "@effect/data/HashSet"
+import * as Option from "@effect/data/Option"
+import * as ReadonlyArray from "@effect/data/ReadonlyArray"
 import * as Cause from "@effect/io/Cause"
 import * as Clock from "@effect/io/Clock"
 import * as Debug from "@effect/io/Debug"
@@ -28,11 +33,6 @@ import * as Result from "@effect/query/internal_effect_untraced/result"
 import * as Sequential from "@effect/query/internal_effect_untraced/sequential"
 import type * as Query from "@effect/query/Query"
 import type * as Request from "@effect/query/Request"
-import * as Either from "@fp-ts/core/Either"
-import type { LazyArg } from "@fp-ts/core/Function"
-import { identity, pipe } from "@fp-ts/core/Function"
-import * as Option from "@fp-ts/core/Option"
-import * as ReadonlyArray from "@fp-ts/core/ReadonlyArray"
 
 /** @internal */
 const QuerySymbolKey = "@effect/query/Query"
@@ -1672,7 +1672,7 @@ const collectAllParContinuation = <R, E, A>(
     }
     index += 1
   }
-  if (ReadonlyArray.isEmpty(queries)) {
+  if (ReadonlyArray.isEmptyReadonlyArray(queries)) {
     return Continue.get(Effect.collectAll(effects.map((tuple) => tuple[0])))
   }
   const query = flatMap(
@@ -1929,10 +1929,10 @@ const collectAllParResult = <R, E, A>(
     }
     index++
   }
-  if (ReadonlyArray.isEmpty(blocked) && ReadonlyArray.isEmpty(fail)) {
+  if (ReadonlyArray.isEmptyReadonlyArray(blocked) && ReadonlyArray.isEmptyReadonlyArray(fail)) {
     return Result.done(Chunk.unsafeFromArray(done.map(([a]) => a)))
   }
-  if (ReadonlyArray.isEmpty(fail)) {
+  if (ReadonlyArray.isEmptyReadonlyArray(fail)) {
     const blockedRequests = blocked.map((tuple) => tuple[0]).reduce(BlockedRequests.par, BlockedRequests.empty)
     const continuation = mapContinuation(
       collectAllParContinuation(blocked.map((tuple) => tuple[1])),

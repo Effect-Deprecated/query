@@ -1,4 +1,5 @@
 import type * as Context from "@effect/data/Context"
+import * as Either from "@effect/data/Either"
 import * as Equal from "@effect/data/Equal"
 import * as List from "@effect/data/List"
 import type * as DataSource from "@effect/query/DataSource"
@@ -7,7 +8,6 @@ import type * as BlockedRequest from "@effect/query/internal_effect_untraced/blo
 import * as _dataSource from "@effect/query/internal_effect_untraced/dataSource"
 import * as Parallel from "@effect/query/internal_effect_untraced/parallel"
 import * as Sequential from "@effect/query/internal_effect_untraced/sequential"
-import * as Either from "@fp-ts/core/Either"
 
 /**
  * `BlockedRequests` captures a collection of blocked requests as a data

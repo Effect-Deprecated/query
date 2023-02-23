@@ -1,12 +1,12 @@
+import * as Either from "@effect/data/Either"
+import { constVoid, pipe } from "@effect/data/Function"
 import * as HashMap from "@effect/data/HashMap"
+import * as Option from "@effect/data/Option"
 import * as Debug from "@effect/io/Debug"
 import * as Effect from "@effect/io/Effect"
 import * as Ref from "@effect/io/Ref"
 import type * as Cache from "@effect/query/Cache"
 import type * as Request from "@effect/query/Request"
-import * as Either from "@fp-ts/core/Either"
-import { constVoid, pipe } from "@fp-ts/core/Function"
-import * as Option from "@fp-ts/core/Option"
 
 /** @internal */
 const CacheSymbolKey = "@effect/query/Cache"
