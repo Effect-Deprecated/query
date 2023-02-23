@@ -1,12 +1,12 @@
 /**
  * @since 1.0.0
  */
+import type * as Either from "@effect/data/Either"
+import type * as Option from "@effect/data/Option"
 import type * as Effect from "@effect/io/Effect"
 import type * as Ref from "@effect/io/Ref"
 import * as internal from "@effect/query/internal_effect_untraced/cache"
 import type * as Request from "@effect/query/Request"
-import type * as Either from "@fp-ts/core/Either"
-import type * as Option from "@fp-ts/core/Option"
 
 /**
  * @since 1.0.0

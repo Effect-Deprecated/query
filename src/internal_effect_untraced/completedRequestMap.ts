@@ -1,12 +1,12 @@
 import * as Context from "@effect/data/Context"
+import * as Either from "@effect/data/Either"
+import { dual } from "@effect/data/Function"
 import * as HashMap from "@effect/data/HashMap"
 import type * as HashSet from "@effect/data/HashSet"
 import * as MutableRef from "@effect/data/MutableRef"
+import * as Option from "@effect/data/Option"
 import type * as CompletedRequestMap from "@effect/query/CompletedRequestMap"
 import type * as Request from "@effect/query/Request"
-import * as Either from "@fp-ts/core/Either"
-import { dual } from "@fp-ts/core/Function"
-import * as Option from "@fp-ts/core/Option"
 
 /** @internal */
 const CompletedRequestMapSymbolKey = "@effect/query/CompletedRequestMap"

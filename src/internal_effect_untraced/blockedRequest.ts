@@ -1,7 +1,7 @@
+import type * as Either from "@effect/data/Either"
+import type * as Option from "@effect/data/Option"
 import type * as Ref from "@effect/io/Ref"
 import type * as Request from "@effect/query/Request"
-import type * as Either from "@fp-ts/core/Either"
-import type * as Option from "@fp-ts/core/Option"
 
 /** @internal */
 export const BlockedRequestTypeId = Symbol.for("@effect/query/BlockedRequest")

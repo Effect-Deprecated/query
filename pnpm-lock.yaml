@@ -15,11 +15,10 @@ specifiers:
   '@effect-ts/core': ^0.60.5
   '@effect/babel-plugin': ^0.1.0
   '@effect/core': ^0.0.16
-  '@effect/data': ~0.1.0
-  '@effect/io': ~0.1.11
+  '@effect/data': ~0.2.0
+  '@effect/io': ~0.3.0
   '@effect/language-service': ^0.0.19
   '@effect/vite-plugin': ^0.0.1
-  '@fp-ts/core': ~0.2.0
   '@repo-tooling/eslint-plugin-dprint': ^0.0.4
   '@rollup/pluginutils': ^5.0.2
   '@types/benchmark': ^2.1.2
@@ -58,9 +57,8 @@ specifiers:
   vitest: 0.28.4
 
 dependencies:
-  '@effect/data': 0.1.0
-  '@effect/io': 0.1.11
-  '@fp-ts/core': 0.2.0
+  '@effect/data': 0.2.0
+  '@effect/io': 0.3.0
 
 devDependencies:
   '@babel/cli': 7.20.7_@babel+core@7.20.12
@@ -665,17 +663,14 @@ packages:
       '@tsplus/stdlib': 0.2.8
     dev: true
 
-  /@effect/data/0.1.0:
-    resolution: {integrity: sha512-p9/AYs06o7IVyKRUvzq73+XnzmYQIkflo+F/IDMJRzulOEdfSyl3+Tvkw0pXVeXqlcKxlTSdos1VYs2wbRFQDg==}
-    dependencies:
-      '@fp-ts/core': 0.2.0
+  /@effect/data/0.2.0:
+    resolution: {integrity: sha512-1hSNjR0LX3zsGxCB8wykSNZ4OHXoA9NjeWlxgjmxcCOkYyMH+3exxJu/9GbkXt/35zaZE0KDFyMwfvrr20zRKw==}
     dev: false
 
-  /@effect/io/0.1.11:
-    resolution: {integrity: sha512-dQLGx6KhuEgGAbb5UDbBi0P+wtSsm33ojlcshf2Ho4soORDd2QRDOMC+ki1EzVENztBhRmUd9Yp8DyICBQtldw==}
+  /@effect/io/0.3.0:
+    resolution: {integrity: sha512-Vpp+CUkUolShXJ9uosGJu3uOojoCw7ifB23u3ffr7yogk8o60MIGi2vbbo6V9UZgSIGDDnURgyOX6i/0KQt12Q==}
     dependencies:
-      '@effect/data': 0.1.0
-      '@fp-ts/core': 0.2.0
+      '@effect/data': 0.2.0
     dev: false
 
   /@effect/language-service/0.0.19:
@@ -921,10 +916,6 @@ packages:
   /@fp-ts/core/0.0.11:
     resolution: {integrity: sha512-BCAJBYzghwoJpcUOARJ1tui50HoYJFlV2pJlVMlsEkDFhD8MTtq8xQVpZCRF66RmtkxtGBYINCQ+5H1lRaL35Q==}
     dev: true
-
-  /@fp-ts/core/0.2.0:
-    resolution: {integrity: sha512-oDMfMDId/Op6EHLTBZvhsW6d0XmXZDWQsvcZmC2wXGt+utv8hXGi41IJD8SwBJsvQvoJYe/NRTamDco4Bl7qsQ==}
-    dev: false
 
   /@fp-ts/data/0.0.41:
     resolution: {integrity: sha512-0S93kOQ91D7wp60q/PSVWvMsJjSWJutjt4qX/BvVNV7+fymuC2hTfW2HlE2OcMK11xCNiI6Rq2AkvyzoMhOlpg==}

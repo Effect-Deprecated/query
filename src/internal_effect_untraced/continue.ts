@@ -1,11 +1,11 @@
+import type * as Either from "@effect/data/Either"
+import * as Option from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
 import * as Ref from "@effect/io/Ref"
 import type * as DataSource from "@effect/query/DataSource"
 import * as queryFailure from "@effect/query/internal_effect_untraced/queryFailure"
 import type * as Query from "@effect/query/Query"
 import type * as Request from "@effect/query/Request"
-import type * as Either from "@fp-ts/core/Either"
-import * as Option from "@fp-ts/core/Option"
 
 /** @internal */
 export const ContinueTypeId: unique symbol = Symbol.for("@effect/query/Continue")
