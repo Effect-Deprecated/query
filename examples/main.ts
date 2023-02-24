@@ -4,9 +4,9 @@ import * as Effect from "@effect/io/Effect"
 import * as DataSource from "@effect/query/DataSource"
 import * as Query from "@effect/query/Query"
 import * as Request from "@effect/query/Request"
-import * as Either from "@fp-ts/core/Either"
-import { pipe } from "@fp-ts/core/Function"
-import * as ReadonlyArray from "@fp-ts/core/ReadonlyArray"
+import * as Either from "@effect/data/Either"
+import { pipe } from "@effect/data/Function"
+import * as ReadonlyArray from "@effect/data/ReadonlyArray"
 
 export const userIds: ReadonlyArray<number> = ReadonlyArray.range(1, 26)
 
