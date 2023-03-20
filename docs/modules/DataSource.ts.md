@@ -57,15 +57,15 @@ and `after`, where the result of `before` can be used by `after`.
 
 ```ts
 export declare const around: {
-  <R, A extends Request.Request<any, any>, R2, A2, R3, _>(
+  <R2, A2, R3, _>(
+    before: Described.Described<Effect.Effect<R2, never, A2>>,
+    after: Described.Described<(a: A2) => Effect.Effect<R3, never, _>>
+  ): <R, A>(self: DataSource<R, A>) => DataSource<R2 | R3 | R, A>
+  <R, A, R2, A2, R3, _>(
     self: DataSource<R, A>,
     before: Described.Described<Effect.Effect<R2, never, A2>>,
     after: Described.Described<(a: A2) => Effect.Effect<R3, never, _>>
   ): DataSource<R | R2 | R3, A>
-  <R2, A2, R3, _>(
-    before: Described.Described<Effect.Effect<R2, never, A2>>,
-    after: Described.Described<(a: A2) => Effect.Effect<R3, never, _>>
-  ): <R, A extends Request.Request<any, any>>(self: DataSource<R, A>) => DataSource<R2 | R3 | R, A>
 }
 ```
 
@@ -79,8 +79,8 @@ Returns a data source that executes at most `n` requests in parallel.
 
 ```ts
 export declare const batchN: {
-  <R, A extends Request.Request<any, any>>(self: DataSource<R, A>, n: number): DataSource<R, A>
-  (n: number): <R, A extends Request.Request<any, any>>(self: DataSource<R, A>) => DataSource<R, A>
+  (n: number): <R, A>(self: DataSource<R, A>) => DataSource<R, A>
+  <R, A>(self: DataSource<R, A>, n: number): DataSource<R, A>
 }
 ```
 
@@ -96,13 +96,13 @@ source can execute.
 
 ```ts
 export declare const contramap: {
+  <A extends Request.Request<any, any>, B extends Request.Request<any, any>>(f: Described.Described<(_: B) => A>): <R>(
+    self: DataSource<R, A>
+  ) => DataSource<R, B>
   <R, A extends Request.Request<any, any>, B extends Request.Request<any, any>>(
     self: DataSource<R, A>,
     f: Described.Described<(_: B) => A>
   ): DataSource<R, B>
-  <A extends Request.Request<any, any>, B extends Request.Request<any, any>>(f: Described.Described<(_: B) => A>): <R>(
-    self: DataSource<R, A>
-  ) => DataSource<R, B>
 }
 ```
 
@@ -118,13 +118,13 @@ this data source can execute.
 
 ```ts
 export declare const contramapEffect: {
+  <A extends Request.Request<any, any>, R2, B extends Request.Request<any, any>>(
+    f: Described.Described<(_: B) => Effect.Effect<R2, never, A>>
+  ): <R>(self: DataSource<R, A>) => DataSource<R2 | R, B>
   <R, A extends Request.Request<any, any>, R2, B extends Request.Request<any, any>>(
     self: DataSource<R, A>,
     f: Described.Described<(_: B) => Effect.Effect<R2, never, A>>
   ): DataSource<R | R2, B>
-  <A extends Request.Request<any, any>, R2, B extends Request.Request<any, any>>(
-    f: Described.Described<(_: B) => Effect.Effect<R2, never, A>>
-  ): <R>(self: DataSource<R, A>) => DataSource<R2 | R, B>
 }
 ```
 
@@ -140,6 +140,10 @@ data source or that data source can execute.
 
 ```ts
 export declare const eitherWith: {
+  <A extends Request.Request<any, any>, R2, B extends Request.Request<any, any>, C extends Request.Request<any, any>>(
+    that: DataSource<R2, B>,
+    f: Described.Described<(_: C) => Either.Either<A, B>>
+  ): <R>(self: DataSource<R, A>) => DataSource<R2 | R, C>
   <
     R,
     A extends Request.Request<any, any>,
@@ -151,10 +155,6 @@ export declare const eitherWith: {
     that: DataSource<R2, B>,
     f: Described.Described<(_: C) => Either.Either<A, B>>
   ): DataSource<R | R2, C>
-  <A extends Request.Request<any, any>, R2, B extends Request.Request<any, any>, C extends Request.Request<any, any>>(
-    that: DataSource<R2, B>,
-    f: Described.Described<(_: C) => Either.Either<A, B>>
-  ): <R>(self: DataSource<R, A>) => DataSource<R2 | R, C>
 }
 ```
 
@@ -170,13 +170,13 @@ source to complete and safely interrupting the loser.
 
 ```ts
 export declare const race: {
+  <R2, A2 extends Request.Request<any, any>>(that: DataSource<R2, A2>): <R, A extends Request.Request<any, any>>(
+    self: DataSource<R, A>
+  ) => DataSource<R2 | R, A2 | A>
   <R, A extends Request.Request<any, any>, R2, A2 extends Request.Request<any, any>>(
     self: DataSource<R, A>,
     that: DataSource<R2, A2>
   ): DataSource<R | R2, A | A2>
-  <R2, A2 extends Request.Request<any, any>>(that: DataSource<R2, A2>): <R, A extends Request.Request<any, any>>(
-    self: DataSource<R, A>
-  ) => DataSource<R2 | R, A2 | A>
 }
 ```
 
@@ -413,15 +413,15 @@ Provides this data source with part of its required context.
 
 ```ts
 export declare const contramapContext: {
-  <R, A extends Request.Request<any, any>, R0>(
-    self: DataSource<R, A>,
-    f: Described.Described<(context: Context.Context<R0>) => Context.Context<R>>
-  ): DataSource<R0, A>
   <R0, R>(f: Described.Described<(context: Context.Context<R0>) => Context.Context<R>>): <
     A extends Request.Request<any, any>
   >(
     self: DataSource<R, A>
   ) => DataSource<R0, A>
+  <R, A extends Request.Request<any, any>, R0>(
+    self: DataSource<R, A>,
+    f: Described.Described<(context: Context.Context<R0>) => Context.Context<R>>
+  ): DataSource<R0, A>
 }
 ```
 
@@ -435,13 +435,13 @@ Provides this data source with its required context.
 
 ```ts
 export declare const provideContext: {
+  <R>(context: Described.Described<Context.Context<R>>): <A extends Request.Request<any, any>>(
+    self: DataSource<R, A>
+  ) => DataSource<never, A>
   <R, A extends Request.Request<any, any>>(
     self: DataSource<R, A>,
     context: Described.Described<Context.Context<R>>
   ): DataSource<never, A>
-  <R>(context: Described.Described<Context.Context<R>>): <A extends Request.Request<any, any>>(
-    self: DataSource<R, A>
-  ) => DataSource<never, A>
 }
 ```
 

@@ -9,7 +9,7 @@ import type { LazyArg } from "@effect/data/Function"
 import type * as Option from "@effect/data/Option"
 import type * as Cause from "@effect/io/Cause"
 import type * as Debug from "@effect/io/Debug"
-import type * as Effect from "@effect/io/Effect"
+import * as Effect from "@effect/io/Effect"
 import type * as Layer from "@effect/io/Layer"
 import type * as Cache from "@effect/query/Cache"
 import type * as DataSource from "@effect/query/DataSource"
@@ -75,7 +75,7 @@ export interface Query<R, E, A> extends Query.Variance<R, E, A>, Effect.Effect<R
   traced(trace: Debug.Trace): Query<R, E, A>
 
   /** @internal */
-  readonly step: Effect.Effect<R, never, Result.Result<R, E, A>>
+  readonly i0: Effect.Effect<R, never, Result.Result<R, E, A>>
 }
 
 /**
@@ -460,6 +460,26 @@ export const fromRequestUncached: <R, A extends Request.Request<any, any>, A2 ex
   request: A,
   dataSource: DataSource.DataSource<R, A2>
 ) => Query<R, Request.Request.Error<A>, Request.Request.Success<A>> = internal.fromRequestUncached
+
+
+/**
+ * This function returns `true` if the specified value is an `Query` value,
+ * `false` otherwise.
+ *
+ * This function can be useful for checking the type of a value before
+ * attempting to operate on it as an `Query` value. For example, you could
+ * use `isQuery` to check the type of a value before using it as an
+ * argument to a function that expects an `Query` value.
+ *
+ * @param u - The value to check for being an `Query` value.
+ *
+ * @returns `true` if the specified value is an `Query` value, `false`
+ * otherwise.
+ *
+ * @since 1.0.0
+ * @category refinements
+ */
+export const isQuery: (u: unknown) => u is Query<any, any, any> = internal.isQuery
 
 /**
  * "Zooms in" on the value in the `Left` side of an `Either`, moving the

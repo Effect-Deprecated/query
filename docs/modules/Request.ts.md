@@ -97,14 +97,14 @@ Complete a `Request` with the specified result.
 
 ```ts
 export declare const complete: {
+  <A extends Request<any, any>>(result: Request.Result<A>): (
+    self: A
+  ) => Effect.Effect<CompletedRequestMap.CompletedRequestMap, never, void>
   <A extends Request<any, any>>(self: A, result: Request.Result<A>): Effect.Effect<
     CompletedRequestMap.CompletedRequestMap,
     never,
     void
   >
-  <A extends Request<any, any>>(result: Request.Result<A>): (
-    self: A
-  ) => Effect.Effect<CompletedRequestMap.CompletedRequestMap, never, void>
 }
 ```
 
@@ -120,13 +120,13 @@ the request with the value of the effect workflow if it succeeds.
 
 ```ts
 export declare const completeEffect: {
+  <A extends Request<any, any>, R>(effect: Effect.Effect<R, Request.Error<A>, Request.Success<A>>): (
+    self: A
+  ) => Effect.Effect<CompletedRequestMap.CompletedRequestMap | R, never, void>
   <A extends Request<any, any>, R>(
     self: A,
     effect: Effect.Effect<R, Request.Error<A>, Request.Success<A>>
   ): Effect.Effect<CompletedRequestMap.CompletedRequestMap | R, never, void>
-  <A extends Request<any, any>, R>(effect: Effect.Effect<R, Request.Error<A>, Request.Success<A>>): (
-    self: A
-  ) => Effect.Effect<CompletedRequestMap.CompletedRequestMap | R, never, void>
 }
 ```
 
@@ -140,14 +140,14 @@ Complete a `Request` with the specified error.
 
 ```ts
 export declare const fail: {
+  <A extends Request<any, any>>(error: Request.Error<A>): (
+    self: A
+  ) => Effect.Effect<CompletedRequestMap.CompletedRequestMap, never, void>
   <A extends Request<any, any>>(self: A, error: Request.Error<A>): Effect.Effect<
     CompletedRequestMap.CompletedRequestMap,
     never,
     void
   >
-  <A extends Request<any, any>>(error: Request.Error<A>): (
-    self: A
-  ) => Effect.Effect<CompletedRequestMap.CompletedRequestMap, never, void>
 }
 ```
 
@@ -161,14 +161,14 @@ Complete a `Request` with the specified value.
 
 ```ts
 export declare const succeed: {
+  <A extends Request<any, any>>(value: Request.Success<A>): (
+    self: A
+  ) => Effect.Effect<CompletedRequestMap.CompletedRequestMap, never, void>
   <A extends Request<any, any>>(self: A, value: Request.Success<A>): Effect.Effect<
     CompletedRequestMap.CompletedRequestMap,
     never,
     void
   >
-  <A extends Request<any, any>>(value: Request.Success<A>): (
-    self: A
-  ) => Effect.Effect<CompletedRequestMap.CompletedRequestMap, never, void>
 }
 ```
 

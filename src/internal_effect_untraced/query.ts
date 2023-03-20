@@ -43,6 +43,10 @@ export const QueryTypeId: Query.QueryTypeId = Symbol.for(
 ) as Query.QueryTypeId
 
 /** @internal */
+export const isQuery = (u: unknown): u is Query.Query<any, any, any> =>
+  typeof u === "object" && u !== null && QueryTypeId in u
+
+/** @internal */
 const queryVariance = {
   _R: (_: never) => _,
   _E: (_: never) => _,
@@ -52,8 +56,15 @@ const queryVariance = {
 /** @internal */
 class QueryImpl<R, E, A> implements Query.Query<R, E, A> {
   readonly _tag = "Commit"
-  readonly [QueryTypeId] = queryVariance
-  constructor(readonly step: Effect.Effect<R, never, Result.Result<R, E, A>>, readonly trace?: Debug.Trace) {}
+  get [QueryTypeId]() {
+    return queryVariance
+  }
+  public trace = undefined
+  constructor(
+    readonly i0: Effect.Effect<R, never, Result.Result<R, E, A>>,
+    readonly i1: any = undefined,
+    readonly i2: any = undefined
+  ) {}
 
   [Equal.symbol](that: unknown) {
     return this === that
@@ -67,7 +78,7 @@ class QueryImpl<R, E, A> implements Query.Query<R, E, A> {
 
   traced(trace: Debug.Trace): Query.Query<R, E, A> {
     if (trace) {
-      return new QueryImpl(matchCauseQuery(this, failCause, succeed).step.traced(trace))
+      return new QueryImpl(matchCauseQuery(this, failCause, succeed).i0.traced(trace))
     }
     return this
   }
@@ -202,7 +213,7 @@ export const contramapContext = Debug.dualWithTrace<
     ) =>
       new QueryImpl(
         Effect.contramapContext(
-          Effect.map(self.step, (result) => contramapContextResult(result, f)),
+          Effect.map(self.i0, (result) => contramapContextResult(result, f)),
           (context: Context.Context<R0>) => restore(f.value)(context)
         ).traced(trace)
       )
@@ -246,7 +257,7 @@ export const ensuring = Debug.untracedDual<
 /** @internal */
 export const fail = Debug.methodWithTrace((trace) =>
   <E>(error: E): Query.Query<never, E, never> =>
-    new QueryImpl(Effect.succeed(Result.fail(Cause.fail(error))).traced(trace))
+    new QueryImpl(Effect.succeed(Result.fail(Cause.fail(error))).traced(trace), "Fail", error)
 )
 
 /** @internal */
@@ -279,7 +290,7 @@ export const flatMap = Debug.dualWithTrace<
 >(2, (trace, restore) =>
   (self, f) =>
     new QueryImpl(
-      Effect.flatMap(self.step, (result) => {
+      Effect.flatMap(self.i0, (result) => {
         switch (result._tag) {
           case "Blocked": {
             return Effect.succeed(
@@ -290,7 +301,7 @@ export const flatMap = Debug.dualWithTrace<
             )
           }
           case "Done": {
-            return restore(f)(result.value).step
+            return restore(f)(result.value).i0
           }
           case "Fail": {
             return Effect.succeed(Result.fail(result.cause))
@@ -389,7 +400,7 @@ export const forEachPar = Debug.untracedDual<
       }
       return new QueryImpl(
         Effect.map(
-          Effect.forEachPar(chunk, (a) => restore(f)(a).step),
+          Effect.forEachPar(chunk, (a) => restore(f)(a).i0),
           collectAllParResult
         )
       )
@@ -482,7 +493,7 @@ export const map = Debug.dualWithTrace<
   (self, f) =>
     new QueryImpl(
       Effect.map(
-        self.step,
+        self.i0,
         (result) => mapResult(result, restore(f))
       ).traced(trace)
     ))
@@ -512,7 +523,7 @@ export const mapDataSources = Debug.dualWithTrace<
   (self, f) =>
     new QueryImpl(
       Effect.map(
-        self.step,
+        self.i0,
         (result) => mapDataSourcesResult(result, restore(f))
       ).traced(trace)
     ))
@@ -578,8 +589,8 @@ export const matchCauseQuery = Debug.dualWithTrace<
   ) =>
     new QueryImpl(
       Effect.matchCauseEffect(
-        self.step,
-        (cause) => restore(onFailure)(cause).step,
+        self.i0,
+        (cause) => restore(onFailure)(cause).i0,
         (result): Effect.Effect<
           R | R2 | R3,
           never,
@@ -595,10 +606,10 @@ export const matchCauseQuery = Debug.dualWithTrace<
               )
             }
             case "Done": {
-              return restore(onSuccess)(result.value).step
+              return restore(onSuccess)(result.value).i0
             }
             case "Fail": {
-              return restore(onFailure)(result.cause).step
+              return restore(onFailure)(result.cause).i0
             }
           }
         }
@@ -728,7 +739,7 @@ export const provideLayer = Debug.dualWithTrace<
           Effect.exit(Layer.build(layer.value)),
           Effect.flatMap(Exit.match(
             (e): Effect.Effect<R0, never, Result.Result<R0, E | E2, A>> => Effect.succeed(Result.fail(e)),
-            (c) => provideContext(self, described.make(c, layer.description)).step
+            (c) => provideContext(self, described.make(c, layer.description)).i0
           ))
         )
       ).traced(trace)
@@ -817,8 +828,8 @@ export const race = Debug.dualWithTrace<
       query: Query.Query<R | R2, E | E2, A | A2>,
       fiber: Fiber.Fiber<never, Result.Result<R | R2, E | E2, A | A2>>
     ): Query.Query<R | R2, E | E2, A | A2> =>
-      new QueryImpl(Effect.raceWith(query.step, Fiber.join(fiber), coordinate, coordinate))
-    return new QueryImpl(Effect.raceWith(self.step, that.step, coordinate, coordinate).traced(trace))
+      new QueryImpl(Effect.raceWith(query.i0, Fiber.join(fiber), coordinate, coordinate))
+    return new QueryImpl(Effect.raceWith(self.i0, that.i0, coordinate, coordinate).traced(trace))
   })
 
 /** @internal */
@@ -870,7 +881,7 @@ export const runCache = Debug.dualWithTrace<
 >(2, (trace) =>
   <R, E, A>(self: Query.Query<R, E, A>, cache: Cache.Cache) => {
     const runInternal = (query: Query.Query<R, E, A>): Effect.Effect<R, E, A> =>
-      Effect.flatMap(query.step, (result) => {
+      Effect.flatMap(query.i0, (result) => {
         switch (result._tag) {
           case "Blocked": {
             switch (result.continue._tag) {
@@ -994,7 +1005,8 @@ export const someOrFail = Debug.untracedDual<
 
 /** @internal */
 export const succeed = Debug.methodWithTrace((trace) =>
-  <A>(value: A): Query.Query<never, never, A> => new QueryImpl(Effect.succeed(Result.done(value)).traced(trace))
+  <A>(value: A): Query.Query<never, never, A> =>
+    new QueryImpl(Effect.succeed(Result.done(value)).traced(trace), "Succeed", value)
 )
 
 /** @internal */
@@ -1121,7 +1133,7 @@ export const timeoutTo = Debug.untracedDual<
     const race = (query: Query.Query<R, E, B | B2>, fiber: Fiber.Fiber<never, B | B2>): Query.Query<R, E, B | B2> =>
       new QueryImpl(
         Effect.raceWith(
-          query.step,
+          query.i0,
           Fiber.join(fiber),
           (leftExit, rightFiber) =>
             Exit.matchEffect(
@@ -1415,7 +1427,7 @@ export const zipWith: {
 >(3, (trace, restore) =>
   (self, that, f) =>
     new QueryImpl(
-      Effect.flatMap(self.step, (result) => {
+      Effect.flatMap(self.i0, (result) => {
         switch (result._tag) {
           case "Blocked": {
             switch (result.continue._tag) {
@@ -1428,7 +1440,7 @@ export const zipWith: {
                 )
               }
               case "Get": {
-                return Effect.map(that.step, (thatResult) => {
+                return Effect.map(that.i0, (thatResult) => {
                   switch (thatResult._tag) {
                     case "Blocked": {
                       return Result.blocked(
@@ -1451,7 +1463,7 @@ export const zipWith: {
             }
           }
           case "Done": {
-            return Effect.map(that.step, (thatResult) => {
+            return Effect.map(that.i0, (thatResult) => {
               switch (thatResult._tag) {
                 case "Blocked": {
                   return Result.blocked(
@@ -1489,8 +1501,8 @@ export const zipWithBatched = Debug.untracedDual<
 >(3, (restore) =>
   (self, that, f) =>
     new QueryImpl(Effect.zipWith(
-      self.step,
-      that.step,
+      self.i0,
+      that.i0,
       (selfResult, thatResult) => {
         if (Result.isBlocked(selfResult) && Result.isBlocked(thatResult)) {
           return Result.blocked(
@@ -1542,8 +1554,8 @@ export const zipWithPar = Debug.untracedDual<
 >(3, (restore) =>
   (self, that, f) =>
     new QueryImpl(Effect.zipWithPar(
-      self.step,
-      that.step,
+      self.i0,
+      that.i0,
       (selfResult, thatResult) => {
         if (Result.isBlocked(selfResult) && Result.isBlocked(thatResult)) {
           return Result.blocked(

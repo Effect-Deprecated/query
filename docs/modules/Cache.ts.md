@@ -55,14 +55,14 @@ has been executed.
 
 ```ts
 export declare const get: {
+  <E, A>(request: Request.Request<E, A>): (
+    self: Cache
+  ) => Effect.Effect<never, void, Ref.Ref<Option.Option<Either.Either<E, A>>>>
   <E, A>(self: Cache, request: Request.Request<E, A>): Effect.Effect<
     never,
     void,
     Ref.Ref<Option.Option<Either.Either<E, A>>>
   >
-  <E, A>(request: Request.Request<E, A>): (
-    self: Cache
-  ) => Effect.Effect<never, void, Ref.Ref<Option.Option<Either.Either<E, A>>>>
 }
 ```
 
@@ -80,14 +80,14 @@ either contains `Some` with a result if the request has been executed or
 
 ```ts
 export declare const lookup: {
-  <E, A>(self: Cache, request: Request.Request<E, A>): Effect.Effect<
+  <E, A>(request: Request.Request<E, A>): (
+    self: Cache
+  ) => Effect.Effect<
     never,
     never,
     Either.Either<Ref.Ref<Option.Option<Either.Either<E, A>>>, Ref.Ref<Option.Option<Either.Either<E, A>>>>
   >
-  <E, A>(request: Request.Request<E, A>): (
-    self: Cache
-  ) => Effect.Effect<
+  <E, A>(self: Cache, request: Request.Request<E, A>): Effect.Effect<
     never,
     never,
     Either.Either<Ref.Ref<Option.Option<Either.Either<E, A>>>, Ref.Ref<Option.Option<Either.Either<E, A>>>>
@@ -161,8 +161,8 @@ Removes a request from the cache.
 
 ```ts
 export declare const remove: {
-  <E, A>(self: Cache, request: Request.Request<E, A>): Effect.Effect<never, never, void>
   <E, A>(request: Request.Request<E, A>): (self: Cache) => Effect.Effect<never, never, void>
+  <E, A>(self: Cache, request: Request.Request<E, A>): Effect.Effect<never, never, void>
 }
 ```
 
@@ -177,14 +177,14 @@ when it is executed into the cache.
 
 ```ts
 export declare const set: {
+  <E, A>(request: Request.Request<E, A>, result: Ref.Ref<Option.Option<Either.Either<E, A>>>): (
+    self: Cache
+  ) => Effect.Effect<never, never, void>
   <E, A>(
     self: Cache,
     request: Request.Request<E, A>,
     result: Ref.Ref<Option.Option<Either.Either<E, A>>>
   ): Effect.Effect<never, never, void>
-  <E, A>(request: Request.Request<E, A>, result: Ref.Ref<Option.Option<Either.Either<E, A>>>): (
-    self: Cache
-  ) => Effect.Effect<never, never, void>
 }
 ```
 

@@ -46,7 +46,7 @@ export const CacheDataSource: Context.Tag<CacheDataSource> = Context.Tag<CacheDa
 export const layer: Layer.Layer<never, never, CacheDataSource> = Layer.effect(
   CacheDataSource,
   Effect.map(
-    Effect.tuple(
+    Effect.all(
       Ref.make(HashMap.empty<number, number>()),
       Ref.make<ReadonlyArray<ReadonlyArray<HashSet.HashSet<CacheRequest>>>>([])
     ),

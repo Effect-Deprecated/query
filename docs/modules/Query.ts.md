@@ -108,6 +108,8 @@ Added in v1.0.0
   - [mapErrorCause](#maperrorcause)
 - [models](#models)
   - [Query (interface)](#query-interface)
+- [refinements](#refinements)
+  - [isQuery](#isquery)
 - [sequencing](#sequencing)
   - [flatMap](#flatmap)
   - [flatten](#flatten)
@@ -160,15 +162,15 @@ where the result of `before` can be used by `after`.
 
 ```ts
 export declare const around: {
+  <R2, A2, R3, _>(
+    before: Described.Described<Effect.Effect<R2, never, A2>>,
+    after: Described.Described<(a: A2) => Effect.Effect<R3, never, _>>
+  ): <R, E, A>(self: Query<R, E, A>) => Query<R2 | R3 | R, E, A>
   <R, E, A, R2, A2, R3, _>(
     self: Query<R, E, A>,
     before: Described.Described<Effect.Effect<R2, never, A2>>,
     after: Described.Described<(a: A2) => Effect.Effect<R3, never, _>>
   ): Query<R | R2 | R3, E, A>
-  <R2, A2, R3, _>(
-    before: Described.Described<Effect.Effect<R2, never, A2>>,
-    after: Described.Described<(a: A2) => Effect.Effect<R3, never, _>>
-  ): <R, E, A>(self: Query<R, E, A>) => Query<R2 | R3 | R, E, A>
 }
 ```
 
@@ -263,8 +265,8 @@ Limits the query data sources to execute at most `n` requests in parallel.
 
 ```ts
 export declare const maxBatchSize: {
-  <R, E, A>(self: Query<R, E, A>, n: number): Query<R, E, A>
   (n: number): <R, E, A>(self: Query<R, E, A>) => Query<R, E, A>
+  <R, E, A>(self: Query<R, E, A>, n: number): Query<R, E, A>
 }
 ```
 
@@ -293,14 +295,14 @@ Requests will be executed sequentially and will be pipelined.
 
 ```ts
 export declare const partitionQuery: {
+  <A, R, E, B>(f: (a: A) => Query<R, E, B>): (
+    elements: Iterable<A>
+  ) => Query<R, never, readonly [Chunk.Chunk<E>, Chunk.Chunk<B>]>
   <A, R, E, B>(elements: Iterable<A>, f: (a: A) => Query<R, E, B>): Query<
     R,
     never,
     readonly [Chunk.Chunk<E>, Chunk.Chunk<B>]
   >
-  <A, R, E, B>(f: (a: A) => Query<R, E, B>): (
-    elements: Iterable<A>
-  ) => Query<R, never, readonly [Chunk.Chunk<E>, Chunk.Chunk<B>]>
 }
 ```
 
@@ -316,14 +318,14 @@ Requests will be executed in parallel and will be batched.
 
 ```ts
 export declare const partitionQueryPar: {
+  <A, R, E, B>(f: (a: A) => Query<R, E, B>): (
+    elements: Iterable<A>
+  ) => Query<R, never, readonly [Chunk.Chunk<E>, Chunk.Chunk<B>]>
   <A, R, E, B>(elements: Iterable<A>, f: (a: A) => Query<R, E, B>): Query<
     R,
     never,
     readonly [Chunk.Chunk<E>, Chunk.Chunk<B>]
   >
-  <A, R, E, B>(f: (a: A) => Query<R, E, B>): (
-    elements: Iterable<A>
-  ) => Query<R, never, readonly [Chunk.Chunk<E>, Chunk.Chunk<B>]>
 }
 ```
 
@@ -338,8 +340,8 @@ first to complete successfully and safely interrupting the other.
 
 ```ts
 export declare const race: {
-  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, that: Query<R2, E2, A2>): Query<R | R2, E | E2, A | A2>
   <R2, E2, A2>(that: Query<R2, E2, A2>): <R, E, A>(self: Query<R, E, A>) => Query<R2 | R, E2 | E, A2 | A>
+  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, that: Query<R2, E2, A2>): Query<R | R2, E | E2, A | A2>
 }
 ```
 
@@ -379,13 +381,13 @@ errors and defects alike, as in:
 
 ```ts
 export declare const sandboxWith: {
+  <R, E, A, R2, E2, A2>(f: (self: Query<R, Cause.Cause<E>, A>) => Query<R2, Cause.Cause<E2>, A2>): (
+    self: Query<R, E, A>
+  ) => Query<R | R2, E2, A | A2>
   <R, E, A, R2, E2, A2>(
     self: Query<R, E, A>,
     f: (self: Query<R, Cause.Cause<E>, A>) => Query<R2, Cause.Cause<E2>, A2>
   ): Query<R | R2, E2, A | A2>
-  <R, E, A, R2, E2, A2>(f: (self: Query<R, Cause.Cause<E>, A>) => Query<R2, Cause.Cause<E2>, A2>): (
-    self: Query<R, E, A>
-  ) => Query<R | R2, E2, A | A2>
 }
 ```
 
@@ -414,8 +416,8 @@ Extracts the optional value or succeeds with the given 'default' value.
 
 ```ts
 export declare const someOrElse: {
-  <R, E, A, B>(self: Query<R, E, Option.Option<A>>, def: LazyArg<B>): Query<R, E, A | B>
   <A, B>(def: LazyArg<B>): <R, E>(self: Query<R, E, Option.Option<A>>) => Query<R, E, A | B>
+  <R, E, A, B>(self: Query<R, E, Option.Option<A>>, def: LazyArg<B>): Query<R, E, A | B>
 }
 ```
 
@@ -429,14 +431,14 @@ Extracts the optional value or executes the given 'default' query.
 
 ```ts
 export declare const someOrElseEffect: {
+  <R2, E2, A2>(def: LazyArg<Query<R2, E2, A2>>): <R, E, A>(
+    self: Query<R, E, Option.Option<A>>
+  ) => Query<R2 | R, E2 | E, A2 | A>
   <R, E, A, R2, E2, A2>(self: Query<R, E, Option.Option<A>>, def: LazyArg<Query<R2, E2, A2>>): Query<
     R | R2,
     E | E2,
     A | A2
   >
-  <R2, E2, A2>(def: LazyArg<Query<R2, E2, A2>>): <R, E, A>(
-    self: Query<R, E, Option.Option<A>>
-  ) => Query<R2 | R, E2 | E, A2 | A>
 }
 ```
 
@@ -450,8 +452,8 @@ Extracts the optional value or fails with the given error `e`.
 
 ```ts
 export declare const someOrFail: {
-  <R, E, A, E2>(self: Query<R, E, Option.Option<A>>, error: LazyArg<E2>): Query<R, E | E2, A>
   <E2>(error: LazyArg<E2>): <R, E, A>(self: Query<R, E, Option.Option<A>>) => Query<R, E2 | E, A>
+  <R, E, A, E2>(self: Query<R, E, Option.Option<A>>, error: LazyArg<E2>): Query<R, E | E2, A>
 }
 ```
 
@@ -467,14 +469,14 @@ execution.
 
 ```ts
 export declare const summarized: {
+  <R2, E2, B, C>(summary: Effect.Effect<R2, E2, B>, f: (start: B, end: B) => C): <R, E, A>(
+    self: Query<R, E, A>
+  ) => Query<R2 | R, E2 | E, readonly [C, A]>
   <R, E, A, R2, E2, B, C>(self: Query<R, E, A>, summary: Effect.Effect<R2, E2, B>, f: (start: B, end: B) => C): Query<
     R | R2,
     E | E2,
     readonly [C, A]
   >
-  <R2, E2, B, C>(summary: Effect.Effect<R2, E2, B>, f: (start: B, end: B) => C): <R, E, A>(
-    self: Query<R, E, A>
-  ) => Query<R2 | R, E2 | E, readonly [C, A]>
 }
 ```
 
@@ -501,8 +503,8 @@ timeout elapses before the query was completed.
 
 ```ts
 export declare const timeout: {
-  <R, E, A>(self: Query<R, E, A>, duration: Duration.Duration): Query<R, E, Option.Option<A>>
   (duration: Duration.Duration): <R, E, A>(self: Query<R, E, A>) => Query<R, E, Option.Option<A>>
+  <R, E, A>(self: Query<R, E, A>, duration: Duration.Duration): Query<R, E, Option.Option<A>>
 }
 ```
 
@@ -517,8 +519,8 @@ of timeout, it will produce the specified error.
 
 ```ts
 export declare const timeoutFail: {
-  <R, E, A, E2>(self: Query<R, E, A>, error: LazyArg<E2>, duration: Duration.Duration): Query<R, E | E2, A>
   <E2>(error: LazyArg<E2>, duration: Duration.Duration): <R, E, A>(self: Query<R, E, A>) => Query<R, E2 | E, A>
+  <R, E, A, E2>(self: Query<R, E, A>, error: LazyArg<E2>, duration: Duration.Duration): Query<R, E | E2, A>
 }
 ```
 
@@ -533,14 +535,14 @@ of timeout, it will produce the specified failure.
 
 ```ts
 export declare const timeoutFailCause: {
+  <E2>(evaluate: LazyArg<Cause.Cause<E2>>, duration: Duration.Duration): <R, E, A>(
+    self: Query<R, E, A>
+  ) => Query<R, E2 | E, A>
   <R, E, A, E2>(self: Query<R, E, A>, evaluate: LazyArg<Cause.Cause<E2>>, duration: Duration.Duration): Query<
     R,
     E | E2,
     A
   >
-  <E2>(evaluate: LazyArg<Cause.Cause<E2>>, duration: Duration.Duration): <R, E, A>(
-    self: Query<R, E, A>
-  ) => Query<R, E2 | E, A>
 }
 ```
 
@@ -556,8 +558,8 @@ of applying the function `f` to the successful result of the query.
 
 ```ts
 export declare const timeoutTo: {
-  <R, E, A, B2, B>(self: Query<R, E, A>, def: B2, f: (a: A) => B, duration: Duration.Duration): Query<R, E, B2 | B>
   <B2, A, B>(def: B2, f: (a: A) => B, duration: Duration.Duration): <R, E>(self: Query<R, E, A>) => Query<R, E, B2 | B>
+  <R, E, A, B2, B>(self: Query<R, E, A>, def: B2, f: (a: A) => B, duration: Duration.Duration): Query<R, E, B2 | B>
 }
 ```
 
@@ -609,8 +611,8 @@ Takes some fiber failures and converts them into errors.
 
 ```ts
 export declare const unrefine: {
-  <R, E, A, E2>(self: Query<R, E, A>, pf: (defect: unknown) => Option.Option<E2>): Query<R, E | E2, A>
   <E, E2>(pf: (defect: unknown) => Option.Option<E2>): <R, A>(self: Query<R, E, A>) => Query<R, E | E2, A>
+  <R, E, A, E2>(self: Query<R, E, A>, pf: (defect: unknown) => Option.Option<E2>): Query<R, E | E2, A>
 }
 ```
 
@@ -625,14 +627,14 @@ specified function to convert the error.
 
 ```ts
 export declare const unrefineWith: {
+  <E, E2, E3>(pf: (defect: unknown) => Option.Option<E2>, f: (error: E) => E3): <R, A>(
+    self: Query<R, E, A>
+  ) => Query<R, E2 | E3, A>
   <R, E, A, E2, E3>(self: Query<R, E, A>, pf: (defect: unknown) => Option.Option<E2>, f: (error: E) => E3): Query<
     R,
     E2 | E3,
     A
   >
-  <E, E2, E3>(pf: (defect: unknown) => Option.Option<E2>, f: (error: E) => E3): <R, A>(
-    self: Query<R, E, A>
-  ) => Query<R, E2 | E3, A>
 }
 ```
 
@@ -968,13 +970,13 @@ Provides this query with part of its required context.
 
 ```ts
 export declare const contramapContext: {
+  <R0, R>(f: Described.Described<(context: Context.Context<R0>) => Context.Context<R>>): <E, A>(
+    self: Query<R, E, A>
+  ) => Query<R0, E, A>
   <R, E, A, R0>(
     self: Query<R, E, A>,
     f: Described.Described<(context: Context.Context<R0>) => Context.Context<R>>
   ): Query<R0, E, A>
-  <R0, R>(f: Described.Described<(context: Context.Context<R0>) => Context.Context<R>>): <E, A>(
-    self: Query<R, E, A>
-  ) => Query<R0, E, A>
 }
 ```
 
@@ -988,8 +990,8 @@ Provides this query with its required context.
 
 ```ts
 export declare const provideContext: {
-  <R, E, A>(self: Query<R, E, A>, context: Described.Described<Context.Context<R>>): Query<never, E, A>
   <R>(context: Described.Described<Context.Context<R>>): <E, A>(self: Query<R, E, A>) => Query<never, E, A>
+  <R, E, A>(self: Query<R, E, A>, context: Described.Described<Context.Context<R>>): Query<never, E, A>
 }
 ```
 
@@ -1003,8 +1005,8 @@ Provides a layer to this query, which translates it to another level.
 
 ```ts
 export declare const provideLayer: {
-  <R, E, A, R0, E2>(self: Query<R, E, A>, layer: Described.Described<Layer.Layer<R0, E2, R>>): Query<R0, E | E2, A>
   <R0, E2, R>(layer: Described.Described<Layer.Layer<R0, E2, R>>): <E, A>(self: Query<R, E, A>) => Query<R0, E2 | E, A>
+  <R, E, A, R0, E2>(self: Query<R, E, A>, layer: Described.Described<Layer.Layer<R0, E2, R>>): Query<R0, E | E2, A>
 }
 ```
 
@@ -1019,14 +1021,14 @@ specified layer and leaving the remainder `R0`.
 
 ```ts
 export declare const provideSomeLayer: {
+  <R2, E2, A2>(layer: Described.Described<Layer.Layer<R2, E2, A2>>): <R, E, A>(
+    self: Query<R, E, A>
+  ) => Query<R2 | Exclude<R, A2>, E2 | E, A>
   <R, E, A, R2, E2, A2>(self: Query<R, E, A>, layer: Described.Described<Layer.Layer<R2, E2, A2>>): Query<
     R2 | Exclude<R, A2>,
     E | E2,
     A
   >
-  <R2, E2, A2>(layer: Described.Described<Layer.Layer<R2, E2, A2>>): <R, E, A>(
-    self: Query<R, E, A>
-  ) => Query<R2 | Exclude<R, A2>, E2 | E, A>
 }
 ```
 
@@ -1112,8 +1114,8 @@ cache.
 
 ```ts
 export declare const runCache: {
-  <R, E, A>(self: Query<R, E, A>, cache: Cache.Cache): Effect.Effect<R, E, A>
   (cache: Cache.Cache): <R, E, A>(self: Query<R, E, A>) => Effect.Effect<R, E, A>
+  <R, E, A>(self: Query<R, E, A>, cache: Cache.Cache): Effect.Effect<R, E, A>
 }
 ```
 
@@ -1142,8 +1144,8 @@ Recovers from all expected errors.
 
 ```ts
 export declare const catchAll: {
-  <R, A, E, R2, E2, A2>(self: Query<R, E, A>, f: (error: E) => Query<R2, E2, A2>): Query<R | R2, E2, A | A2>
   <E, R2, E2, A2>(f: (error: E) => Query<R2, E2, A2>): <R, A>(self: Query<R, E, A>) => Query<R2 | R, E2, A2 | A>
+  <R, A, E, R2, E2, A2>(self: Query<R, E, A>, f: (error: E) => Query<R2, E2, A2>): Query<R | R2, E2, A | A2>
 }
 ```
 
@@ -1158,14 +1160,14 @@ Recovers from all errors, both expected and unexpected, with provided
 
 ```ts
 export declare const catchAllCause: {
+  <E, R2, E2, A2>(f: (cause: Cause.Cause<E>) => Query<R2, E2, A2>): <R, A>(
+    self: Query<R, E, A>
+  ) => Query<R2 | R, E2, A2 | A>
   <R, E, A, R2, E2, A2>(self: Query<R, E, A>, f: (cause: Cause.Cause<E>) => Query<R2, E2, A2>): Query<
     R | R2,
     E2,
     A | A2
   >
-  <E, R2, E2, A2>(f: (cause: Cause.Cause<E>) => Query<R2, E2, A2>): <R, A>(
-    self: Query<R, E, A>
-  ) => Query<R2 | R, E2, A2 | A>
 }
 ```
 
@@ -1192,8 +1194,8 @@ specified function to map the error to a defect.
 
 ```ts
 export declare const orDieWith: {
-  <R, E, A>(self: Query<R, E, A>, f: (error: E) => unknown): Query<R, never, A>
   <E>(f: (error: E) => unknown): <R, A>(self: Query<R, E, A>) => Query<R, never, A>
+  <R, E, A>(self: Query<R, E, A>, f: (error: E) => unknown): Query<R, never, A>
 }
 ```
 
@@ -1207,8 +1209,8 @@ Keeps some of the errors, and terminates the query with the rest.
 
 ```ts
 export declare const refineOrDie: {
-  <R, E, A, E2>(self: Query<R, E, A>, pf: (error: E) => Option.Option<E2>): Query<R, E2, A>
   <E, E2>(pf: (error: E) => Option.Option<E2>): <R, A>(self: Query<R, E, A>) => Query<R, E2, A>
+  <R, E, A, E2>(self: Query<R, E, A>, pf: (error: E) => Option.Option<E2>): Query<R, E2, A>
 }
 ```
 
@@ -1223,10 +1225,10 @@ specified function to convert the `E` into a defect.
 
 ```ts
 export declare const refineOrDieWith: {
-  <R, E, A, E2>(self: Query<R, E, A>, pf: (error: E) => Option.Option<E2>, f: (error: E) => unknown): Query<R, E2, A>
   <E, E2>(pf: (error: E) => Option.Option<E2>, f: (error: E) => unknown): <R, A>(
     self: Query<R, E, A>
   ) => Query<R, E2, A>
+  <R, E, A, E2>(self: Query<R, E, A>, pf: (error: E) => Option.Option<E2>, f: (error: E) => unknown): Query<R, E2, A>
 }
 ```
 
@@ -1244,8 +1246,8 @@ success or failure.
 
 ```ts
 export declare const ensuring: {
-  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, finalizer: Query<R2, E2, A2>): Query<R | R2, E | E2, A>
   <R2, E2, A2>(finalizer: Query<R2, E2, A2>): <R, E, A>(self: Query<R, E, A>) => Query<R2 | R, E2 | E, A>
+  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, finalizer: Query<R2, E2, A2>): Query<R | R2, E | E2, A>
 }
 ```
 
@@ -1263,8 +1265,8 @@ right function passed to `match`.
 
 ```ts
 export declare const match: {
-  <R, E, A, Z>(self: Query<R, E, A>, onFailure: (error: E) => Z, onSuccess: (value: A) => Z): Query<R, never, Z>
   <E, Z, A>(onFailure: (error: E) => Z, onSuccess: (value: A) => Z): <R>(self: Query<R, E, A>) => Query<R, never, Z>
+  <R, E, A, Z>(self: Query<R, E, A>, onFailure: (error: E) => Z, onSuccess: (value: A) => Z): Query<R, never, Z>
 }
 ```
 
@@ -1279,15 +1281,15 @@ of failure except interruptions.
 
 ```ts
 export declare const matchCauseQuery: {
+  <E, R2, E2, A2, A, R3, E3, A3>(
+    onFailure: (cause: Cause.Cause<E>) => Query<R2, E2, A2>,
+    onSuccess: (value: A) => Query<R3, E3, A3>
+  ): <R>(self: Query<R, E, A>) => Query<R2 | R3 | R, E2 | E3, A2 | A3>
   <R, E, A, R2, E2, A2, R3, E3, A3>(
     self: Query<R, E, A>,
     onFailure: (cause: Cause.Cause<E>) => Query<R2, E2, A2>,
     onSuccess: (value: A) => Query<R3, E3, A3>
   ): Query<R | R2 | R3, E2 | E3, A2 | A3>
-  <E, R2, E2, A2, A, R3, E3, A3>(
-    onFailure: (cause: Cause.Cause<E>) => Query<R2, E2, A2>,
-    onSuccess: (value: A) => Query<R3, E3, A3>
-  ): <R>(self: Query<R, E, A>) => Query<R2 | R3 | R, E2 | E3, A2 | A3>
 }
 ```
 
@@ -1302,15 +1304,15 @@ error, and one query to execute for the case of success.
 
 ```ts
 export declare const matchQuery: {
+  <E, R2, E2, A2, A, R3, E3, A3>(
+    onFailure: (error: E) => Query<R2, E2, A2>,
+    onSuccess: (value: A) => Query<R3, E3, A3>
+  ): <R>(self: Query<R, E, A>) => Query<R2 | R3 | R, E2 | E3, A2 | A3>
   <R, E, A, R2, E2, A2, R3, E3, A3>(
     self: Query<R, E, A>,
     onFailure: (error: E) => Query<R2, E2, A2>,
     onSuccess: (value: A) => Query<R3, E3, A3>
   ): Query<R | R2 | R3, E2 | E3, A2 | A3>
-  <E, R2, E2, A2, A, R3, E3, A3>(
-    onFailure: (error: E) => Query<R2, E2, A2>,
-    onSuccess: (value: A) => Query<R3, E3, A3>
-  ): <R>(self: Query<R, E, A>) => Query<R2 | R3 | R, E2 | E3, A2 | A3>
 }
 ```
 
@@ -1326,8 +1328,8 @@ Maps the success value of this query to the specified constant value.
 
 ```ts
 export declare const as: {
-  <R, E, A, A2>(self: Query<R, E, A>, value: A2): Query<R, E, A2>
   <A2>(value: A2): <R, E, A>(self: Query<R, E, A>) => Query<R, E, A2>
+  <R, E, A, A2>(self: Query<R, E, A>, value: A2): Query<R, E, A2>
 }
 ```
 
@@ -1366,8 +1368,8 @@ Maps the specified function over the successful result of this query.
 
 ```ts
 export declare const map: {
-  <R, E, A, B>(self: Query<R, E, A>, f: (a: A) => B): Query<R, E, B>
   <A, B>(f: (a: A) => B): <R, E>(self: Query<R, E, A>) => Query<R, E, B>
+  <R, E, A, B>(self: Query<R, E, A>, f: (a: A) => B): Query<R, E, B>
 }
 ```
 
@@ -1382,8 +1384,8 @@ specified pair of functions, `f` and `g`.
 
 ```ts
 export declare const mapBoth: {
-  <R, E, E2, A, A2>(self: Query<R, E, A>, f: (e: E) => E2, g: (a: A) => A2): Query<R, E2, A2>
   <E, E2, A, A2>(f: (e: E) => E2, g: (a: A) => A2): <R>(self: Query<R, E, A>) => Query<R, E2, A2>
+  <R, E, E2, A, A2>(self: Query<R, E, A>, f: (e: E) => E2, g: (a: A) => A2): Query<R, E2, A2>
 }
 ```
 
@@ -1397,13 +1399,13 @@ Transforms all data sources with the specified data source aspect.
 
 ```ts
 export declare const mapDataSources: {
+  <R, A, R2>(f: (dataSource: DataSource.DataSource<R, A>) => DataSource.DataSource<R2, A>): <E>(
+    self: Query<R, E, A>
+  ) => Query<R | R2, E, A>
   <R, E, A, R2>(
     self: Query<R, E, A>,
     f: (dataSource: DataSource.DataSource<R, A>) => DataSource.DataSource<R2, A>
   ): Query<R | R2, E, A>
-  <R, A, R2>(f: (dataSource: DataSource.DataSource<R, A>) => DataSource.DataSource<R2, A>): <E>(
-    self: Query<R, E, A>
-  ) => Query<R | R2, E, A>
 }
 ```
 
@@ -1417,8 +1419,8 @@ Maps the specified effectual function over the result of this query.
 
 ```ts
 export declare const mapEffect: {
-  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, f: (a: A) => Effect.Effect<R2, E2, A2>): Query<R | R2, E | E2, A2>
   <A, R2, E2, A2>(f: (a: A) => Effect.Effect<R2, E2, A2>): <R, E>(self: Query<R, E, A>) => Query<R2 | R, E2 | E, A2>
+  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, f: (a: A) => Effect.Effect<R2, E2, A2>): Query<R | R2, E | E2, A2>
 }
 ```
 
@@ -1432,8 +1434,8 @@ Maps the specified function over the failed result of this query.
 
 ```ts
 export declare const mapError: {
-  <R, A, E, E2>(self: Query<R, E, A>, f: (e: E) => E2): Query<R, E2, A>
   <E, E2>(f: (e: E) => E2): <R, A>(self: Query<R, E, A>) => Query<R, E2, A>
+  <R, A, E, E2>(self: Query<R, E, A>, f: (e: E) => E2): Query<R, E2, A>
 }
 ```
 
@@ -1449,8 +1451,8 @@ original structure of `Cause`.
 
 ```ts
 export declare const mapErrorCause: {
-  <R, E, A, E2>(self: Query<R, E, A>, f: (cause: Cause.Cause<E>) => Cause.Cause<E2>): Query<R, E2, A>
   <E, E2>(f: (cause: Cause.Cause<E>) => Cause.Cause<E2>): <R, A>(self: Query<R, E, A>) => Query<R, E2, A>
+  <R, E, A, E2>(self: Query<R, E, A>, f: (cause: Cause.Cause<E>) => Cause.Cause<E2>): Query<R, E2, A>
 }
 ```
 
@@ -1476,7 +1478,7 @@ confidence that they will automatically be optimized. For example, consider
 the following query from a user service.
 
 ```ts
-import * as Chunk from '@fp-ts/data/Chunk'
+import * as Chunk from '@effect/data/Chunk'
 import * as Query from '@effect/query/Query'
 
 declare const getAllUserIds: Query.Query<never, never, Chunk.Chunk<number>>
@@ -1501,8 +1503,28 @@ export interface Query<R, E, A> extends Query.Variance<R, E, A>, Effect.Effect<R
   traced(trace: Debug.Trace): Query<R, E, A>
 
   /** @internal */
-  readonly step: Effect.Effect<R, never, Result.Result<R, E, A>>
+  readonly i0: Effect.Effect<R, never, Result.Result<R, E, A>>
 }
+```
+
+Added in v1.0.0
+
+# refinements
+
+## isQuery
+
+This function returns `true` if the specified value is an `Query` value,
+`false` otherwise.
+
+This function can be useful for checking the type of a value before
+attempting to operate on it as an `Query` value. For example, you could
+use `isQuery` to check the type of a value before using it as an
+argument to a function that expects an `Query` value.
+
+**Signature**
+
+```ts
+export declare const isQuery: (u: unknown) => u is Query<any, any, any>
 ```
 
 Added in v1.0.0
@@ -1521,8 +1543,8 @@ requests may still be applied.
 
 ```ts
 export declare const flatMap: {
-  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, f: (a: A) => Query<R2, E2, A2>): Query<R | R2, E | E2, A2>
   <A, R2, E2, A2>(f: (a: A) => Query<R2, E2, A2>): <R, E>(self: Query<R, E, A>) => Query<R2 | R, E2 | E, A2>
+  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, f: (a: A) => Query<R2, E2, A2>): Query<R | R2, E | E2, A2>
 }
 ```
 
@@ -1577,8 +1599,8 @@ executed sequentially and will be pipelined.
 
 ```ts
 export declare const forEach: {
-  <A, R, E, B>(elements: Iterable<A>, f: (a: A) => Query<R, E, B>): Query<R, E, Chunk.Chunk<B>>
   <A, R, E, B>(f: (a: A) => Query<R, E, B>): (elements: Iterable<A>) => Query<R, E, Chunk.Chunk<B>>
+  <A, R, E, B>(elements: Iterable<A>, f: (a: A) => Query<R, E, B>): Query<R, E, Chunk.Chunk<B>>
 }
 ```
 
@@ -1594,8 +1616,8 @@ of their results.
 
 ```ts
 export declare const forEachBatched: {
-  <A, R, E, B>(elements: Iterable<A>, f: (a: A) => Query<R, E, B>): Query<R, E, Chunk.Chunk<B>>
   <A, R, E, B>(f: (a: A) => Query<R, E, B>): (elements: Iterable<A>) => Query<R, E, Chunk.Chunk<B>>
+  <A, R, E, B>(elements: Iterable<A>, f: (a: A) => Query<R, E, B>): Query<R, E, Chunk.Chunk<B>>
 }
 ```
 
@@ -1611,8 +1633,8 @@ executed in parallel and will be batched.
 
 ```ts
 export declare const forEachPar: {
-  <A, R, E, B>(elements: Iterable<A>, f: (a: A) => Query<R, E, B>): Query<R, E, Chunk.Chunk<B>>
   <A, R, E, B>(f: (a: A) => Query<R, E, B>): (elements: Iterable<A>) => Query<R, E, Chunk.Chunk<B>>
+  <A, R, E, B>(elements: Iterable<A>, f: (a: A) => Query<R, E, B>): Query<R, E, Chunk.Chunk<B>>
 }
 ```
 
@@ -1629,8 +1651,8 @@ query sequentially, combining their results into a tuple.
 
 ```ts
 export declare const zip: {
-  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, that: Query<R2, E2, A2>): Query<R | R2, E | E2, readonly [A, A2]>
   <R2, E2, A2>(that: Query<R2, E2, A2>): <R, E, A>(self: Query<R, E, A>) => Query<R2 | R, E2 | E, readonly [A, A2]>
+  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, that: Query<R2, E2, A2>): Query<R | R2, E | E2, readonly [A, A2]>
 }
 ```
 
@@ -1646,8 +1668,8 @@ tuple.
 
 ```ts
 export declare const zipBatched: {
-  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, that: Query<R2, E2, A2>): Query<R | R2, E | E2, readonly [A, A2]>
   <R2, E2, A2>(that: Query<R2, E2, A2>): <R, E, A>(self: Query<R, E, A>) => Query<R2 | R, E2 | E, readonly [A, A2]>
+  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, that: Query<R2, E2, A2>): Query<R | R2, E | E2, readonly [A, A2]>
 }
 ```
 
@@ -1663,8 +1685,8 @@ query.
 
 ```ts
 export declare const zipBatchedLeft: {
-  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, that: Query<R2, E2, A2>): Query<R | R2, E | E2, A>
   <R2, E2, A2>(that: Query<R2, E2, A2>): <R, E, A>(self: Query<R, E, A>) => Query<R2 | R, E2 | E, A>
+  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, that: Query<R2, E2, A2>): Query<R | R2, E | E2, A>
 }
 ```
 
@@ -1680,8 +1702,8 @@ specified query.
 
 ```ts
 export declare const zipBatchedRight: {
-  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, that: Query<R2, E2, A2>): Query<R | R2, E | E2, A2>
   <R2, E2, A2>(that: Query<R2, E2, A2>): <R, E, A>(self: Query<R, E, A>) => Query<R2 | R, E2 | E, A2>
+  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, that: Query<R2, E2, A2>): Query<R | R2, E | E2, A2>
 }
 ```
 
@@ -1696,8 +1718,8 @@ query sequentially, returning the result of this query.
 
 ```ts
 export declare const zipLeft: {
-  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, that: Query<R2, E2, A2>): Query<R | R2, E | E2, A>
   <R2, E2, A2>(that: Query<R2, E2, A2>): <R, E, A>(self: Query<R, E, A>) => Query<R2 | R, E2 | E, A>
+  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, that: Query<R2, E2, A2>): Query<R | R2, E | E2, A>
 }
 ```
 
@@ -1712,8 +1734,8 @@ query in parallel, combining their results into a tuple.
 
 ```ts
 export declare const zipPar: {
-  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, that: Query<R2, E2, A2>): Query<R | R2, E | E2, readonly [A, A2]>
   <R2, E2, A2>(that: Query<R2, E2, A2>): <R, E, A>(self: Query<R, E, A>) => Query<R2 | R, E2 | E, readonly [A, A2]>
+  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, that: Query<R2, E2, A2>): Query<R | R2, E | E2, readonly [A, A2]>
 }
 ```
 
@@ -1728,8 +1750,8 @@ query in parallel, returning the result of this query.
 
 ```ts
 export declare const zipParLeft: {
-  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, that: Query<R2, E2, A2>): Query<R | R2, E | E2, A>
   <R2, E2, A2>(that: Query<R2, E2, A2>): <R, E, A>(self: Query<R, E, A>) => Query<R2 | R, E2 | E, A>
+  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, that: Query<R2, E2, A2>): Query<R | R2, E | E2, A>
 }
 ```
 
@@ -1744,8 +1766,8 @@ query in parallel, returning the result of the specified query.
 
 ```ts
 export declare const zipParRight: {
-  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, that: Query<R2, E2, A2>): Query<R | R2, E | E2, A2>
   <R2, E2, A2>(that: Query<R2, E2, A2>): <R, E, A>(self: Query<R, E, A>) => Query<R2 | R, E2 | E, A2>
+  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, that: Query<R2, E2, A2>): Query<R | R2, E | E2, A2>
 }
 ```
 
@@ -1760,8 +1782,8 @@ query sequentially, returning the result of the specified query.
 
 ```ts
 export declare const zipRight: {
-  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, that: Query<R2, E2, A2>): Query<R | R2, E | E2, A2>
   <R2, E2, A2>(that: Query<R2, E2, A2>): <R, E, A>(self: Query<R, E, A>) => Query<R2 | R, E2 | E, A2>
+  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, that: Query<R2, E2, A2>): Query<R | R2, E | E2, A2>
 }
 ```
 
@@ -1778,10 +1800,10 @@ automatically be pipelined.
 
 ```ts
 export declare const zipWith: {
-  <R, E, A, R2, E2, B, C>(self: Query<R, E, A>, that: Query<R2, E2, B>, f: (a: A, b: B) => C): Query<R | R2, E | E2, C>
   <R2, E2, B, A, C>(that: Query<R2, E2, B>, f: (a: A, b: B) => C): <R, E>(
     self: Query<R, E, A>
   ) => Query<R2 | R, E2 | E, C>
+  <R, E, A, R2, E2, B, C>(self: Query<R, E, A>, that: Query<R2, E2, B>, f: (a: A, b: B) => C): Query<R | R2, E | E2, C>
 }
 ```
 
@@ -1796,10 +1818,10 @@ query, batching requests to data sources.
 
 ```ts
 export declare const zipWithBatched: {
-  <R, E, A, R2, E2, B, C>(self: Query<R, E, A>, that: Query<R2, E2, B>, f: (a: A, b: B) => C): Query<R | R2, E | E2, C>
   <A, R2, E2, B, C>(that: Query<R2, E2, B>, f: (a: A, b: B) => C): <R, E>(
     self: Query<R, E, A>
   ) => Query<R2 | R, E2 | E, C>
+  <R, E, A, R2, E2, B, C>(self: Query<R, E, A>, that: Query<R2, E2, B>, f: (a: A, b: B) => C): Query<R | R2, E | E2, C>
 }
 ```
 
@@ -1816,10 +1838,10 @@ automatically be batched.
 
 ```ts
 export declare const zipWithPar: {
-  <R, E, A, R2, E2, B, C>(self: Query<R, E, A>, that: Query<R2, E2, B>, f: (a: A, b: B) => C): Query<R | R2, E | E2, C>
   <A, R2, E2, B, C>(that: Query<R2, E2, B>, f: (a: A, b: B) => C): <R, E>(
     self: Query<R, E, A>
   ) => Query<R2 | R, E2 | E, C>
+  <R, E, A, R2, E2, B, C>(self: Query<R, E, A>, that: Query<R2, E2, B>, f: (a: A, b: B) => C): Query<R | R2, E | E2, C>
 }
 ```
 
