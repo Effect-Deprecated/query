@@ -55,7 +55,7 @@ export const make = Debug.untracedMethod((restore) =>
     runAll: (requests: Chunk.Chunk<Chunk.Chunk<A>>) => Effect.Effect<R, never, void>
   ): DataSource.DataSource<Exclude<R, CompletedRequestMap.CompletedRequestMap>, A> =>
     new DataSourceImpl(identifier, (requests) =>
-      Effect.suspendSucceed(() => {
+      Effect.suspend(() => {
         const map = completedRequestMap.empty()
         return Effect.as(Effect.provideService(completedRequestMap.Tag, map)(restore(runAll)(requests)), map)
       }))

@@ -24,7 +24,7 @@ export const effect = (() => {
       name,
       () =>
         pipe(
-          Effect.suspendSucceed(self),
+          Effect.suspend(self),
           Effect.provideLayer(Layer.merge(TestEnvironment.testContext(), TestConsole.layer)),
           Effect.runPromise
         ),
@@ -41,7 +41,7 @@ export const effect = (() => {
         name,
         () =>
           pipe(
-            Effect.suspendSucceed(self),
+            Effect.suspend(self),
             Effect.provideLayer(Layer.merge(TestEnvironment.testContext(), TestConsole.layer)),
             Effect.runPromise
           ),
@@ -57,7 +57,7 @@ export const effect = (() => {
         name,
         () =>
           pipe(
-            Effect.suspendSucceed(self),
+            Effect.suspend(self),
             Effect.provideLayer(Layer.merge(TestEnvironment.testContext(), TestConsole.layer)),
             Effect.runPromise
           ),
@@ -76,7 +76,7 @@ export const live = <E, A>(
     name,
     () =>
       pipe(
-        Effect.suspendSucceed(self),
+        Effect.suspend(self),
         Effect.runPromise
       ),
     timeout
@@ -109,7 +109,7 @@ export const scoped = <E, A>(
     name,
     () =>
       pipe(
-        Effect.suspendSucceed(self),
+        Effect.suspend(self),
         Effect.scoped,
         Effect.provideLayer(Layer.merge(TestEnvironment.testContext(), TestConsole.layer)),
         Effect.runPromise
@@ -127,7 +127,7 @@ export const scopedLive = <E, A>(
     name,
     () =>
       pipe(
-        Effect.suspendSucceed(self),
+        Effect.suspend(self),
         Effect.scoped,
         Effect.runPromise
       ),

@@ -43,8 +43,8 @@ Combines two completed request maps into a single completed request map.
 
 ```ts
 export declare const combine: {
-  (self: CompletedRequestMap, that: CompletedRequestMap): CompletedRequestMap
   (that: CompletedRequestMap): (self: CompletedRequestMap) => CompletedRequestMap
+  (self: CompletedRequestMap, that: CompletedRequestMap): CompletedRequestMap
 }
 ```
 
@@ -58,10 +58,10 @@ Appends the specified result to the completed requests map.
 
 ```ts
 export declare const set: {
-  <A extends Request.Request<any, any>>(self: CompletedRequestMap, request: A, result: Request.Request.Result<A>): void
   <A extends Request.Request<any, any>>(request: A, result: Request.Request.Result<A>): (
     self: CompletedRequestMap
   ) => void
+  <A extends Request.Request<any, any>>(self: CompletedRequestMap, request: A, result: Request.Request.Result<A>): void
 }
 ```
 
@@ -75,14 +75,14 @@ Appends the specified optional result to the completed request map.
 
 ```ts
 export declare const setOption: {
+  <A extends Request.Request<any, any>>(request: A, result: Request.Request.OptionalResult<A>): (
+    self: CompletedRequestMap
+  ) => void
   <A extends Request.Request<any, any>>(
     self: CompletedRequestMap,
     request: A,
     result: Request.Request.OptionalResult<A>
   ): void
-  <A extends Request.Request<any, any>>(request: A, result: Request.Request.OptionalResult<A>): (
-    self: CompletedRequestMap
-  ) => void
 }
 ```
 
@@ -139,10 +139,10 @@ Retrieves the result of the specified request if it exists.
 
 ```ts
 export declare const get: {
-  <A extends Request.Request<any, any>>(self: CompletedRequestMap, request: A): Option.Option<Request.Request.Result<A>>
   <A extends Request.Request<any, any>>(request: A): (
     self: CompletedRequestMap
   ) => Option.Option<Request.Request.Result<A>>
+  <A extends Request.Request<any, any>>(self: CompletedRequestMap, request: A): Option.Option<Request.Request.Result<A>>
 }
 ```
 
@@ -156,8 +156,8 @@ Returns whether a result exists for the specified request.
 
 ```ts
 export declare const has: {
-  <A extends Request.Request<any, any>>(self: CompletedRequestMap, request: A): boolean
   <A extends Request.Request<any, any>>(request: A): (self: CompletedRequestMap) => boolean
+  <A extends Request.Request<any, any>>(self: CompletedRequestMap, request: A): boolean
 }
 ```
 
