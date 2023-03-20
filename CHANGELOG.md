@@ -1,5 +1,11 @@
 # @effect/query
 
+## 0.3.0
+
+### Minor Changes
+
+- [#447](https://github.com/Effect-TS/query/pull/447) [`9b9e497`](https://github.com/Effect-TS/query/commit/9b9e49768eaf0f393831c6a83706859625ed21ce) Thanks [@mikearnaldi](https://github.com/mikearnaldi)! - Update effect/io, effect/data and make succeed / fail introspectable
+
 ## 0.2.0
 
 ### Minor Changes
