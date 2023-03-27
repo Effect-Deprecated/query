@@ -1,12 +1,12 @@
 import * as Chunk from "@effect/data/Chunk"
 import type * as Context from "@effect/data/Context"
+import * as Debug from "@effect/data/Debug"
 import * as Either from "@effect/data/Either"
 import * as Equal from "@effect/data/Equal"
 import { pipe } from "@effect/data/Function"
 import * as Hash from "@effect/data/Hash"
 import type * as Option from "@effect/data/Option"
 import * as Cause from "@effect/io/Cause"
-import * as Debug from "@effect/io/Debug"
 import * as Effect from "@effect/io/Effect"
 import type * as CompletedRequestMap from "@effect/query/CompletedRequestMap"
 import type * as DataSource from "@effect/query/DataSource"
@@ -254,7 +254,7 @@ export const fromFunction = Debug.untracedMethod((restore) =>
     f: (request: A) => Request.Request.Success<A>
   ): DataSource.DataSource<never, A> =>
     makeBatched(name, (requests) =>
-      Effect.serviceWith(completedRequestMap.Tag, (map) =>
+      Effect.map(completedRequestMap.Tag, (map) =>
         pipe(
           requests,
           Chunk.forEach((request) =>
@@ -283,7 +283,7 @@ export const fromFunctionBatchedEffect = Debug.untracedMethod((restore) =>
     f: (chunk: Chunk.Chunk<A>) => Effect.Effect<R, Request.Request.Error<A>, Chunk.Chunk<Request.Request.Success<A>>>
   ): DataSource.DataSource<R, A> =>
     makeBatched(name, (requests) =>
-      Effect.serviceWith(completedRequestMap.Tag, (map) =>
+      Effect.flatMap(completedRequestMap.Tag, (map) =>
         pipe(
           Effect.match(
             restore(f)(requests),
@@ -317,7 +317,7 @@ export const fromFunctionBatchedOptionEffect = Debug.untracedMethod((restore) =>
     makeBatched(
       name,
       (requests) =>
-        Effect.serviceWithEffect(completedRequestMap.Tag, (map) =>
+        Effect.flatMap(completedRequestMap.Tag, (map) =>
           Effect.map(
             Effect.match(
               restore(f)(requests),
@@ -361,7 +361,7 @@ export const fromFunctionBatchedWithEffect = Debug.untracedMethod((restore) =>
     g: (b: Request.Request.Success<A>) => Request.Request<Request.Request.Error<A>, Request.Request.Success<A>>
   ): DataSource.DataSource<R, A> =>
     makeBatched(name, (requests) =>
-      Effect.serviceWithEffect(completedRequestMap.Tag, (map) =>
+      Effect.flatMap(completedRequestMap.Tag, (map) =>
         Effect.map(
           Effect.match(
             restore(f)(requests),
@@ -389,7 +389,7 @@ export const fromFunctionEffect = Debug.untracedMethod((restore) =>
     f: (a: A) => Effect.Effect<R, Request.Request.Error<A>, Request.Request.Success<A>>
   ): DataSource.DataSource<R, A> =>
     makeBatched(name, (requests) =>
-      Effect.serviceWithEffect(completedRequestMap.Tag, (map) =>
+      Effect.flatMap(completedRequestMap.Tag, (map) =>
         Effect.map(
           Effect.forEachPar(requests, (a) =>
             Effect.map(
@@ -415,7 +415,7 @@ export const fromFunctionOptionEffect = Debug.untracedMethod((restore) =>
     f: (a: A) => Effect.Effect<R, Request.Request.Error<A>, Option.Option<Request.Request.Success<A>>>
   ): DataSource.DataSource<R, A> =>
     makeBatched(name, (requests) =>
-      Effect.serviceWithEffect(completedRequestMap.Tag, (map) =>
+      Effect.flatMap(completedRequestMap.Tag, (map) =>
         Effect.map(
           Effect.forEachPar(
             requests,

@@ -124,7 +124,7 @@ The context tag for a `CompletedRequestMap`.
 **Signature**
 
 ```ts
-export declare const Tag: Context.Tag<CompletedRequestMap>
+export declare const Tag: Context.Tag<CompletedRequestMap, CompletedRequestMap>
 ```
 
 Added in v1.0.0

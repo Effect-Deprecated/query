@@ -1041,7 +1041,7 @@ Extracts the specified service from the context of the query.
 **Signature**
 
 ```ts
-export declare const service: <T>(tag: Context.Tag<T>) => Query<T, never, T>
+export declare const service: <I, T>(tag: Context.Tag<I, T>) => Query<I, never, T>
 ```
 
 Added in v1.0.0
@@ -1053,10 +1053,10 @@ Accesses the specified service in the context of the query.
 **Signature**
 
 ```ts
-export declare const serviceWith: <T extends Context.Tag<any>, A>(
+export declare const serviceWith: <T extends Context.Tag<any, any>, A>(
   tag: T,
   f: (a: Context.Tag.Service<T>) => A
-) => Query<Context.Tag.Service<T>, never, A>
+) => Query<Context.Tag.Identifier<T>, never, A>
 ```
 
 Added in v1.0.0
@@ -1068,10 +1068,10 @@ Effectfully accesses the specified service in the context of the query.
 **Signature**
 
 ```ts
-export declare const serviceWithEffect: <T extends Context.Tag<any>, R, E, A>(
+export declare const serviceWithEffect: <T extends Context.Tag<any, any>, R, E, A>(
   tag: T,
   f: (a: Context.Tag.Service<T>) => Effect.Effect<R, E, A>
-) => Query<R | Context.Tag.Service<T>, E, A>
+) => Query<R | Context.Tag.Identifier<T>, E, A>
 ```
 
 Added in v1.0.0
@@ -1083,10 +1083,10 @@ Effectfully accesses the specified service in the context of the query.
 **Signature**
 
 ```ts
-export declare const serviceWithQuery: <T extends Context.Tag<any>, R, E, A>(
+export declare const serviceWithQuery: <T extends Context.Tag<any, any>, R, E, A>(
   tag: T,
   f: (a: Context.Tag.Service<T>) => Query<R, E, A>
-) => Query<R | Context.Tag.Service<T>, E, A>
+) => Query<R | Context.Tag.Identifier<T>, E, A>
 ```
 
 Added in v1.0.0

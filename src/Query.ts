@@ -3,13 +3,13 @@
  */
 import type * as Chunk from "@effect/data/Chunk"
 import type * as Context from "@effect/data/Context"
+import type * as Debug from "@effect/data/Debug"
 import type * as Duration from "@effect/data/Duration"
 import type * as Either from "@effect/data/Either"
 import type { LazyArg } from "@effect/data/Function"
 import type * as Option from "@effect/data/Option"
 import type * as Cause from "@effect/io/Cause"
-import type * as Debug from "@effect/io/Debug"
-import * as Effect from "@effect/io/Effect"
+import type * as Effect from "@effect/io/Effect"
 import type * as Layer from "@effect/io/Layer"
 import type * as Cache from "@effect/query/Cache"
 import type * as DataSource from "@effect/query/DataSource"
@@ -461,7 +461,6 @@ export const fromRequestUncached: <R, A extends Request.Request<any, any>, A2 ex
   dataSource: DataSource.DataSource<R, A2>
 ) => Query<R, Request.Request.Error<A>, Request.Request.Success<A>> = internal.fromRequestUncached
 
-
 /**
  * This function returns `true` if the specified value is an `Query` value,
  * `false` otherwise.
@@ -840,47 +839,6 @@ export const sandboxWith: {
     f: (self: Query<R, Cause.Cause<E>, A>) => Query<R2, Cause.Cause<E2>, A2>
   ): Query<R | R2, E2, A | A2>
 } = internal.sandboxWith
-
-/**
- * Extracts the specified service from the context of the query.
- *
- * @since 1.0.0
- * @category context
- */
-export const service: <T>(tag: Context.Tag<T>) => Query<T, never, T> = internal.service
-
-/**
- * Accesses the specified service in the context of the query.
- *
- * @since 1.0.0
- * @category context
- */
-export const serviceWith: <T extends Context.Tag<any>, A>(
-  tag: T,
-  f: (a: Context.Tag.Service<T>) => A
-) => Query<Context.Tag.Service<T>, never, A> = internal.serviceWith
-
-/**
- * Effectfully accesses the specified service in the context of the query.
- *
- * @since 1.0.0
- * @category context
- */
-export const serviceWithEffect: <T extends Context.Tag<any>, R, E, A>(
-  tag: T,
-  f: (a: Context.Tag.Service<T>) => Effect.Effect<R, E, A>
-) => Query<R | Context.Tag.Service<T>, E, A> = internal.serviceWithEffect
-
-/**
- * Effectfully accesses the specified service in the context of the query.
- *
- * @since 1.0.0
- * @category context
- */
-export const serviceWithQuery: <T extends Context.Tag<any>, R, E, A>(
-  tag: T,
-  f: (a: Context.Tag.Service<T>) => Query<R, E, A>
-) => Query<R | Context.Tag.Service<T>, E, A> = internal.serviceWithQuery
 
 /**
  * Extracts a `Some` value into the value channel while moving the `None` into

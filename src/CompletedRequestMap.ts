@@ -63,7 +63,7 @@ export declare namespace CompletedRequestMap {
  * @since 1.0.0
  * @category context
  */
-export const Tag: Context.Tag<CompletedRequestMap> = internal.Tag
+export const Tag: Context.Tag<CompletedRequestMap, CompletedRequestMap> = internal.Tag
 
 /**
  * An empty completed requests map.

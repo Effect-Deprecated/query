@@ -1,6 +1,6 @@
 import * as Data from "@effect/data/Data"
+import * as Debug from "@effect/data/Debug"
 import * as Either from "@effect/data/Either"
-import * as Debug from "@effect/io/Debug"
 import * as Effect from "@effect/io/Effect"
 import type * as CompletedRequestMap from "@effect/query/CompletedRequestMap"
 import * as completedRequestMap from "@effect/query/internal_effect_untraced/completedRequestMap"
@@ -56,7 +56,7 @@ export const complete = Debug.dualWithTrace<
   ) => Effect.Effect<CompletedRequestMap.CompletedRequestMap, never, void>
 >(2, (trace) =>
   (self, result) =>
-    Effect.serviceWith(
+    Effect.map(
       completedRequestMap.Tag,
       (map) => completedRequestMap.set(map, self, result)
     ).traced(trace))

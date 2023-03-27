@@ -30,7 +30,8 @@ class CompletedRequestMapImpl implements CompletedRequestMap.CompletedRequestMap
 }
 
 /** @internal */
-export const Tag: Context.Tag<CompletedRequestMap.CompletedRequestMap> = Context.Tag()
+export const Tag: Context.Tag<CompletedRequestMap.CompletedRequestMap, CompletedRequestMap.CompletedRequestMap> =
+  Context.Tag()
 
 /** @internal */
 export const empty = (): CompletedRequestMap.CompletedRequestMap =>

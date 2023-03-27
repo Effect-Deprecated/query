@@ -41,7 +41,7 @@ export interface CacheDataSource {
   log(): Effect.Effect<never, never, ReadonlyArray<ReadonlyArray<HashSet.HashSet<CacheRequest>>>>
 }
 
-export const CacheDataSource: Context.Tag<CacheDataSource> = Context.Tag<CacheDataSource>()
+export const CacheDataSource: Context.Tag<CacheDataSource, CacheDataSource> = Context.Tag<CacheDataSource>()
 
 export const layer: Layer.Layer<never, never, CacheDataSource> = Layer.effect(
   CacheDataSource,
@@ -106,10 +106,10 @@ export const put = (key: number, value: number): Query.Query<CacheDataSource, ne
   )
 
 export const clear = (): Effect.Effect<CacheDataSource, never, void> =>
-  Effect.serviceWithEffect(CacheDataSource, (cache) => cache.clear())
+  Effect.flatMap(CacheDataSource, (cache) => cache.clear())
 
 export const log = (): Effect.Effect<
   CacheDataSource,
   never,
   ReadonlyArray<ReadonlyArray<HashSet.HashSet<CacheRequest>>>
-> => Effect.serviceWithEffect(CacheDataSource, (cache) => cache.log())
+> => Effect.flatMap(CacheDataSource, (cache) => cache.log())
