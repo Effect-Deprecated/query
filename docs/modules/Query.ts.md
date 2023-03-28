@@ -75,10 +75,6 @@ Added in v1.0.0
   - [provideContext](#providecontext)
   - [provideLayer](#providelayer)
   - [provideSomeLayer](#providesomelayer)
-  - [service](#service)
-  - [serviceWith](#servicewith)
-  - [serviceWithEffect](#servicewitheffect)
-  - [serviceWithQuery](#servicewithquery)
 - [destructors](#destructors)
   - [run](#run)
   - [runCache](#runcache)
@@ -1030,63 +1026,6 @@ export declare const provideSomeLayer: {
     A
   >
 }
-```
-
-Added in v1.0.0
-
-## service
-
-Extracts the specified service from the context of the query.
-
-**Signature**
-
-```ts
-export declare const service: <I, T>(tag: Context.Tag<I, T>) => Query<I, never, T>
-```
-
-Added in v1.0.0
-
-## serviceWith
-
-Accesses the specified service in the context of the query.
-
-**Signature**
-
-```ts
-export declare const serviceWith: <T extends Context.Tag<any, any>, A>(
-  tag: T,
-  f: (a: Context.Tag.Service<T>) => A
-) => Query<Context.Tag.Identifier<T>, never, A>
-```
-
-Added in v1.0.0
-
-## serviceWithEffect
-
-Effectfully accesses the specified service in the context of the query.
-
-**Signature**
-
-```ts
-export declare const serviceWithEffect: <T extends Context.Tag<any, any>, R, E, A>(
-  tag: T,
-  f: (a: Context.Tag.Service<T>) => Effect.Effect<R, E, A>
-) => Query<R | Context.Tag.Identifier<T>, E, A>
-```
-
-Added in v1.0.0
-
-## serviceWithQuery
-
-Effectfully accesses the specified service in the context of the query.
-
-**Signature**
-
-```ts
-export declare const serviceWithQuery: <T extends Context.Tag<any, any>, R, E, A>(
-  tag: T,
-  f: (a: Context.Tag.Service<T>) => Query<R, E, A>
-) => Query<R | Context.Tag.Identifier<T>, E, A>
 ```
 
 Added in v1.0.0
