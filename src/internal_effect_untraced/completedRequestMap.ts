@@ -5,20 +5,20 @@ import * as HashMap from "@effect/data/HashMap"
 import type * as HashSet from "@effect/data/HashSet"
 import * as MutableRef from "@effect/data/MutableRef"
 import * as Option from "@effect/data/Option"
-import type * as CompletedRequestMap from "@effect/query/CompletedRequestMap"
+import type * as CRM from "@effect/query/CompletedRequestMap"
 import type * as Request from "@effect/query/Request"
 
 /** @internal */
 const CompletedRequestMapSymbolKey = "@effect/query/CompletedRequestMap"
 
 /** @internal */
-export const CompletedRequestMapTypeId: CompletedRequestMap.CompletedRequestMapTypeId = Symbol.for(
+export const CompletedRequestMapTypeId: CRM.CompletedRequestMapTypeId = Symbol.for(
   CompletedRequestMapSymbolKey
-) as CompletedRequestMap.CompletedRequestMapTypeId
+) as CRM.CompletedRequestMapTypeId
 
 /** @internal */
-class CompletedRequestMapImpl implements CompletedRequestMap.CompletedRequestMap {
-  readonly [CompletedRequestMapTypeId]: CompletedRequestMap.CompletedRequestMapTypeId = CompletedRequestMapTypeId
+class CompletedRequestMapImpl implements CRM.CompletedRequestMap {
+  readonly [CompletedRequestMapTypeId]: CRM.CompletedRequestMapTypeId = CompletedRequestMapTypeId
   constructor(
     readonly map: MutableRef.MutableRef<
       HashMap.HashMap<
@@ -30,30 +30,28 @@ class CompletedRequestMapImpl implements CompletedRequestMap.CompletedRequestMap
 }
 
 /** @internal */
-export const Tag: Context.Tag<CompletedRequestMap.CompletedRequestMap> = Context.Tag()
+export const CompletedRequestMap: Context.Tag<CRM.CompletedRequestMap, CRM.CompletedRequestMap> = Context.Tag()
 
 /** @internal */
-export const empty = (): CompletedRequestMap.CompletedRequestMap =>
-  new CompletedRequestMapImpl(MutableRef.make(HashMap.empty()))
+export const empty = (): CRM.CompletedRequestMap => new CompletedRequestMapImpl(MutableRef.make(HashMap.empty()))
 
 /** @internal */
 export const make = <E, A>(
   request: Request.Request<E, A>,
   result: Either.Either<E, A>
-): CompletedRequestMap.CompletedRequestMap =>
-  new CompletedRequestMapImpl(MutableRef.make(HashMap.make([request, result])))
+): CRM.CompletedRequestMap => new CompletedRequestMapImpl(MutableRef.make(HashMap.make([request, result])))
 
 /** @internal */
 export const combine = dual<
   (
-    that: CompletedRequestMap.CompletedRequestMap
+    that: CRM.CompletedRequestMap
   ) => (
-    self: CompletedRequestMap.CompletedRequestMap
-  ) => CompletedRequestMap.CompletedRequestMap,
+    self: CRM.CompletedRequestMap
+  ) => CRM.CompletedRequestMap,
   (
-    self: CompletedRequestMap.CompletedRequestMap,
-    that: CompletedRequestMap.CompletedRequestMap
-  ) => CompletedRequestMap.CompletedRequestMap
+    self: CRM.CompletedRequestMap,
+    that: CRM.CompletedRequestMap
+  ) => CRM.CompletedRequestMap
 >(2, (self, that) => {
   const selfMap = MutableRef.get(self.map)
   const thatMap = MutableRef.get(that.map)
@@ -65,26 +63,26 @@ export const get = dual<
   <A extends Request.Request<any, any>>(
     request: A
   ) => (
-    self: CompletedRequestMap.CompletedRequestMap
+    self: CRM.CompletedRequestMap
   ) => Option.Option<Request.Request.Result<A>>,
   <A extends Request.Request<any, any>>(
-    self: CompletedRequestMap.CompletedRequestMap,
+    self: CRM.CompletedRequestMap,
     request: A
   ) => Option.Option<Request.Request.Result<A>>
 >(2, <A extends Request.Request<any, any>>(
-  self: CompletedRequestMap.CompletedRequestMap,
+  self: CRM.CompletedRequestMap,
   request: A
 ) => HashMap.get(MutableRef.get(self.map), request) as any)
 
 /** @internal */
 export const has = dual<
-  <A extends Request.Request<any, any>>(request: A) => (self: CompletedRequestMap.CompletedRequestMap) => boolean,
-  <A extends Request.Request<any, any>>(self: CompletedRequestMap.CompletedRequestMap, request: A) => boolean
+  <A extends Request.Request<any, any>>(request: A) => (self: CRM.CompletedRequestMap) => boolean,
+  <A extends Request.Request<any, any>>(self: CRM.CompletedRequestMap, request: A) => boolean
 >(2, (self, request) => HashMap.has(MutableRef.get(self.map), request))
 
 /** @internal */
 export const requests = (
-  self: CompletedRequestMap.CompletedRequestMap
+  self: CRM.CompletedRequestMap
 ): HashSet.HashSet<Request.Request<unknown, unknown>> => HashMap.keySet(MutableRef.get(self.map))
 
 /** @internal */
@@ -92,9 +90,9 @@ export const set = dual<
   <A extends Request.Request<any, any>>(
     request: A,
     result: Request.Request.Result<A>
-  ) => (self: CompletedRequestMap.CompletedRequestMap) => void,
+  ) => (self: CRM.CompletedRequestMap) => void,
   <A extends Request.Request<any, any>>(
-    self: CompletedRequestMap.CompletedRequestMap,
+    self: CRM.CompletedRequestMap,
     request: A,
     result: Request.Request.Result<A>
   ) => void
@@ -118,9 +116,9 @@ export const setOption = dual<
   <A extends Request.Request<any, any>>(
     request: A,
     result: Request.Request.OptionalResult<A>
-  ) => (self: CompletedRequestMap.CompletedRequestMap) => void,
+  ) => (self: CRM.CompletedRequestMap) => void,
   <A extends Request.Request<any, any>>(
-    self: CompletedRequestMap.CompletedRequestMap,
+    self: CRM.CompletedRequestMap,
     request: A,
     result: Request.Request.OptionalResult<A>
   ) => void

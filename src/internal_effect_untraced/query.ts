@@ -1,5 +1,6 @@
 import * as Chunk from "@effect/data/Chunk"
 import type * as Context from "@effect/data/Context"
+import * as Debug from "@effect/data/Debug"
 import * as Duration from "@effect/data/Duration"
 import * as Either from "@effect/data/Either"
 import * as Equal from "@effect/data/Equal"
@@ -11,7 +12,6 @@ import * as Option from "@effect/data/Option"
 import * as ReadonlyArray from "@effect/data/ReadonlyArray"
 import * as Cause from "@effect/io/Cause"
 import * as Clock from "@effect/io/Clock"
-import * as Debug from "@effect/io/Debug"
 import * as Effect from "@effect/io/Effect"
 import * as Exit from "@effect/io/Exit"
 import * as Fiber from "@effect/io/Fiber"
@@ -935,35 +935,6 @@ export const sandboxWith = Debug.untracedDual<
     f: (self: Query.Query<R, Cause.Cause<E>, A>) => Query.Query<R2, Cause.Cause<E2>, A2>
   ) => Query.Query<R | R2, E2, A | A2>
 >(2, (restore) => (self, f) => unsandbox(restore(f)(sandbox(self))))
-
-/** @internal */
-export const service = Debug.methodWithTrace((trace) =>
-  <T>(tag: Context.Tag<T>): Query.Query<T, never, T> => fromEffect(Effect.service(tag).traced(trace))
-)
-
-/** @internal */
-export const serviceWith = Debug.untracedMethod((restore) =>
-  <T extends Context.Tag<any>, A>(
-    tag: T,
-    f: (a: Context.Tag.Service<T>) => A
-  ): Query.Query<Context.Tag.Service<T>, never, A> => map(service(tag), restore(f))
-)
-
-/** @internal */
-export const serviceWithEffect = Debug.untracedMethod((restore) =>
-  <T extends Context.Tag<any>, R, E, A>(
-    tag: T,
-    f: (a: Context.Tag.Service<T>) => Effect.Effect<R, E, A>
-  ): Query.Query<R | Context.Tag.Service<T>, E, A> => mapEffect(service(tag), restore(f))
-)
-
-/** @internal */
-export const serviceWithQuery = Debug.untracedMethod((restore) =>
-  <T extends Context.Tag<any>, R, E, A>(
-    tag: T,
-    f: (a: Context.Tag.Service<T>) => Query.Query<R, E, A>
-  ): Query.Query<R | Context.Tag.Service<T>, E, A> => flatMap(service(tag), restore(f))
-)
 
 /** @internal */
 export const some = Debug.untracedMethod(() =>
