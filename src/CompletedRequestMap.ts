@@ -45,6 +45,14 @@ export interface CompletedRequestMap extends CompletedRequestMap.Proto {
 }
 
 /**
+ * The context tag for a `CompletedRequestMap`.
+ *
+ * @since 1.0.0
+ * @category context
+ */
+export const CompletedRequestMap: Context.Tag<CompletedRequestMap, CompletedRequestMap> = internal.CompletedRequestMap
+
+/**
  * @since 1.0.0
  */
 export declare namespace CompletedRequestMap {
@@ -56,14 +64,6 @@ export declare namespace CompletedRequestMap {
     readonly [CompletedRequestMapTypeId]: CompletedRequestMapTypeId
   }
 }
-
-/**
- * The context tag for a `CompletedRequestMap`.
- *
- * @since 1.0.0
- * @category context
- */
-export const Tag: Context.Tag<CompletedRequestMap, CompletedRequestMap> = internal.Tag
 
 /**
  * An empty completed requests map.

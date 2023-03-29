@@ -57,7 +57,7 @@ export const complete = Debug.dualWithTrace<
 >(2, (trace) =>
   (self, result) =>
     Effect.map(
-      completedRequestMap.Tag,
+      completedRequestMap.CompletedRequestMap,
       (map) => completedRequestMap.set(map, self, result)
     ).traced(trace))
 
