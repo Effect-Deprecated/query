@@ -20,7 +20,7 @@ Added in v1.0.0
   - [empty](#empty)
   - [make](#make)
 - [context](#context)
-  - [Tag](#tag)
+  - [CompletedRequestMap](#completedrequestmap)
 - [elements](#elements)
   - [get](#get)
   - [has](#has)
@@ -117,14 +117,14 @@ Added in v1.0.0
 
 # context
 
-## Tag
+## CompletedRequestMap
 
 The context tag for a `CompletedRequestMap`.
 
 **Signature**
 
 ```ts
-export declare const Tag: Context.Tag<CompletedRequestMap, CompletedRequestMap>
+export declare const CompletedRequestMap: Context.Tag<CompletedRequestMap, CompletedRequestMap>
 ```
 
 Added in v1.0.0
