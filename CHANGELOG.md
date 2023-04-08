@@ -1,5 +1,11 @@
 # @effect/query
 
+## 0.6.0
+
+### Minor Changes
+
+- [#453](https://github.com/Effect-TS/query/pull/453) [`4ea6d2f`](https://github.com/Effect-TS/query/commit/4ea6d2fe1fd394b61ca73112de71a9f478238cff) Thanks [@TylorS](https://github.com/TylorS)! - Update to latest @effect/data + @effect/io
+
 ## 0.5.0
 
 ### Minor Changes
