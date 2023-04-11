@@ -52,7 +52,6 @@ export const layer: Layer.Layer<never, never, CacheDataSource> = Layer.effect(
     ),
     ([cache, ref]): CacheDataSource => ({
       dataSource: DataSource.make(
-        "CacheDataSource",
         (requests) =>
           Effect.zipRight(
             Ref.update(

@@ -11,9 +11,11 @@ export interface TestConsole {
 export const TestConsole: Context.Tag<TestConsole, TestConsole> = Context.Tag<TestConsole>()
 
 export const empty = (): Effect.Effect<never, never, TestConsole> =>
-  Effect.map(
-    Ref.make<ReadonlyArray<string>>([]),
-    (lines) => ({ lines })
+  Effect.suspend(() =>
+    Effect.map(
+      Ref.make<ReadonlyArray<string>>([]),
+      (lines) => ({ lines })
+    )
   )
 
 export const layer: Layer.Layer<never, never, TestConsole> = Layer.effect(TestConsole, empty())

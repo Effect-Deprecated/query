@@ -12,7 +12,6 @@ import * as TestClock from "@effect/io/internal_effect_untraced/testing/testCloc
 import * as Ref from "@effect/io/Ref"
 import * as Cache from "@effect/query/Cache"
 import * as DataSource from "@effect/query/DataSource"
-import * as Described from "@effect/query/Described"
 import * as Query from "@effect/query/Query"
 import * as QueryFailure from "@effect/query/QueryFailure"
 import * as Request from "@effect/query/Request"
@@ -33,7 +32,6 @@ interface SuccessRequest extends Request.Request<never, void> {
 }
 const SuccessRequest = Request.of<SuccessRequest>()
 const successDataSource: DataSource.DataSource<never, SuccessRequest> = DataSource.fromFunctionEffect(
-  "succeed",
   (request) => Effect.asUnit(Deferred.succeed(request.deferred, void 0))
 )
 const successQuery = (deferred: Deferred.Deferred<never, void>): Query.Query<never, never, void> =>
@@ -88,7 +86,7 @@ describe.concurrent("Query", () => {
 
   it.it("query failure is correctly reported", () => {
     const failure = QueryFailure.make(UserRequest.UserDataSource, UserRequest.GetNameById({ id: 27 }))
-    expect(failure.message()).toBe("Data source UserRequestDataSource did not complete request GetNameById")
+    expect(failure.message()).toBe("Data source did not complete request GetNameById")
   })
 
   it.effect("timed does not prevent batching", () =>
@@ -309,6 +307,7 @@ describe.concurrent("Query", () => {
       const result = yield* $(query)
       const log = yield* $(TestConsole.output)
       expect(result).toEqual(Array.from(UserRequest.userNames.values()))
+      console.log(log)
       expect(log).toHaveLength(10)
     }))
 
@@ -451,11 +450,7 @@ describe.concurrent("Query", () => {
       )
       const afterRef = yield* $(Ref.make(0))
       const after = (v: number) => Ref.set(afterRef, v * 2)
-      const query = Query.around(
-        UserRequest.getUserNameById(1),
-        Described.make(before, "before effect"),
-        Described.make(after, "after effect")
-      )
+      const query = Query.around(UserRequest.getUserNameById(1), before, after)
       yield* $(query)
       const isBeforeRan = yield* $(Ref.get(beforeRef))
       const isAfterRan = yield* $(Ref.get(afterRef))

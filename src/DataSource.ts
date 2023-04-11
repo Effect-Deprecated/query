@@ -9,7 +9,6 @@ import type * as Equal from "@effect/data/Equal"
 import type * as Option from "@effect/data/Option"
 import type * as Effect from "@effect/io/Effect"
 import type * as CompletedRequestMap from "@effect/query/CompletedRequestMap"
-import type * as Described from "@effect/query/Described"
 import * as internal from "@effect/query/internal_effect_untraced/dataSource"
 import type * as Request from "@effect/query/Request"
 
@@ -51,15 +50,16 @@ export type DataSourceTypeId = typeof DataSourceTypeId
  */
 export interface DataSource<R, A> extends Equal.Equal {
   /**
-   * The data source's identifier.
-   */
-  readonly identifier: string
-  /**
    * Execute a collection of requests. The outer `Chunk` represents batches
    * of requests that must be performed sequentially. The inner `Chunk`
    * represents a batch of requests that can be performed in parallel.
    */
   runAll(requests: Chunk.Chunk<Chunk.Chunk<A>>): Effect.Effect<R, never, CompletedRequestMap.CompletedRequestMap>
+
+  /**
+   * Identify the data source using the specific identifier
+   */
+  identified(id: unknown): DataSource<R, A>
 }
 
 /**
@@ -94,7 +94,6 @@ export const isDataSource: (u: unknown) => u is DataSource<unknown, unknown> = i
  * @category constructors
  */
 export const make: <R, A>(
-  identifier: string,
   runAll: (requests: Chunk.Chunk<Chunk.Chunk<A>>) => Effect.Effect<R, never, void>
 ) => DataSource<Exclude<R, CompletedRequestMap.CompletedRequestMap>, A> = internal.make
 
@@ -106,7 +105,6 @@ export const make: <R, A>(
  * @category constructors
  */
 export const makeBatched: <R, A extends Request.Request<any, any>>(
-  identifier: string,
   run: (requests: Chunk.Chunk<A>) => Effect.Effect<R, never, void>
 ) => DataSource<Exclude<R, CompletedRequestMap.CompletedRequestMap>, A> = internal.makeBatched
 
@@ -119,13 +117,13 @@ export const makeBatched: <R, A extends Request.Request<any, any>>(
  */
 export const around: {
   <R2, A2, R3, _>(
-    before: Described.Described<Effect.Effect<R2, never, A2>>,
-    after: Described.Described<(a: A2) => Effect.Effect<R3, never, _>>
+    before: Effect.Effect<R2, never, A2>,
+    after: (a: A2) => Effect.Effect<R3, never, _>
   ): <R, A>(self: DataSource<R, A>) => DataSource<R2 | R3 | R, A>
   <R, A, R2, A2, R3, _>(
     self: DataSource<R, A>,
-    before: Described.Described<Effect.Effect<R2, never, A2>>,
-    after: Described.Described<(a: A2) => Effect.Effect<R3, never, _>>
+    before: Effect.Effect<R2, never, A2>,
+    after: (a: A2) => Effect.Effect<R3, never, _>
   ): DataSource<R | R2 | R3, A>
 } = internal.around
 
@@ -150,11 +148,11 @@ export const batchN: {
  */
 export const contramap: {
   <A extends Request.Request<any, any>, B extends Request.Request<any, any>>(
-    f: Described.Described<(_: B) => A>
+    f: (_: B) => A
   ): <R>(self: DataSource<R, A>) => DataSource<R, B>
   <R, A extends Request.Request<any, any>, B extends Request.Request<any, any>>(
     self: DataSource<R, A>,
-    f: Described.Described<(_: B) => A>
+    f: (_: B) => A
   ): DataSource<R, B>
 } = internal.contramap
 
@@ -166,11 +164,11 @@ export const contramap: {
  */
 export const contramapContext: {
   <R0, R>(
-    f: Described.Described<(context: Context.Context<R0>) => Context.Context<R>>
+    f: (context: Context.Context<R0>) => Context.Context<R>
   ): <A extends Request.Request<any, any>>(self: DataSource<R, A>) => DataSource<R0, A>
   <R, A extends Request.Request<any, any>, R0>(
     self: DataSource<R, A>,
-    f: Described.Described<(context: Context.Context<R0>) => Context.Context<R>>
+    f: (context: Context.Context<R0>) => Context.Context<R>
   ): DataSource<R0, A>
 } = internal.contramapContext
 
@@ -184,11 +182,11 @@ export const contramapContext: {
  */
 export const contramapEffect: {
   <A extends Request.Request<any, any>, R2, B extends Request.Request<any, any>>(
-    f: Described.Described<(_: B) => Effect.Effect<R2, never, A>>
+    f: (_: B) => Effect.Effect<R2, never, A>
   ): <R>(self: DataSource<R, A>) => DataSource<R2 | R, B>
   <R, A extends Request.Request<any, any>, R2, B extends Request.Request<any, any>>(
     self: DataSource<R, A>,
-    f: Described.Described<(_: B) => Effect.Effect<R2, never, A>>
+    f: (_: B) => Effect.Effect<R2, never, A>
   ): DataSource<R | R2, B>
 } = internal.contramapEffect
 
@@ -203,7 +201,7 @@ export const contramapEffect: {
 export const eitherWith: {
   <A extends Request.Request<any, any>, R2, B extends Request.Request<any, any>, C extends Request.Request<any, any>>(
     that: DataSource<R2, B>,
-    f: Described.Described<(_: C) => Either.Either<A, B>>
+    f: (_: C) => Either.Either<A, B>
   ): <R>(self: DataSource<R, A>) => DataSource<R2 | R, C>
   <
     R,
@@ -211,11 +209,7 @@ export const eitherWith: {
     R2,
     B extends Request.Request<any, any>,
     C extends Request.Request<any, any>
-  >(
-    self: DataSource<R, A>,
-    that: DataSource<R2, B>,
-    f: Described.Described<(_: C) => Either.Either<A, B>>
-  ): DataSource<R | R2, C>
+  >(self: DataSource<R, A>, that: DataSource<R2, B>, f: (_: C) => Either.Either<A, B>): DataSource<R | R2, C>
 } = internal.eitherWith
 
 /**
@@ -225,7 +219,6 @@ export const eitherWith: {
  * @category constructors
  */
 export const fromFunction: <A extends Request.Request<never, any>>(
-  name: string,
   f: (request: A) => Request.Request.Success<A>
 ) => DataSource<never, A> = internal.fromFunction
 
@@ -238,7 +231,6 @@ export const fromFunction: <A extends Request.Request<never, any>>(
  * @category constructors
  */
 export const fromFunctionBatched: <A extends Request.Request<never, any>>(
-  name: string,
   f: (chunk: Chunk.Chunk<A>) => Chunk.Chunk<Request.Request.Success<A>>
 ) => DataSource<never, A> = internal.fromFunctionBatched
 
@@ -252,7 +244,6 @@ export const fromFunctionBatched: <A extends Request.Request<never, any>>(
  * @category constructors
  */
 export const fromFunctionBatchedEffect: <R, A extends Request.Request<any, any>>(
-  name: string,
   f: (chunk: Chunk.Chunk<A>) => Effect.Effect<R, Request.Request.Error<A>, Chunk.Chunk<Request.Request.Success<A>>>
 ) => DataSource<R, A> = internal.fromFunctionBatchedEffect
 
@@ -266,7 +257,6 @@ export const fromFunctionBatchedEffect: <R, A extends Request.Request<any, any>>
  * @category constructors
  */
 export const fromFunctionBatchedOption: <A extends Request.Request<never, any>>(
-  name: string,
   f: (chunk: Chunk.Chunk<A>) => Chunk.Chunk<Option.Option<Request.Request.Success<A>>>
 ) => DataSource<never, A> = internal.fromFunctionBatchedOption
 
@@ -280,7 +270,6 @@ export const fromFunctionBatchedOption: <A extends Request.Request<never, any>>(
  * @category constructors
  */
 export const fromFunctionBatchedOptionEffect: <R, A extends Request.Request<any, any>>(
-  name: string,
   f: (
     chunk: Chunk.Chunk<A>
   ) => Effect.Effect<R, Request.Request.Error<A>, Chunk.Chunk<Option.Option<Request.Request.Success<A>>>>
@@ -297,7 +286,6 @@ export const fromFunctionBatchedOptionEffect: <R, A extends Request.Request<any,
  * @category constructors
  */
 export const fromFunctionBatchedWith: <A extends Request.Request<any, any>>(
-  name: string,
   f: (chunk: Chunk.Chunk<A>) => Chunk.Chunk<Request.Request.Success<A>>,
   g: (value: Request.Request.Success<A>) => Request.Request<never, Request.Request.Success<A>>
 ) => DataSource<never, A> = internal.fromFunctionBatchedWith
@@ -313,7 +301,6 @@ export const fromFunctionBatchedWith: <A extends Request.Request<any, any>>(
  * @category constructors
  */
 export const fromFunctionBatchedWithEffect: <R, A extends Request.Request<any, any>>(
-  name: string,
   f: (chunk: Chunk.Chunk<A>) => Effect.Effect<R, Request.Request.Error<A>, Chunk.Chunk<Request.Request.Success<A>>>,
   g: (b: Request.Request.Success<A>) => Request.Request<Request.Request.Error<A>, Request.Request.Success<A>>
 ) => DataSource<R, A> = internal.fromFunctionBatchedWithEffect
@@ -325,7 +312,6 @@ export const fromFunctionBatchedWithEffect: <R, A extends Request.Request<any, a
  * @category constructors
  */
 export const fromFunctionEffect: <R, A extends Request.Request<any, any>>(
-  name: string,
   f: (a: A) => Effect.Effect<R, Request.Request.Error<A>, Request.Request.Success<A>>
 ) => DataSource<R, A> = internal.fromFunctionEffect
 
@@ -337,7 +323,6 @@ export const fromFunctionEffect: <R, A extends Request.Request<any, any>>(
  * @category constructors
  */
 export const fromFunctionOption: <A extends Request.Request<never, any>>(
-  name: string,
   f: (a: A) => Option.Option<Request.Request.Success<A>>
 ) => DataSource<never, A> = internal.fromFunctionOption
 
@@ -349,7 +334,6 @@ export const fromFunctionOption: <A extends Request.Request<never, any>>(
  * @category constructors
  */
 export const fromFunctionOptionEffect: <R, A extends Request.Request<any, any>>(
-  name: string,
   f: (a: A) => Effect.Effect<R, Request.Request.Error<A>, Option.Option<Request.Request.Success<A>>>
 ) => DataSource<R, A> = internal.fromFunctionOptionEffect
 
@@ -369,12 +353,9 @@ export const never: (_: void) => DataSource<never, never> = internal.never
  */
 export const provideContext: {
   <R>(
-    context: Described.Described<Context.Context<R>>
+    context: Context.Context<R>
   ): <A extends Request.Request<any, any>>(self: DataSource<R, A>) => DataSource<never, A>
-  <R, A extends Request.Request<any, any>>(
-    self: DataSource<R, A>,
-    context: Described.Described<Context.Context<R>>
-  ): DataSource<never, A>
+  <R, A extends Request.Request<any, any>>(self: DataSource<R, A>, context: Context.Context<R>): DataSource<never, A>
 } = internal.provideContext
 
 /**

@@ -47,11 +47,12 @@ export interface GetPayment extends Request.Request<never, Payment> {
 export const GetPayment = Request.of<GetPayment>()
 
 export const PaymentDataSource: DataSource.DataSource<never, GetPayment> = DataSource
-  .fromFunctionBatchedOptionEffect("PaymentSource", (requests) =>
+  .fromFunctionBatchedOptionEffect((requests) =>
     Effect.succeed(pipe(
       requests,
       Chunk.map((request) => pipe(paymentData, HashMap.get(request.id)))
-    )))
+    ))
+  )
 
 export const getPayment = (id: number): Query.Query<never, never, Payment> =>
   Query.fromRequest(GetPayment({ id }), PaymentDataSource)
@@ -69,13 +70,14 @@ export interface GetAddress extends Request.Request<never, Address> {
 export const GetAddress = Request.of<GetAddress>()
 
 export const AddressDataSource: DataSource.DataSource<never, GetAddress> = DataSource
-  .fromFunctionBatchedOptionEffect("AddressSource", (requests) =>
+  .fromFunctionBatchedOptionEffect((requests) =>
     Effect.succeed(
       pipe(
         requests,
         Chunk.map((request) => pipe(addressData, HashMap.get(request.id)))
       )
-    ))
+    )
+  )
 
 export const getAddress = (id: number): Query.Query<never, never, Address> =>
   Query.fromRequest(GetAddress({ id }), AddressDataSource)

@@ -3,7 +3,6 @@ import * as Either from "@effect/data/Either"
 import * as Equal from "@effect/data/Equal"
 import * as List from "@effect/data/List"
 import type * as DataSource from "@effect/query/DataSource"
-import type * as Described from "@effect/query/Described"
 import type * as BlockedRequest from "@effect/query/internal_effect_untraced/blockedRequest"
 import * as _dataSource from "@effect/query/internal_effect_untraced/dataSource"
 import * as Parallel from "@effect/query/internal_effect_untraced/parallel"
@@ -122,7 +121,7 @@ export const MapDataSourcesReducer = <R, A, R2>(
 
 /** @internal */
 export const ContramapContextReducer = <R0, R>(
-  f: Described.Described<(context: Context.Context<R0>) => Context.Context<R>>
+  f: (context: Context.Context<R0>) => Context.Context<R>
 ): BlockedRequests.Reducer<R, BlockedRequests<R0>> => ({
   emptyCase: () => empty,
   parCase: (left, right) => par(left, right),
@@ -163,7 +162,7 @@ export const mapDataSources = <R, A, R2>(
  */
 export const contramapContext = <R0, R>(
   self: BlockedRequests<R>,
-  f: Described.Described<(context: Context.Context<R0>) => Context.Context<R>>
+  f: (context: Context.Context<R0>) => Context.Context<R>
 ): BlockedRequests<R0> => reduce(self, ContramapContextReducer(f))
 
 /**

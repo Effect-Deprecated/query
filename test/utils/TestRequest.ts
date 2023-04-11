@@ -62,7 +62,6 @@ export interface NotFound extends Data.Case {
 export const NotFound = Data.tagged<NotFound>("NotFound")
 
 export const TestDataSource: DataSource.DataSource<TestConsole.TestConsole, TestRequest> = DataSource.makeBatched(
-  "TestDataSource",
   (requests) => {
     const [all, oneByOne] = pipe(
       requests,

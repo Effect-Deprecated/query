@@ -37,7 +37,7 @@ export interface GetNameById extends Request.Request<never, string> {
 export const GetNameById = Request.tagged<GetNameById>("GetNameById")
 
 export const UserDataSource: DataSource.DataSource<TestConsole.TestConsole, UserRequest> = DataSource
-  .makeBatched("UserRequestDataSource", (requests) =>
+  .makeBatched((requests) =>
     pipe(
       Effect.dieMessage("Duplicate requests"),
       Effect.when(() => HashSet.size(HashSet.fromIterable(requests)) !== Chunk.size(requests)),
@@ -56,7 +56,8 @@ export const UserDataSource: DataSource.DataSource<TestConsole.TestConsole, User
           }
         }
       }))
-    ))
+    )
+  )
 
 export const getAllUserIds: Query.Query<TestConsole.TestConsole, never, ReadonlyArray<number>> = Query.fromRequest(
   GetAllIds({}),

@@ -24,22 +24,19 @@ class QueryFailureImpl implements QueryFailure.QueryFailure {
     if ("_tag" in this.request) {
       return {
         _tag: "QueryFailure",
-        dataSource: this.dataSource.identifier,
         request: this.request._tag
       }
     }
     return {
-      _tag: "QueryFailure",
-      dataSource: this.dataSource.identifier
+      _tag: "QueryFailure"
     }
   }
   toString() {
-    const dataSourceId = this.dataSource.identifier
     if ("_tag" in this.request) {
       const requestId = this.request._tag
-      return `Data source ${dataSourceId} did not complete request ${requestId}`
+      return `Data source did not complete request ${requestId}`
     }
-    return `Data source ${dataSourceId} did not complete request`
+    return `Data source did not complete request`
   }
   [Symbol.for("nodejs.util.inspect.custom")]() {
     return this.toJSON()

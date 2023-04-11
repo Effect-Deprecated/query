@@ -6,6 +6,7 @@ import * as Either from "@effect/data/Either"
 import * as Equal from "@effect/data/Equal"
 import type { LazyArg } from "@effect/data/Function"
 import { identity, pipe } from "@effect/data/Function"
+import { SingleShotGen } from "@effect/data/Gen"
 import * as Hash from "@effect/data/Hash"
 import * as HashSet from "@effect/data/HashSet"
 import * as Option from "@effect/data/Option"
@@ -20,14 +21,12 @@ import * as Layer from "@effect/io/Layer"
 import * as Ref from "@effect/io/Ref"
 import * as Cache from "@effect/query/Cache"
 import type * as DataSource from "@effect/query/DataSource"
-import type * as Described from "@effect/query/Described"
 import * as BlockedRequest from "@effect/query/internal_effect_untraced/blockedRequest"
 import * as BlockedRequests from "@effect/query/internal_effect_untraced/blockedRequests"
 import * as cache from "@effect/query/internal_effect_untraced/cache"
 import * as completedRequestMap from "@effect/query/internal_effect_untraced/completedRequestMap"
 import * as Continue from "@effect/query/internal_effect_untraced/continue"
 import * as dataSource from "@effect/query/internal_effect_untraced/dataSource"
-import * as described from "@effect/query/internal_effect_untraced/described"
 import * as queryFailure from "@effect/query/internal_effect_untraced/queryFailure"
 import * as Result from "@effect/query/internal_effect_untraced/result"
 import * as Sequential from "@effect/query/internal_effect_untraced/sequential"
@@ -78,7 +77,7 @@ class QueryImpl<R, E, A> implements Query.Query<R, E, A> {
 
   traced(trace: Debug.Trace): Query.Query<R, E, A> {
     if (trace) {
-      return new QueryImpl(matchCauseQuery(this, failCause, succeed).i0.traced(trace))
+      return new QueryImpl(toEffect(matchCauseQuery(this, failCause, succeed)).traced(trace))
     }
     return this
   }
@@ -87,6 +86,11 @@ class QueryImpl<R, E, A> implements Query.Query<R, E, A> {
     return run(this)
   }
 }
+
+/** @internal */
+export const toEffect = <R, E, A>(self: Query.Query<R, E, A>): Effect.Effect<R, never, Result.Result<R, E, A>> =>
+  // @ts-expect-error
+  self["_tag"] === "Commit" && QueryTypeId in self ? self.i0 : fromEffect(self)
 
 const cachingEnabled: FiberRef.FiberRef<boolean> = FiberRef.unsafeMake(true)
 
@@ -100,13 +104,13 @@ export const absolve = Debug.untracedMethod(() =>
 /** @internal */
 export const around = Debug.untracedDual<
   <R2, A2, R3, _>(
-    before: Described.Described<Effect.Effect<R2, never, A2>>,
-    after: Described.Described<(a: A2) => Effect.Effect<R3, never, _>>
+    before: Effect.Effect<R2, never, A2>,
+    after: (a: A2) => Effect.Effect<R3, never, _>
   ) => <R, E, A>(self: Query.Query<R, E, A>) => Query.Query<R | R2 | R3, E, A>,
   <R, E, A, R2, A2, R3, _>(
     self: Query.Query<R, E, A>,
-    before: Described.Described<Effect.Effect<R2, never, A2>>,
-    after: Described.Described<(a: A2) => Effect.Effect<R3, never, _>>
+    before: Effect.Effect<R2, never, A2>,
+    after: (a: A2) => Effect.Effect<R3, never, _>
   ) => Query.Query<R | R2 | R3, E, A>
 >(3, () => (self, before, after) => mapDataSources(self, (source) => dataSource.around(source, before, after)))
 
@@ -198,23 +202,23 @@ export const contextWithQuery = Debug.untracedMethod((restore) =>
 /** @internal */
 export const contramapContext = Debug.dualWithTrace<
   <R0, R>(
-    f: Described.Described<(context: Context.Context<R0>) => Context.Context<R>>
+    f: (context: Context.Context<R0>) => Context.Context<R>
   ) => <E, A>(self: Query.Query<R, E, A>) => Query.Query<R0, E, A>,
   <R, E, A, R0>(
     self: Query.Query<R, E, A>,
-    f: Described.Described<(context: Context.Context<R0>) => Context.Context<R>>
+    f: (context: Context.Context<R0>) => Context.Context<R>
   ) => Query.Query<R0, E, A>
 >(
   2,
   (trace, restore) =>
     <R, E, A, R0>(
       self: Query.Query<R, E, A>,
-      f: Described.Described<(context: Context.Context<R0>) => Context.Context<R>>
-    ) =>
+      f: (context: Context.Context<R0>) => Context.Context<R>
+    ): Query.Query<R0, E, A> =>
       new QueryImpl(
         Effect.contramapContext(
-          Effect.map(self.i0, (result) => contramapContextResult(result, f)),
-          (context: Context.Context<R0>) => restore(f.value)(context)
+          Effect.map(toEffect(self), (result) => contramapContextResult(result, f)),
+          (context: Context.Context<R0>) => restore(f)(context)
         ).traced(trace)
       )
 )
@@ -290,7 +294,7 @@ export const flatMap = Debug.dualWithTrace<
 >(2, (trace, restore) =>
   (self, f) =>
     new QueryImpl(
-      Effect.flatMap(self.i0, (result) => {
+      Effect.flatMap(toEffect(self), (result) => {
         switch (result._tag) {
           case "Blocked": {
             return Effect.succeed(
@@ -301,7 +305,7 @@ export const flatMap = Debug.dualWithTrace<
             )
           }
           case "Done": {
-            return restore(f)(result.value).i0
+            return toEffect(restore(f)(result.value))
           }
           case "Fail": {
             return Effect.succeed(Result.fail(result.cause))
@@ -400,7 +404,7 @@ export const forEachPar = Debug.untracedDual<
       }
       return new QueryImpl(
         Effect.map(
-          Effect.forEachPar(chunk, (a) => restore(f)(a).i0),
+          Effect.forEachPar(chunk, (a) => toEffect(restore(f)(a))),
           collectAllParResult
         )
       )
@@ -493,7 +497,7 @@ export const map = Debug.dualWithTrace<
   (self, f) =>
     new QueryImpl(
       Effect.map(
-        self.i0,
+        toEffect(self),
         (result) => mapResult(result, restore(f))
       ).traced(trace)
     ))
@@ -523,7 +527,7 @@ export const mapDataSources = Debug.dualWithTrace<
   (self, f) =>
     new QueryImpl(
       Effect.map(
-        self.i0,
+        toEffect(self),
         (result) => mapDataSourcesResult(result, restore(f))
       ).traced(trace)
     ))
@@ -589,8 +593,8 @@ export const matchCauseQuery = Debug.dualWithTrace<
   ) =>
     new QueryImpl(
       Effect.matchCauseEffect(
-        self.i0,
-        (cause) => restore(onFailure)(cause).i0,
+        toEffect(self),
+        (cause) => toEffect(restore(onFailure)(cause)),
         (result): Effect.Effect<
           R | R2 | R3,
           never,
@@ -606,10 +610,10 @@ export const matchCauseQuery = Debug.dualWithTrace<
               )
             }
             case "Done": {
-              return restore(onSuccess)(result.value).i0
+              return toEffect(restore(onSuccess)(result.value))
             }
             case "Fail": {
-              return restore(onFailure)(result.cause).i0
+              return toEffect(restore(onFailure)(result.cause))
             }
           }
         }
@@ -709,37 +713,37 @@ export const partitionQueryPar = Debug.untracedDual<
 /** @internal */
 export const provideContext = Debug.untracedDual<
   <R>(
-    context: Described.Described<Context.Context<R>>
+    context: Context.Context<R>
   ) => <E, A>(
     self: Query.Query<R, E, A>
   ) => Query.Query<never, E, A>,
   <R, E, A>(
     self: Query.Query<R, E, A>,
-    context: Described.Described<Context.Context<R>>
+    context: Context.Context<R>
   ) => Query.Query<never, E, A>
->(2, () => (self, context) => contramapContext(self, described.make(() => context.value, context.description)))
+>(2, () => (self, context) => contramapContext(self, () => context))
 
 /** @internal */
 export const provideLayer = Debug.dualWithTrace<
   <R0, E2, R>(
-    layer: Described.Described<Layer.Layer<R0, E2, R>>
+    layer: Layer.Layer<R0, E2, R>
   ) => <E, A>(self: Query.Query<R, E, A>) => Query.Query<R0, E | E2, A>,
   <R, E, A, R0, E2>(
     self: Query.Query<R, E, A>,
-    layer: Described.Described<Layer.Layer<R0, E2, R>>
+    layer: Layer.Layer<R0, E2, R>
   ) => Query.Query<R0, E | E2, A>
 >(2, (trace) =>
   <R, E, A, R0, E2>(
     self: Query.Query<R, E, A>,
-    layer: Described.Described<Layer.Layer<R0, E2, R>>
+    layer: Layer.Layer<R0, E2, R>
   ) =>
     new QueryImpl(
       Effect.scoped(
         pipe(
-          Effect.exit(Layer.build(layer.value)),
+          Effect.exit(Layer.build(layer)),
           Effect.flatMap(Exit.match(
             (e): Effect.Effect<R0, never, Result.Result<R0, E | E2, A>> => Effect.succeed(Result.fail(e)),
-            (c) => provideContext(self, described.make(c, layer.description)).i0
+            (c) => toEffect(provideContext(self, c))
           ))
         )
       ).traced(trace)
@@ -748,21 +752,19 @@ export const provideLayer = Debug.dualWithTrace<
 /** @internal */
 export const provideSomeLayer = Debug.untracedDual<
   <R2, E2, A2>(
-    layer: Described.Described<Layer.Layer<R2, E2, A2>>
+    layer: Layer.Layer<R2, E2, A2>
   ) => <R, E, A>(self: Query.Query<R, E, A>) => Query.Query<R2 | Exclude<R, A2>, E2 | E, A>,
   <R, E, A, R2, E2, A2>(
     self: Query.Query<R, E, A>,
-    layer: Described.Described<Layer.Layer<R2, E2, A2>>
+    layer: Layer.Layer<R2, E2, A2>
   ) => Query.Query<R2 | Exclude<R, A2>, E | E2, A>
 >(
   2,
   () =>
-    <R, E, A, R2, E2, A2>(self: Query.Query<R, E, A>, layer: Described.Described<Layer.Layer<R2, E2, A2>>) =>
-      provideLayer(
-        // @ts-expect-error
-        self,
-        described.make(Layer.merge(Layer.context<R2>(), layer.value), layer.description)
-      )
+    <R, E, A, R2, E2, A2>(
+      self: Query.Query<R, E, A>,
+      layer: Layer.Layer<R2, E2, A2>
+    ): Query.Query<R2 | Exclude<R, A2>, E | E2, A> => provideLayer(self as any, Layer.merge(Layer.context<R2>(), layer))
 )
 
 /** @internal */
@@ -828,8 +830,8 @@ export const race = Debug.dualWithTrace<
       query: Query.Query<R | R2, E | E2, A | A2>,
       fiber: Fiber.Fiber<never, Result.Result<R | R2, E | E2, A | A2>>
     ): Query.Query<R | R2, E | E2, A | A2> =>
-      new QueryImpl(Effect.raceWith(query.i0, Fiber.join(fiber), coordinate, coordinate))
-    return new QueryImpl(Effect.raceWith(self.i0, that.i0, coordinate, coordinate).traced(trace))
+      new QueryImpl(Effect.raceWith(toEffect(query), Fiber.join(fiber), coordinate, coordinate))
+    return new QueryImpl(Effect.raceWith(toEffect(self), toEffect(that), coordinate, coordinate).traced(trace))
   })
 
 /** @internal */
@@ -881,7 +883,7 @@ export const runCache = Debug.dualWithTrace<
 >(2, (trace) =>
   <R, E, A>(self: Query.Query<R, E, A>, cache: Cache.Cache) => {
     const runInternal = (query: Query.Query<R, E, A>): Effect.Effect<R, E, A> =>
-      Effect.flatMap(query.i0, (result) => {
+      Effect.flatMap(toEffect(query), (result) => {
         switch (result._tag) {
           case "Blocked": {
             switch (result.continue._tag) {
@@ -1104,7 +1106,7 @@ export const timeoutTo = Debug.untracedDual<
     const race = (query: Query.Query<R, E, B | B2>, fiber: Fiber.Fiber<never, B | B2>): Query.Query<R, E, B | B2> =>
       new QueryImpl(
         Effect.raceWith(
-          query.i0,
+          toEffect(query),
           Fiber.join(fiber),
           (leftExit, rightFiber) =>
             Exit.matchEffect(
@@ -1398,7 +1400,7 @@ export const zipWith: {
 >(3, (trace, restore) =>
   (self, that, f) =>
     new QueryImpl(
-      Effect.flatMap(self.i0, (result) => {
+      Effect.flatMap(toEffect(self), (result) => {
         switch (result._tag) {
           case "Blocked": {
             switch (result.continue._tag) {
@@ -1411,7 +1413,7 @@ export const zipWith: {
                 )
               }
               case "Get": {
-                return Effect.map(that.i0, (thatResult) => {
+                return Effect.map(toEffect(that), (thatResult) => {
                   switch (thatResult._tag) {
                     case "Blocked": {
                       return Result.blocked(
@@ -1434,7 +1436,7 @@ export const zipWith: {
             }
           }
           case "Done": {
-            return Effect.map(that.i0, (thatResult) => {
+            return Effect.map(toEffect(that), (thatResult) => {
               switch (thatResult._tag) {
                 case "Blocked": {
                   return Result.blocked(
@@ -1472,8 +1474,8 @@ export const zipWithBatched = Debug.untracedDual<
 >(3, (restore) =>
   (self, that, f) =>
     new QueryImpl(Effect.zipWith(
-      self.i0,
-      that.i0,
+      toEffect(self),
+      toEffect(that),
       (selfResult, thatResult) => {
         if (Result.isBlocked(selfResult) && Result.isBlocked(thatResult)) {
           return Result.blocked(
@@ -1525,8 +1527,8 @@ export const zipWithPar = Debug.untracedDual<
 >(3, (restore) =>
   (self, that, f) =>
     new QueryImpl(Effect.zipWithPar(
-      self.i0,
-      that.i0,
+      toEffect(self),
+      toEffect(that),
       (selfResult, thatResult) => {
         if (Result.isBlocked(selfResult) && Result.isBlocked(thatResult)) {
           return Result.blocked(
@@ -1685,7 +1687,7 @@ const collectAllParContinuation = <R, E, A>(
  */
 const contramapContextContinuation = <R, E, A, R0>(
   self: Continue.Continue<R, E, A>,
-  f: Described.Described<(context: Context.Context<R0>) => Context.Context<R>>
+  f: (context: Context.Context<R0>) => Context.Context<R>
 ): Continue.Continue<R0, E, A> => {
   switch (self._tag) {
     case "Eff": {
@@ -1941,7 +1943,7 @@ const collectAllParResult = <R, E, A>(
  */
 const contramapContextResult = <R0, R, E, A>(
   self: Result.Result<R, E, A>,
-  f: Described.Described<(context: Context.Context<R0>) => Context.Context<R>>
+  f: (context: Context.Context<R0>) => Context.Context<R>
 ) => {
   switch (self._tag) {
     case "Blocked": {
@@ -2017,3 +2019,41 @@ const mapResult = <R, E, A, B>(self: Result.Result<R, E, A>, f: (a: A) => B): Re
     }
   }
 }
+
+/** @internal */
+class QueryGen {
+  constructor(readonly value: Query.Query<any, any, any>) {}
+  [Symbol.iterator]() {
+    return new SingleShotGen(this)
+  }
+}
+
+const adapter = function() {
+  let x = arguments[0]
+  for (let i = 1; i < arguments.length; i++) {
+    x = arguments[i](x)
+  }
+  return new QueryGen(x) as any
+}
+
+/**
+ * Inspired by https://github.com/tusharmath/qio/pull/22 (revised)
+ * @internal
+ */
+export const gen: typeof Query.gen = Debug.methodWithTrace((trace, restore) =>
+  (f) =>
+    suspend(() => {
+      const iterator = f(adapter)
+      const state = restore(() => iterator.next())()
+      const run = (
+        state: IteratorYieldResult<any> | IteratorReturnResult<any>
+      ): Query.Query<any, any, any> =>
+        state.done ?
+          succeed(state.value) :
+          flatMap(
+            state.value.value as unknown as Query.Query<any, any, any>,
+            (val: any) => run(restore(() => iterator.next(val))())
+          )
+      return run(state)
+    }).traced(trace)
+)

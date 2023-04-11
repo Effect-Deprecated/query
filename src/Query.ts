@@ -13,9 +13,7 @@ import type * as Effect from "@effect/io/Effect"
 import type * as Layer from "@effect/io/Layer"
 import type * as Cache from "@effect/query/Cache"
 import type * as DataSource from "@effect/query/DataSource"
-import type * as Described from "@effect/query/Described"
 import * as internal from "@effect/query/internal_effect_untraced/query"
-import type * as Result from "@effect/query/internal_effect_untraced/result"
 import type * as Request from "@effect/query/Request"
 
 /**
@@ -73,9 +71,6 @@ export type QueryTypeId = typeof QueryTypeId
  */
 export interface Query<R, E, A> extends Query.Variance<R, E, A>, Effect.Effect<R, E, A> {
   traced(trace: Debug.Trace): Query<R, E, A>
-
-  /** @internal */
-  readonly i0: Effect.Effect<R, never, Result.Result<R, E, A>>
 }
 
 /**
@@ -93,6 +88,18 @@ export declare namespace Query {
       readonly _A: (_: never) => A
     }
   }
+}
+
+/**
+ * @category models
+ * @since 1.0.0
+ */
+export interface QueryGen<R, E, A> {
+  readonly _R: () => R
+  readonly _E: () => E
+  readonly _A: () => A
+  readonly value: Query<R, E, A>
+  [Symbol.iterator](): Generator<QueryGen<R, E, A>, A>
 }
 
 /**
@@ -115,13 +122,13 @@ export const absolve: <R, E, A>(self: Query<R, E, Either.Either<E, A>>) => Query
  */
 export const around: {
   <R2, A2, R3, _>(
-    before: Described.Described<Effect.Effect<R2, never, A2>>,
-    after: Described.Described<(a: A2) => Effect.Effect<R3, never, _>>
+    before: Effect.Effect<R2, never, A2>,
+    after: (a: A2) => Effect.Effect<R3, never, _>
   ): <R, E, A>(self: Query<R, E, A>) => Query<R2 | R3 | R, E, A>
   <R, E, A, R2, A2, R3, _>(
     self: Query<R, E, A>,
-    before: Described.Described<Effect.Effect<R2, never, A2>>,
-    after: Described.Described<(a: A2) => Effect.Effect<R3, never, _>>
+    before: Effect.Effect<R2, never, A2>,
+    after: (a: A2) => Effect.Effect<R3, never, _>
   ): Query<R | R2 | R3, E, A>
 } = internal.around
 
@@ -265,13 +272,8 @@ export const contextWithQuery: <R, R2, E, A>(
  * @category context
  */
 export const contramapContext: {
-  <R0, R>(
-    f: Described.Described<(context: Context.Context<R0>) => Context.Context<R>>
-  ): <E, A>(self: Query<R, E, A>) => Query<R0, E, A>
-  <R, E, A, R0>(
-    self: Query<R, E, A>,
-    f: Described.Described<(context: Context.Context<R0>) => Context.Context<R>>
-  ): Query<R0, E, A>
+  <R0, R>(f: (context: Context.Context<R0>) => Context.Context<R>): <E, A>(self: Query<R, E, A>) => Query<R0, E, A>
+  <R, E, A, R0>(self: Query<R, E, A>, f: (context: Context.Context<R0>) => Context.Context<R>): Query<R0, E, A>
 } = internal.contramapContext
 
 /**
@@ -460,6 +462,284 @@ export const fromRequestUncached: <R, A extends Request.Request<any, any>, A2 ex
   request: A,
   dataSource: DataSource.DataSource<R, A2>
 ) => Query<R, Request.Request.Error<A>, Request.Request.Success<A>> = internal.fromRequestUncached
+
+/**
+ * @since 1.0.0
+ * @category models
+ */
+export interface Adapter {
+  <R, E, A>(self: Query<R, E, A>): QueryGen<R, E, A>
+  <A, _R, _E, _A>(a: A, ab: (a: A) => Query<_R, _E, _A>): QueryGen<_R, _E, _A>
+  <A, B, _R, _E, _A>(a: A, ab: (a: A) => B, bc: (b: B) => Query<_R, _E, _A>): QueryGen<_R, _E, _A>
+  <A, B, C, _R, _E, _A>(a: A, ab: (a: A) => B, bc: (b: B) => C, cd: (c: C) => Query<_R, _E, _A>): QueryGen<_R, _E, _A>
+  <A, B, C, D, _R, _E, _A>(
+    a: A,
+    ab: (a: A) => B,
+    bc: (b: B) => C,
+    cd: (c: C) => D,
+    de: (d: D) => Query<_R, _E, _A>
+  ): QueryGen<_R, _E, _A>
+  <A, B, C, D, E, _R, _E, _A>(
+    a: A,
+    ab: (a: A) => B,
+    bc: (b: B) => C,
+    cd: (c: C) => D,
+    de: (d: D) => E,
+    ef: (e: E) => Query<_R, _E, _A>
+  ): QueryGen<_R, _E, _A>
+  <A, B, C, D, E, F, _R, _E, _A>(
+    a: A,
+    ab: (a: A) => B,
+    bc: (b: B) => C,
+    cd: (c: C) => D,
+    de: (d: D) => E,
+    ef: (e: E) => F,
+    fg: (f: F) => Query<_R, _E, _A>
+  ): QueryGen<_R, _E, _A>
+  <A, B, C, D, E, F, G, _R, _E, _A>(
+    a: A,
+    ab: (a: A) => B,
+    bc: (b: B) => C,
+    cd: (c: C) => D,
+    de: (d: D) => E,
+    ef: (e: E) => F,
+    fg: (f: F) => G,
+    gh: (g: F) => Query<_R, _E, _A>
+  ): QueryGen<_R, _E, _A>
+  <A, B, C, D, E, F, G, H, _R, _E, _A>(
+    a: A,
+    ab: (a: A) => B,
+    bc: (b: B) => C,
+    cd: (c: C) => D,
+    de: (d: D) => E,
+    ef: (e: E) => F,
+    fg: (f: F) => G,
+    gh: (g: G) => H,
+    hi: (g: H) => Query<_R, _E, _A>
+  ): QueryGen<_R, _E, _A>
+  <A, B, C, D, E, F, G, H, I, _R, _E, _A>(
+    a: A,
+    ab: (a: A) => B,
+    bc: (b: B) => C,
+    cd: (c: C) => D,
+    de: (d: D) => E,
+    ef: (e: E) => F,
+    fg: (f: F) => G,
+    gh: (g: G) => H,
+    hi: (h: H) => I,
+    ij: (i: I) => Query<_R, _E, _A>
+  ): QueryGen<_R, _E, _A>
+  <A, B, C, D, E, F, G, H, I, J, _R, _E, _A>(
+    a: A,
+    ab: (a: A) => B,
+    bc: (b: B) => C,
+    cd: (c: C) => D,
+    de: (d: D) => E,
+    ef: (e: E) => F,
+    fg: (f: F) => G,
+    gh: (g: G) => H,
+    hi: (h: H) => I,
+    ij: (i: I) => J,
+    jk: (j: J) => Query<_R, _E, _A>
+  ): QueryGen<_R, _E, _A>
+  <A, B, C, D, E, F, G, H, I, J, K, _R, _E, _A>(
+    a: A,
+    ab: (a: A) => B,
+    bc: (b: B) => C,
+    cd: (c: C) => D,
+    de: (d: D) => E,
+    ef: (e: E) => F,
+    fg: (f: F) => G,
+    gh: (g: G) => H,
+    hi: (h: H) => I,
+    ij: (i: I) => J,
+    jk: (j: J) => K,
+    kl: (k: K) => Query<_R, _E, _A>
+  ): QueryGen<_R, _E, _A>
+  <A, B, C, D, E, F, G, H, I, J, K, L, _R, _E, _A>(
+    a: A,
+    ab: (a: A) => B,
+    bc: (b: B) => C,
+    cd: (c: C) => D,
+    de: (d: D) => E,
+    ef: (e: E) => F,
+    fg: (f: F) => G,
+    gh: (g: G) => H,
+    hi: (h: H) => I,
+    ij: (i: I) => J,
+    jk: (j: J) => K,
+    kl: (k: K) => L,
+    lm: (l: L) => Query<_R, _E, _A>
+  ): QueryGen<_R, _E, _A>
+  <A, B, C, D, E, F, G, H, I, J, K, L, M, _R, _E, _A>(
+    a: A,
+    ab: (a: A) => B,
+    bc: (b: B) => C,
+    cd: (c: C) => D,
+    de: (d: D) => E,
+    ef: (e: E) => F,
+    fg: (f: F) => G,
+    gh: (g: G) => H,
+    hi: (h: H) => I,
+    ij: (i: I) => J,
+    jk: (j: J) => K,
+    kl: (k: K) => L,
+    lm: (l: L) => M,
+    mn: (m: M) => Query<_R, _E, _A>
+  ): QueryGen<_R, _E, _A>
+  <A, B, C, D, E, F, G, H, I, J, K, L, M, N, _R, _E, _A>(
+    a: A,
+    ab: (a: A) => B,
+    bc: (b: B) => C,
+    cd: (c: C) => D,
+    de: (d: D) => E,
+    ef: (e: E) => F,
+    fg: (f: F) => G,
+    gh: (g: G) => H,
+    hi: (h: H) => I,
+    ij: (i: I) => J,
+    jk: (j: J) => K,
+    kl: (k: K) => L,
+    lm: (l: L) => M,
+    mn: (m: M) => N,
+    no: (n: N) => Query<_R, _E, _A>
+  ): QueryGen<_R, _E, _A>
+  <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, _R, _E, _A>(
+    a: A,
+    ab: (a: A) => B,
+    bc: (b: B) => C,
+    cd: (c: C) => D,
+    de: (d: D) => E,
+    ef: (e: E) => F,
+    fg: (f: F) => G,
+    gh: (g: G) => H,
+    hi: (h: H) => I,
+    ij: (i: I) => J,
+    jk: (j: J) => K,
+    kl: (k: K) => L,
+    lm: (l: L) => M,
+    mn: (m: M) => N,
+    no: (n: N) => O,
+    op: (o: O) => Query<_R, _E, _A>
+  ): QueryGen<_R, _E, _A>
+  <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, _R, _E, _A>(
+    a: A,
+    ab: (a: A) => B,
+    bc: (b: B) => C,
+    cd: (c: C) => D,
+    de: (d: D) => E,
+    ef: (e: E) => F,
+    fg: (f: F) => G,
+    gh: (g: G) => H,
+    hi: (h: H) => I,
+    ij: (i: I) => J,
+    jk: (j: J) => K,
+    kl: (k: K) => L,
+    lm: (l: L) => M,
+    mn: (m: M) => N,
+    no: (n: N) => O,
+    op: (o: O) => P,
+    pq: (p: P) => Query<_R, _E, _A>
+  ): QueryGen<_R, _E, _A>
+  <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, _R, _E, _A>(
+    a: A,
+    ab: (a: A) => B,
+    bc: (b: B) => C,
+    cd: (c: C) => D,
+    de: (d: D) => E,
+    ef: (e: E) => F,
+    fg: (f: F) => G,
+    gh: (g: G) => H,
+    hi: (h: H) => I,
+    ij: (i: I) => J,
+    jk: (j: J) => K,
+    kl: (k: K) => L,
+    lm: (l: L) => M,
+    mn: (m: M) => N,
+    no: (n: N) => O,
+    op: (o: O) => P,
+    pq: (p: P) => Q,
+    qr: (q: Q) => Query<_R, _E, _A>
+  ): QueryGen<_R, _E, _A>
+  <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, _R, _E, _A>(
+    a: A,
+    ab: (a: A) => B,
+    bc: (b: B) => C,
+    cd: (c: C) => D,
+    de: (d: D) => E,
+    ef: (e: E) => F,
+    fg: (f: F) => G,
+    gh: (g: G) => H,
+    hi: (h: H) => I,
+    ij: (i: I) => J,
+    jk: (j: J) => K,
+    kl: (k: K) => L,
+    lm: (l: L) => M,
+    mn: (m: M) => N,
+    no: (n: N) => O,
+    op: (o: O) => P,
+    pq: (p: P) => Q,
+    qr: (q: Q) => R,
+    rs: (r: R) => Query<_R, _E, _A>
+  ): QueryGen<_R, _E, _A>
+  <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, _R, _E, _A>(
+    a: A,
+    ab: (a: A) => B,
+    bc: (b: B) => C,
+    cd: (c: C) => D,
+    de: (d: D) => E,
+    ef: (e: E) => F,
+    fg: (f: F) => G,
+    gh: (g: G) => H,
+    hi: (h: H) => I,
+    ij: (i: I) => J,
+    jk: (j: J) => K,
+    kl: (k: K) => L,
+    lm: (l: L) => M,
+    mn: (m: M) => N,
+    no: (n: N) => O,
+    op: (o: O) => P,
+    pq: (p: P) => Q,
+    qr: (q: Q) => R,
+    rs: (r: R) => S,
+    st: (s: S) => Query<_R, _E, _A>
+  ): QueryGen<_R, _E, _A>
+  <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, _R, _E, _A>(
+    a: A,
+    ab: (a: A) => B,
+    bc: (b: B) => C,
+    cd: (c: C) => D,
+    de: (d: D) => E,
+    ef: (e: E) => F,
+    fg: (f: F) => G,
+    gh: (g: G) => H,
+    hi: (h: H) => I,
+    ij: (i: I) => J,
+    jk: (j: J) => K,
+    kl: (k: K) => L,
+    lm: (l: L) => M,
+    mn: (m: M) => N,
+    no: (n: N) => O,
+    op: (o: O) => P,
+    pq: (p: P) => Q,
+    qr: (q: Q) => R,
+    rs: (r: R) => S,
+    st: (s: S) => T,
+    tu: (s: T) => Query<_R, _E, _A>
+  ): QueryGen<_R, _E, _A>
+}
+
+/**
+ * @since 1.0.0
+ * @category constructors
+ */
+export const gen: <Eff extends QueryGen<any, any, any>, AEff>(
+  f: (resume: Adapter) => Generator<Eff, AEff, any>
+) => Query<
+  [Eff] extends [never] ? never : [Eff] extends [QueryGen<infer R, any, any>] ? R : never,
+  [Eff] extends [never] ? never : [Eff] extends [QueryGen<any, infer E, any>] ? E : never,
+  AEff
+> = internal.gen
 
 /**
  * This function returns `true` if the specified value is an `Query` value,
@@ -706,8 +986,8 @@ export const partitionQueryPar: {
  * @category context
  */
 export const provideContext: {
-  <R>(context: Described.Described<Context.Context<R>>): <E, A>(self: Query<R, E, A>) => Query<never, E, A>
-  <R, E, A>(self: Query<R, E, A>, context: Described.Described<Context.Context<R>>): Query<never, E, A>
+  <R>(context: Context.Context<R>): <E, A>(self: Query<R, E, A>) => Query<never, E, A>
+  <R, E, A>(self: Query<R, E, A>, context: Context.Context<R>): Query<never, E, A>
 } = internal.provideContext
 
 /**
@@ -717,8 +997,8 @@ export const provideContext: {
  * @category context
  */
 export const provideLayer: {
-  <R0, E2, R>(layer: Described.Described<Layer.Layer<R0, E2, R>>): <E, A>(self: Query<R, E, A>) => Query<R0, E2 | E, A>
-  <R, E, A, R0, E2>(self: Query<R, E, A>, layer: Described.Described<Layer.Layer<R0, E2, R>>): Query<R0, E | E2, A>
+  <R0, E2, R>(layer: Layer.Layer<R0, E2, R>): <E, A>(self: Query<R, E, A>) => Query<R0, E2 | E, A>
+  <R, E, A, R0, E2>(self: Query<R, E, A>, layer: Layer.Layer<R0, E2, R>): Query<R0, E | E2, A>
 } = internal.provideLayer
 
 /**
@@ -729,13 +1009,8 @@ export const provideLayer: {
  * @category context
  */
 export const provideSomeLayer: {
-  <R2, E2, A2>(
-    layer: Described.Described<Layer.Layer<R2, E2, A2>>
-  ): <R, E, A>(self: Query<R, E, A>) => Query<R2 | Exclude<R, A2>, E2 | E, A>
-  <R, E, A, R2, E2, A2>(
-    self: Query<R, E, A>,
-    layer: Described.Described<Layer.Layer<R2, E2, A2>>
-  ): Query<R2 | Exclude<R, A2>, E | E2, A>
+  <R2, E2, A2>(layer: Layer.Layer<R2, E2, A2>): <R, E, A>(self: Query<R, E, A>) => Query<R2 | Exclude<R, A2>, E2 | E, A>
+  <R, E, A, R2, E2, A2>(self: Query<R, E, A>, layer: Layer.Layer<R2, E2, A2>): Query<R2 | Exclude<R, A2>, E | E2, A>
 } = internal.provideSomeLayer
 
 /**
